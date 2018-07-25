@@ -51,7 +51,7 @@ display_usage() {
     Output to stdout
 
   EXAMPLE :
-    $(basename $0) -f file.vcf 
+    ${NAME} -f file.vcf 
 EOF
 
   return 0
@@ -61,8 +61,8 @@ EOF
 # Main
 
 # initialisation des variables
+NAME=$(basename $0)
 vcfin=""
-foldout="."
 nbthread=4
 
 # Argument parsing

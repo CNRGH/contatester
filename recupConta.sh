@@ -67,7 +67,7 @@ display_usage() {
     Output a VCF file and a BED file 
 
   EXAMPLE :
-    $(basename $0) -f file.vcf -c vcfconta.vcf -b file.bed \
+    ${NAME} -f file.vcf -c vcfconta.vcf -b file.bed \
                    -g lcr_seg_dup_gnomad_2.0.2.bed -s 0 -e 0.2 -t 4
 EOF
 
@@ -78,7 +78,7 @@ EOF
 
 ################################################################################
 # Modules
-
+module load bcftools
 module load bedtools
 module load bedops
 
@@ -86,7 +86,7 @@ module load bedops
 # Main
 
 # Variables initialisation
-
+NAME=$(basename $0)
 # vcf file to process
 vcfin=""
 # All-in-one LCR & SEG DUP
@@ -108,7 +108,6 @@ nbthread=4
 
 # Use an output folder
 # foldout="./"
-
 
 # Argument parsing
 
@@ -140,57 +139,11 @@ if [[ -z $vcfin ]]; then
     echo '[ERROR] -f|--file was not supplied (mandatory option)' >&2 && exit 1
 fi
 
-# # define default value for ABstart & ABend if not defined
-# if [ -z $ABstart ] then
-    # ABstart=0
-# fi
-# if [ -z $ABend ] then
-    # ABend=0.2
-# fi
-
-# # Name the files if it's not given
-# filename=$(basename $(basename $(basename $vcfin .gz) .vcf) _BOTH.HC.annot )
-# fileExtension=AB_${ABstart}to${ABend}
-
-# if [ -z $vcfconta ] then
-    # vcfconta=${filename}_${fileExtension}_noLCRnoDUP.vcf
-# fi
-
-# if [ -z $bedfile ] then
-    # bedfile=${filename}_${fileExtension}_noLCRnoDUP.bed
-# fi
-
-
-# bedfile=${foldout}/${filename}_${fileExtension}_noLCRnoDUP.bed
-# vcfconta=${foldout}/${filename}_${fileExtension}_noLCRnoDUP.vcf
-
 # Command
-bcftools view $vcfin --no-header --output-type v --types snps \
+bcftools view $vcfin --output-type v --types snps \
 --thread $nbthread --targets ^$LCRSEGDUPgnomad | \
 # parsing du vcf version 4.2 parsing de la colone AD 
 awk -F '\t' '{if($1 !~ /^#/ ) {split($10, a, ":") ; split(a[2], b, ","); \
 if((b[2]+b[1]+b[3]) != 0 && b[2]/(b[2]+b[1]+b[3]) > ABstart && \
 b[2]/(b[2]+b[1]+b[3]) < ABend ) {print}} else {print}}' \
 ABstart="$ABstart" ABend="$ABend"| tee $vcfconta | vcf2bed > $bedfile
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

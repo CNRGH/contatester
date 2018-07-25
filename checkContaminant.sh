@@ -48,7 +48,7 @@ display_usage() {
         - Write important informations on the standard output
 
   EXAMPLE :
-    $(basename $0) -f file.vcf -c vcfconta.vcf -b file.bed
+    ${NAME} -f file.vcf -c vcfconta.vcf -b file.bed
 EOF
 
   return 0
@@ -66,7 +66,7 @@ module load useq
 
 
 # Variables initialisation
-
+NAME=$(basename $0)
 # vcf file to compare
 vcfcompare=""
 # possibly contaminated vcf file to process

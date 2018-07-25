@@ -116,7 +116,7 @@ if (argv$reportName == "<input>.pdf") {
 scriptPath = dirname(getFilename())
 
 # load dataset
-load(paste(scriptPath, "contaIntraProjet.rda", sep=""))
+load(paste(scriptPath, "contaIntraProjet.rda", sep="/"))
 
 # Data Treatment 
 sample_test = merge_data(filin)
@@ -279,11 +279,23 @@ if ( as.numeric(name_hit_1tiers) >= 5 &&
 }
 
 # save informations
+
 write.table(tab_cor, file = filout, eol = "\n", quote = TRUE,col.names=TRUE, 
             row.names = TRUE, sep = ",")
+oldw <- getOption("warn")
+#stop warnings
+options(warn = -1)
 write.table(tab_hetero, file = filout, eol = "\n", quote = TRUE, 
           row.names = TRUE, sep = ",",  append = TRUE)
+          # Warning message:
+          # In write.table(tab_hetero, file = filout, eol = "\n", quote = TRUE,  :
+          # appending column names to file
+#restore warnings
+options(warn = oldw)
 cat(conta_res, file = filout, eol = "\n", append = TRUE)
+
+
+
 # write.table(tab_res, file = paste(filout, ".raw", sep=""), eol = "\n", 
             # quote = TRUE,col.names=TRUE, row.names = TRUE, sep = ",")
 

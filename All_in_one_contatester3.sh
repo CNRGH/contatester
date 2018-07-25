@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #####
-##### Allelic Balance Calculation
+##### Contamination tester with Allelic Balance Distribution
 #####
 
 #
@@ -14,21 +14,27 @@
 # Detection de contaminations croisées humain/humain 
 #
 
-set -uo pipefail
-
-
-
-
+#set -uo pipefail
 
 ################################################################################
 # FUNCTIONS                                                                    #
 ################################################################################
 
+testArg() {
+    # Used for the parsing of Arguments
+    # Test if a string start with a "-" or empty
+    if [[ $1 =~ ^[-] || -z $1 ]]; then 
+        echo "ERROR : Missing Argument for $1" >&2; exit 1
+    else
+        echo $1 
+    fi
+}
+
 # display_usage
 # This function displays the usage of this program.
 # No parameters
 display_usage() {
- # cat - <<EOF
+  cat - <<EOF
   USAGE :
     ${NAME} [options] -f <vcf_file> -o <out_dir> -r
       -f, --file <vcf_file>
@@ -42,6 +48,9 @@ display_usage() {
       -r, --report 
             create a pdf report for contamination etimation 
             [default: no report]
+      -c, --check
+            enable contaminant check for the list of VCF provided if a VCF is
+            marked as contaminated
       -h, --help 
             print help
             
@@ -74,12 +83,12 @@ module load bedtools
 module load bedops
 module load useq
 
-
 ################################################################################
 # MAIN                                                                         #
 ################################################################################
 
 # Variables initialisation
+NAME=$(basename $0)
 vcffile=""
 vcflist=""
 
@@ -99,6 +108,7 @@ do
         -l|--list)   vcflist=$(testArg $2); shift;;
         -o|--outdir) outdir=$(testArg $2); shift;;
         -r|--report) report="--report";;
+        -c|--check)  check=TRUE;;
         -h|--help) display_usage && exit 0 ;;
         --) shift; break;; 
         -*) echo "$0: error - unrecognized option $1" >&2; exit 1;;
@@ -108,14 +118,14 @@ do
 done
 
 # for mandatory arg
-if [ -z $vcffile && -n $vcflist ]; then
+if [[ -z $vcffile && -n $vcflist ]]; then
     list_fi=$(cat $vcflist)
-elif [ -n $vcffile && -z $vcflist ]; then
+elif [[ -n $vcffile && -z $vcflist ]]; then
     list_fi=$vcffile
-elif [ -n $vcffile && -n $vcflist ]; then
+elif [[ -n $vcffile && -n $vcflist ]]; then
     echo "$0: error - provide only a VCF file or a list of VCF file"\
     "in a text file not both at the same time" 1>&2; exit 1;
-elif [ -z $vcffile && -z $vcflist ]; then
+elif [[ -z $vcffile && -z $vcflist ]]; then
     echo "$0: error - provide a vcf file or"\
     "a list of vcf file in a text file" 1>&2; exit 1;
 fi
@@ -131,19 +141,19 @@ for vcfin in $list_fi; do
     vcfhist=${basename_vcf}.hist
     contafile=${basename_vcf}.conta
     # calcul allelic balance
-    task_id1="ABCalc_${vcfin}"
+    task_id1="ABCalc_${basename_vcf}"
     task_conf="TASK $task_id1 -c 4 bash -c"
-    task_cmd="calculAllelicBalance $vcfin 4 > $vcfhist"
+    task_cmd="calculAllelicBalance.sh -f $vcfin > $vcfhist"
     echo "$task_conf \" $task_cmd \"" >> ${DAG_FILE}
     # test and report contamination
-    task_id2="Report_${vcfin}"
+    task_id2="Report_${basename_vcf}"
     task_conf="TASK $task_id2 bash -c"
     task_cmd="contaReport.R --input $vcfhist --output $contafile ${report}"
     echo "$task_conf \" $task_cmd \"" >> ${DAG_FILE}
     task_conf="EDGE $task_id1 $task_id2"
     echo "$task_conf" >> ${DAG_FILE_EDGE}
     # proceed to comparison
-    if [ -n $vcflist ]; then 
+    if [[ -n $vcflist && $check = TRUE ]]; then 
         filename=$(basename $(basename $(basename $vcfin .gz) .vcf) _BOTH.HC.annot )
         ABstart=0
         ABstop=0.2
@@ -151,10 +161,10 @@ for vcfin in $list_fi; do
         vcfconta=${filename}_${fileExtension}_noLCRnoDUP.vcf
         bedfile=${filename}_${fileExtension}_noLCRnoDUP.bed
         # select potentialy contaminant variants
-        task_id3="RecupConta_${vcfin}"
-        task_conf="TASK $task_id3 bash -c"
-        task_cmd="if [ \$(awk 'END{printf \$NF}' $contafile) ]; then; \
-        recupConta.sh $vcfin $vcfconta $bedfile; fi"
+        task_id3="RecupConta_${basename_vcf}"
+        task_conf="TASK $task_id3 -c 4 bash -c"
+        task_cmd="if [[ \$(awk 'END{printf \$NF}' $contafile) ]]; then; \
+        recupConta.sh -f $vcfin -c $vcfconta -b $bedfile; fi"
         echo "$task_conf \" $task_cmd \"" >> ${DAG_FILE}
         task_conf="EDGE $task_id2 $task_id3"
         echo "$task_conf" >> ${DAG_FILE_EDGE}
@@ -166,11 +176,13 @@ for vcfin in $list_fi; do
              "PPV=matchTest/(matchTest+nonMatchTest)" > $summaryFile
         # comparisons with other vcf
         for vcfcompare in $list_fi; do
-            if [ $vcfcompare != $vcfin ]; then
-                task_id4="Compare_${$vcfin}_${vcfcompare}"
-                task_conf="TASK $task_id4 bash -c"
-                task_cmd="if [ \$(awk 'END{printf $NF}' \$contafile) ]; then; \
-                checkContaminant.sh $vcfcompare $vcfconta $bedfile \
+            if [[ $vcfcompare != $vcfin ]]; then
+                vcfcompareBasename=$(basename $(basename $(basename \
+                                        $vcfcompare .gz) .vcf) _BOTH.HC.annot )
+                task_id4="Compare_${basename_vcf}_${vcfcompareBasename}"
+                task_conf="TASK $task_id4 -c 4 bash -c"
+                task_cmd="if [[ \$(awk 'END{printf $NF}' \$contafile) ]]; then; \
+                checkContaminant.sh -f $vcfcompare -b $vcfconta -c $bedfile \
                 >> $summaryFile; fi"
                 echo "$task_conf \" $task_cmd \"" >> ${DAG_FILE}
                 task_conf="EDGE $task_id3 $task_id4"
@@ -180,21 +192,22 @@ for vcfin in $list_fi; do
     fi
 done
 echo "" >> ${DAG_FILE}
-cat ${DAG_FILE} ${DAG_FILE_EDGE} > ${DAG_FILE}
+cat ${DAG_FILE_EDGE} >> ${DAG_FILE}
 
 ### Ecriture du fichier msub
 FILE_MSUB1=${script_name}.msub
 
-if [ -n $vcflist ]; then; ntask=24; else ntask=1; fi
+if [[ -n $vcflist ]]; then ntask=24 ; else ntask=2 ; fi
 
 echo '#!/bin/bash' > ${FILE_MSUB1}
 # Parametres MSUB
 echo "#MSUB -r ${script_name}" >> ${FILE_MSUB1}       # nom du job
-echo "#MSUB -A fg0062" >> ${FILE_MSUB1}               # projet ou compte pour le decompte de ressource
+#echo "#MSUB -A fg0062" >> ${FILE_MSUB1}               # projet ou compte pour le decompte de ressource
 #echo "#MSUB -N 1" >> ${FILE_MSUB1}                   # Un seul noeud minimum et maximum
 #echo "#MSUB -n ${ntask}" >> ${FILE_MSUB1}             # nombre de taches en parallele
 echo "#MSUB -c 4" >> ${FILE_MSUB1}                    # nombre de coeurs par tache
-echo "#MSUB -q broadwell" >> ${FILE_MSUB1}            # nom de la partition
+#echo "#MSUB -q broadwell" >> ${FILE_MSUB1}            # nom de la partition
+echo "#MSUB -q normal" >> ${FILE_MSUB1}            # nom de la partition
 #echo "#MSUB -E '--qos long'" >> ${FILE_MSUB1}        # qos 3J
 echo "#MSUB -T 86400" >> ${FILE_MSUB1}                # temps de l'allocation des ressources en secondes
 echo "#MSUB -o ${script_name}%j.out" >> ${FILE_MSUB1} # redirection de la sortie standard.
@@ -204,7 +217,7 @@ echo "#MSUB -@ delafoy@cng.fr:end" >> ${FILE_MSUB1}   # envoie de mail a la fin
 # MODULES LOAD
 echo "module load extenv/ig"  >> ${FILE_MSUB1}
 echo "module load pegasus/4.8.0.a"  >> ${FILE_MSUB1}
-echo "module load r"  >> ${FILE_MSUB1}
+#echo "module load r"  >> ${FILE_MSUB1}
 echo "module load bcftools"  >> ${FILE_MSUB1}
 echo "module load bedtools"  >> ${FILE_MSUB1}
 echo "module load bedops"  >> ${FILE_MSUB1}
