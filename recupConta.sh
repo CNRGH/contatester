@@ -139,6 +139,16 @@ if [[ -z $vcfin ]]; then
     echo '[ERROR] -f|--file was not supplied (mandatory option)' >&2 && exit 1
 fi
 
+contadir=$(dirname $vcfconta )
+if [[ ! -d $contadir ]]; then 
+    mkdir --parents $contadir
+fi
+
+beddir=$(dirname $bedfile )
+if [[ ! -d $bedfile ]]; then 
+    mkdir --parents $bedfile
+fi
+
 # Command
 bcftools view $vcfin --output-type v --types snps \
 --thread $nbthread --targets ^$LCRSEGDUPgnomad | \

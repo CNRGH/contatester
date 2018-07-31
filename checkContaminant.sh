@@ -38,6 +38,11 @@ display_usage() {
             VCF file with selected variants (Mandatory)
       -b, --bedfile <bed_file>
             BED file for selected variants (Mandatory)
+      -s, --summaryfile <text_file>
+            text file for result output (Mandatory)
+      -o,--outdir <folder>
+            folder for storing all output files (optional) 
+            [default: current directory]
       -h, --help 
             print help
 
@@ -45,7 +50,7 @@ display_usage() {
     ${NAME} compare selected variants from a VCF file with an over VCF 
     Output : 
         - Standard VCFComparator output 
-        - Write important informations on the standard output
+        - Write important informations in summary file
 
   EXAMPLE :
     ${NAME} -f file.vcf -c vcfconta.vcf -b file.bed
@@ -73,6 +78,10 @@ vcfcompare=""
 vcfconta=""
 # bed file name for comparison
 bedfile=""
+# summary file for results
+summaryfile=""
+# output directory
+outdir="."
 
 # Use an output folder
 # foldout=$2
@@ -87,9 +96,11 @@ fi
 while [[ $# -gt 0 ]]
 do
     case $1 in
-        -f|--file)     vcfcompare=$(testArg $2);    shift;;
-        -c|--vcfconta) vcfconta=$(testArg $2); shift;;
-        -b|--bedfile)  bedfile=$(testArg $2);  shift;;
+        -f|--file)        vcfcompare=$(testArg $2);    shift;;
+        -c|--vcfconta)    vcfconta=$(testArg $2); shift;;
+        -b|--bedfile)     bedfile=$(testArg $2);  shift;;
+        -s|--summaryfile) summaryfile=$(testArg $2); shift;;
+        -o|--outdir)      outdir=$(testArg $2); shift;;
         -h|--help) display_usage && exit 0 ;;
         --) shift; break;; 
         -*) echo "$0: error - unrecognized option $1" >&2; exit 1;;
@@ -99,10 +110,18 @@ do
 done
 
 # for mandatory arg
-if [[ -z $vcfcompare || -z $vcfconta || -z $bedfile ]]; then
+if [[ -z $vcfcompare || -z $vcfconta || -z $bedfile || -z $summaryfile ]]; then
     echo '[ERROR] All arguments are mandatory' >&2 && exit 1
 fi
 
+summarydir=$(dirname $summaryfile)
+if [[ ! -d $summarydir ]]; then 
+    mkdir --parents $summarydir
+fi
+
+if [[ ! -d $outdir ]]; then 
+    mkdir --parents $outdir
+fi
 
 ####
 # comparaison des variants avec un echantillon 
@@ -110,11 +129,11 @@ fileA=$vcfcompare
 fileA_name=$(basename $(basename $fileA .gz) .vcf)
 fileB=$vcfconta
 fileB_name=$(basename $(basename $fileB .gz) .vcf)
-filout=${fileA_name}_${fileB_name}
+filout=${outdir}/${fileA_name}_${fileB_name}
 
 VCFComparator -a $fileA -b $bedfile -c $fileB -d $bedfile -s -p $filout
 res=$(grep 'none' ${fileA_name}_${fileB_name}/comparison_SNP_${fileA_name}_${fileB_name}.xls)
-echo ${fileA_name}_${fileB_name} $res
+echo ${fileA_name}_${fileB_name} $res >> $summaryfile
 
 
 

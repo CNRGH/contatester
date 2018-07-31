@@ -43,8 +43,9 @@ display_usage() {
       -l, --list <text_file>     
             input text file, one vcf by lane 
             if -l is used dont use -f (Mandatory)
-      -o, --out <directory>    
-            directory where are stored output files
+      -o,--outdir <folder>
+            folder for storing all output files (optional) 
+            [default: current directory]
       -r, --report 
             create a pdf report for contamination etimation 
             [default: no report]
@@ -67,21 +68,15 @@ EOF
 }
 
 
-      # -o,--folderout <folder>
-            # folder for storing all output files (optional) 
-            # [default: current directory]
-            
-#        -o|--outputfolder) foldout=$(testArg $2); shift;;
-
 ################################################################################
 # MODULES                                                                      #
 ################################################################################
 
 # module load r
-module load bcftools
-module load bedtools
-module load bedops
-module load useq
+# module load bcftools
+# module load bedtools
+# module load bedops
+# module load useq
 
 ################################################################################
 # MAIN                                                                         #
@@ -93,6 +88,7 @@ vcffile=""
 vcflist=""
 
 report=""
+outdir="."
 
 # Argument parsing
 
@@ -130,7 +126,10 @@ elif [[ -z $vcffile && -z $vcflist ]]; then
     "a list of vcf file in a text file" 1>&2; exit 1;
 fi
 
-#$(wc -l $list_fi)
+if [[ ! -d $outdir ]]; then 
+    mkdir --parents $outdir
+fi
+
 script_name=contaTester
 DAG_FILE=${script_name}.dagfile
 DAG_FILE_EDGE=${script_name}.dagfiledge
@@ -138,8 +137,8 @@ rm -f $DAG_FILE $DAG_FILE_EDGE
 
 for vcfin in $list_fi; do
     basename_vcf=$(basename $(basename $vcfin .gz) .vcf)
-    vcfhist=${basename_vcf}.hist
-    contafile=${basename_vcf}.conta
+    vcfhist=${outdir}/${basename_vcf}.hist
+    contafile=${outdir}/${basename_vcf}.conta
     # calcul allelic balance
     task_id1="ABCalc_${basename_vcf}"
     task_conf="TASK $task_id1 -c 4 bash -c"
@@ -158,34 +157,40 @@ for vcfin in $list_fi; do
         ABstart=0
         ABstop=0.2
         fileExtension=AB_${ABstart}to${ABstop}
-        vcfconta=${filename}_${fileExtension}_noLCRnoDUP.vcf
-        bedfile=${filename}_${fileExtension}_noLCRnoDUP.bed
+        vcfconta=${outdir}/${filename}_${fileExtension}_noLCRnoDUP.vcf
+        bedfile=${outdir}/${filename}_${fileExtension}_noLCRnoDUP.bed
         # select potentialy contaminant variants
         task_id3="RecupConta_${basename_vcf}"
         task_conf="TASK $task_id3 -c 4 bash -c"
-        task_cmd="if [[ \$(awk 'END{printf \$NF}' $contafile) ]]; then; \
-        recupConta.sh -f $vcfin -c $vcfconta -b $bedfile; fi"
+        task_cmd="if [[ \$( awk \'END{printf \$NF}\' $contafile ) = TRUE ]]; then \
+        recupConta.sh -f $vcfin -c $vcfconta -b $bedfile; fi "
         echo "$task_conf \" $task_cmd \"" >> ${DAG_FILE}
         task_conf="EDGE $task_id2 $task_id3"
         echo "$task_conf" >> ${DAG_FILE_EDGE}
         # summary file for comparisons
-        summaryFile=${basename_vcf}_comparisonSummary.txt
-        echo "comparison" "QUALThreshold" "NumMatchTest" "NumNonMatchTest"\
-             "FDR=nonMatchTest/(matchTest+nonMatchTest)" "decreasingFDR"\
-             "TPR=matchTest/totalKey" "FPR=nonMatchTest/totalKey"\
-             "PPV=matchTest/(matchTest+nonMatchTest)" > $summaryFile
+        summaryFile=${outdir}/${basename_vcf}_comparisonSummary.txt
+        task_id3b="SummaryFile_${basename_vcf}"
+        task_conf="TASK $task_id3b bash -c"
+        task_cmd=" if [[ \$( awk \'END{printf \$NF}\' $contafile ) = TRUE ]];\
+        then echo \'comparison\' \'QUALThreshold\' \'NumMatchTest\'\
+             \'NumNonMatchTest\' \'FDR=nonMatchTest/(matchTest+nonMatchTest)\'\
+             \'decreasingFDR\' \'TPR=matchTest/totalKey\' \'FPR=nonMatchTest/totalKey\'\
+             \'PPV=matchTest/(matchTest+nonMatchTest)\' > $summaryFile ; fi"
+        echo "$task_conf \" $task_cmd \"" >> ${DAG_FILE}
+        task_conf="EDGE $task_id3 $task_id3b"
+        echo "$task_conf" >> ${DAG_FILE_EDGE}
         # comparisons with other vcf
         for vcfcompare in $list_fi; do
             if [[ $vcfcompare != $vcfin ]]; then
                 vcfcompareBasename=$(basename $(basename $(basename \
                                         $vcfcompare .gz) .vcf) _BOTH.HC.annot )
                 task_id4="Compare_${basename_vcf}_${vcfcompareBasename}"
-                task_conf="TASK $task_id4 -c 4 bash -c"
-                task_cmd="if [[ \$(awk 'END{printf $NF}' \$contafile) ]]; then; \
-                checkContaminant.sh -f $vcfcompare -b $vcfconta -c $bedfile \
-                >> $summaryFile; fi"
+                task_conf="TASK $task_id4 -c 7 bash -c"
+                task_cmd="if [[ \$( awk \'END{printf \$NF}\' $contafile ) = TRUE ]];\
+                then checkContaminant.sh -f $vcfcompare -b $bedfile -c $vcfconta \
+                -s $summaryFile -o $outdir ; fi"
                 echo "$task_conf \" $task_cmd \"" >> ${DAG_FILE}
-                task_conf="EDGE $task_id3 $task_id4"
+                task_conf="EDGE $task_id3b $task_id4"
                 echo "$task_conf" >> ${DAG_FILE_EDGE}
             fi
         done
@@ -193,30 +198,43 @@ for vcfin in $list_fi; do
 done
 echo "" >> ${DAG_FILE}
 cat ${DAG_FILE_EDGE} >> ${DAG_FILE}
-
+rm -f ${DAG_FILE_EDGE}
 ### Ecriture du fichier msub
 FILE_MSUB1=${script_name}.msub
 
-if [[ -n $vcflist ]]; then ntask=24 ; else ntask=2 ; fi
+ntask=2
+if [[ -n $vcflist ]]; then 
+    nbVCF=$(wc -l < $vcflist)
+    if [[ $nbVCF -ge 24 ]]; then ntask=24
+    else ntask=$(($nbVCF+1))
+    fi
+fi
 
 echo '#!/bin/bash' > ${FILE_MSUB1}
 # Parametres MSUB
 echo "#MSUB -r ${script_name}" >> ${FILE_MSUB1}       # nom du job
-#echo "#MSUB -A fg0062" >> ${FILE_MSUB1}               # projet ou compte pour le decompte de ressource
-#echo "#MSUB -N 1" >> ${FILE_MSUB1}                   # Un seul noeud minimum et maximum
-#echo "#MSUB -n ${ntask}" >> ${FILE_MSUB1}             # nombre de taches en parallele
-echo "#MSUB -c 4" >> ${FILE_MSUB1}                    # nombre de coeurs par tache
-#echo "#MSUB -q broadwell" >> ${FILE_MSUB1}            # nom de la partition
-echo "#MSUB -q normal" >> ${FILE_MSUB1}            # nom de la partition
-#echo "#MSUB -E '--qos long'" >> ${FILE_MSUB1}        # qos 3J
-echo "#MSUB -T 86400" >> ${FILE_MSUB1}                # temps de l'allocation des ressources en secondes
+echo "#MSUB -n $((${ntask}-1))" >> ${FILE_MSUB1}             # nombre de taches en parallele
+echo "#MSUB -c 7" >> ${FILE_MSUB1}                    # nombre de coeurs par tache
+echo "#MSUB -T 28800" >> ${FILE_MSUB1}                # temps de l'allocation des ressources en secondes
 echo "#MSUB -o ${script_name}%j.out" >> ${FILE_MSUB1} # redirection de la sortie standard.
 echo "#MSUB -e ${script_name}%j.err" >> ${FILE_MSUB1} # redirection de la sortie erreur.
 echo "#MSUB -@ delafoy@cng.fr:end" >> ${FILE_MSUB1}   # envoie de mail a la fin
 
+# Parametres cluster
+HOSTNAME=$(dnsdomainname)
+if [[ $HOSTNAME =~ cng.fr$ || $HOSTNAME =~ cnrgh.fr$ ]]; then
+    #lirac
+    echo "#MSUB -q normal" >> ${FILE_MSUB1}            # nom de la partition
+elif [[ $HOSTNAME =~ .ccrt.ccc.cea.fr$ ]]; then
+    #cobalt
+    echo "#MSUB -A fg0062" >> ${FILE_MSUB1}               # projet ou compte pour le decompte de ressource
+    echo "#MSUB -q broadwell" >> ${FILE_MSUB1}            # nom de la partition"
+fi
+
+
 # MODULES LOAD
 echo "module load extenv/ig"  >> ${FILE_MSUB1}
-echo "module load pegasus/4.8.0.a"  >> ${FILE_MSUB1}
+echo "module load pegasus"  >> ${FILE_MSUB1}
 #echo "module load r"  >> ${FILE_MSUB1}
 echo "module load bcftools"  >> ${FILE_MSUB1}
 echo "module load bedtools"  >> ${FILE_MSUB1}

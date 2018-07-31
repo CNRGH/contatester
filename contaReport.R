@@ -59,7 +59,6 @@ library("gridExtra")
 #############
 
 option_list <- list(
-
     make_option(c("-i", "--input"), action="store", type="character",
     default=NULL,
     help="Input file obtained with script CalculAllelicBalance.sh"),
@@ -76,7 +75,6 @@ option_list <- list(
     default=FALSE,
     help="Create a pdf with Allele Balance Distribution and Sample correlation 
     with Dataset [default %default]")
-    
 )
 
 parser <- OptionParser(usage = "Estimate the contamination degree of a sample\n
