@@ -52,6 +52,8 @@ display_usage() {
       -c, --check
             enable contaminant check for the list of VCF provided if a VCF is
             marked as contaminated
+      -m, --mail <email_adress>
+            send an email at the end of the job 
       -h, --help 
             print help
             
@@ -105,6 +107,7 @@ do
         -o|--outdir) outdir=$(testArg $2); shift;;
         -r|--report) report="--report";;
         -c|--check)  check=TRUE;;
+        -m|--mail)   mail=$(testArg $2); shift;;
         -h|--help) display_usage && exit 0 ;;
         --) shift; break;; 
         -*) echo "$0: error - unrecognized option $1" >&2; exit 1;;
@@ -119,10 +122,10 @@ if [[ -z $vcffile && -n $vcflist ]]; then
 elif [[ -n $vcffile && -z $vcflist ]]; then
     list_fi=$vcffile
 elif [[ -n $vcffile && -n $vcflist ]]; then
-    echo "$0: error - provide only a VCF file or a list of VCF file"\
+    echo "$NAME: error - provide only a VCF file or a list of VCF file"\
     "in a text file not both at the same time" 1>&2; exit 1;
 elif [[ -z $vcffile && -z $vcflist ]]; then
-    echo "$0: error - provide a vcf file or"\
+    echo "$NAME: error - provide a vcf file or"\
     "a list of vcf file in a text file" 1>&2; exit 1;
 fi
 
@@ -131,14 +134,15 @@ if [[ ! -d $outdir ]]; then
 fi
 
 script_name=contaTester
-DAG_FILE=${script_name}.dagfile
-DAG_FILE_EDGE=${script_name}.dagfiledge
+DAG_FILE=$outdir/${script_name}.dagfile
+DAG_FILE_EDGE=$outdir/${script_name}.dagfiledge
 rm -f $DAG_FILE $DAG_FILE_EDGE
 
 for vcfin in $list_fi; do
     basename_vcf=$(basename $(basename $vcfin .gz) .vcf)
     vcfhist=${outdir}/${basename_vcf}.hist
     contafile=${outdir}/${basename_vcf}.conta
+    reportName=${outdir}/${basename_vcf}.pdf
     # calcul allelic balance
     task_id1="ABCalc_${basename_vcf}"
     task_conf="TASK $task_id1 -c 4 bash -c"
@@ -147,7 +151,8 @@ for vcfin in $list_fi; do
     # test and report contamination
     task_id2="Report_${basename_vcf}"
     task_conf="TASK $task_id2 bash -c"
-    task_cmd="contaReport.R --input $vcfhist --output $contafile ${report}"
+    task_cmd="contaReport.R --input $vcfhist --output $contafile ${report} \
+    --reportName $reportName"
     echo "$task_conf \" $task_cmd \"" >> ${DAG_FILE}
     task_conf="EDGE $task_id1 $task_id2"
     echo "$task_conf" >> ${DAG_FILE_EDGE}
@@ -200,7 +205,7 @@ echo "" >> ${DAG_FILE}
 cat ${DAG_FILE_EDGE} >> ${DAG_FILE}
 rm -f ${DAG_FILE_EDGE}
 ### Ecriture du fichier msub
-FILE_MSUB1=${script_name}.msub
+FILE_MSUB=$outdir/${script_name}.msub
 
 ntask=2
 if [[ -n $vcflist ]]; then 
@@ -210,39 +215,42 @@ if [[ -n $vcflist ]]; then
     fi
 fi
 
-echo '#!/bin/bash' > ${FILE_MSUB1}
+echo '#!/bin/bash' > ${FILE_MSUB}
 # Parametres MSUB
-echo "#MSUB -r ${script_name}" >> ${FILE_MSUB1}       # nom du job
-echo "#MSUB -n $((${ntask}-1))" >> ${FILE_MSUB1}             # nombre de taches en parallele
-echo "#MSUB -c 7" >> ${FILE_MSUB1}                    # nombre de coeurs par tache
-echo "#MSUB -T 28800" >> ${FILE_MSUB1}                # temps de l'allocation des ressources en secondes
-echo "#MSUB -o ${script_name}%j.out" >> ${FILE_MSUB1} # redirection de la sortie standard.
-echo "#MSUB -e ${script_name}%j.err" >> ${FILE_MSUB1} # redirection de la sortie erreur.
-echo "#MSUB -@ delafoy@cng.fr:end" >> ${FILE_MSUB1}   # envoie de mail a la fin
+echo "#MSUB -r ${script_name}" >> ${FILE_MSUB}       # nom du job
+echo "#MSUB -n $((${ntask}-1))" >> ${FILE_MSUB}      # nombre de taches en parallele
+echo "#MSUB -c 7" >> ${FILE_MSUB}                    # nombre de coeurs par tache
+echo "#MSUB -T 28800" >> ${FILE_MSUB}                # temps de l'allocation des ressources en secondes
+echo "#MSUB -o $outdir/${script_name}%j.out" >> ${FILE_MSUB} # redirection de la sortie standard.
+echo "#MSUB -e $outdir/${script_name}%j.err" >> ${FILE_MSUB} # redirection de la sortie erreur.
+
+if [[ -n $mail ]]; then
+    echo "#MSUB -@ ${mail}:end" >> ${FILE_MSUB}      # envoie de mail a la fin
+fi
 
 # Parametres cluster
 HOSTNAME=$(dnsdomainname)
 if [[ $HOSTNAME =~ cng.fr$ || $HOSTNAME =~ cnrgh.fr$ ]]; then
     #lirac
-    echo "#MSUB -q normal" >> ${FILE_MSUB1}            # nom de la partition
+    echo "#MSUB -q normal" >> ${FILE_MSUB}            # nom de la partition
 elif [[ $HOSTNAME =~ .ccrt.ccc.cea.fr$ ]]; then
     #cobalt
-    echo "#MSUB -A fg0062" >> ${FILE_MSUB1}               # projet ou compte pour le decompte de ressource
-    echo "#MSUB -q broadwell" >> ${FILE_MSUB1}            # nom de la partition"
+    echo "#MSUB -A fg0062" >> ${FILE_MSUB}            # projet ou compte pour le decompte de ressource
+    echo "#MSUB -q broadwell" >> ${FILE_MSUB}         # nom de la partition"
 fi
 
 
 # MODULES LOAD
-echo "module load extenv/ig"  >> ${FILE_MSUB1}
-echo "module load pegasus"  >> ${FILE_MSUB1}
-#echo "module load r"  >> ${FILE_MSUB1}
-echo "module load bcftools"  >> ${FILE_MSUB1}
-echo "module load bedtools"  >> ${FILE_MSUB1}
-echo "module load bedops"  >> ${FILE_MSUB1}
-echo "module load useq"  >> ${FILE_MSUB1}
+echo "module load extenv/ig"  >> ${FILE_MSUB}
+echo "module load pegasus"  >> ${FILE_MSUB}
+#echo "module load r"  >> ${FILE_MSUB}
+echo "module load bcftools"  >> ${FILE_MSUB}
+echo "module load bedtools"  >> ${FILE_MSUB}
+echo "module load bedops"  >> ${FILE_MSUB}
+echo "module load useq"  >> ${FILE_MSUB}
 
-echo "mpirun -oversubscribe -n ${ntask} pegasus-mpi-cluster $DAG_FILE"  >> ${FILE_MSUB1}
+echo "mpirun -oversubscribe -n ${ntask} pegasus-mpi-cluster $DAG_FILE"  >> ${FILE_MSUB}
 
 # Lancement du script
 rm -f ${DAG_FILE}.res*
-ccc_msub $FILE_MSUB1
+ccc_msub $FILE_MSUB
