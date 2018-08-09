@@ -108,7 +108,7 @@ if (argv$reportName == "<input>.pdf") {
     basename_file = gsub(pattern = "\\.hist$", "", (basename(filin)))
     pdfout = paste(basename_file, ".pdf", sep="")
 } else {
-    pdfout = argv$report_name
+    pdfout = argv$reportName
 }
 
 scriptPath = dirname(getFilename())
