@@ -1,0 +1,11 @@
+.idea/
+build/
+linux_venv/
+win_venv/
+*.pyc
+*.pyo
+.eggs/
+.pytest_cache/
+dist/
+__pycache__/
+*.egg-info/
