@@ -1,0 +1,74 @@
+stages:
+  - build
+  - test
+  - distribute
+
+
+image: centos:7.5.1804
+
+.epel_install: &epel_install
+  before_script:
+    - yum install -y epel-release
+    - yum install -y python36  python36-setuptools
+    - curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+    - python36 get-pip.py
+    - python36 -m venv linux_venv
+    - source linux_venv/bin/activate
+    - pip install wheel
+    - pip install  --upgrade pip setuptools wheel virtualenv
+
+
+variables:
+    CI_IMAGE: registry.cnrgh.fr/lbi/python_starter_project/ci:1.0.0-0
+    DOCKER_DRIVER: overlay2
+    LANG: en_US.UTF-8
+
+
+build_python:
+  <<: *epel_install
+  cache:
+      key: py_lbi
+      untracked: true
+  stage: build
+  script:
+    - python36 setup.py clean
+    - python36 setup.py build
+
+
+test_python:
+  <<: *epel_install
+  cache:
+      key: py_lbi
+      untracked: true
+  stage: test
+  script:
+    - python36 setup.py test
+
+
+coverage_python:
+  <<: *epel_install
+  cache:
+      key: py_lbi
+      untracked: true
+  artifacts:
+    name: reports
+    paths:
+      - htmlcov
+  stage: test
+  script:
+    - pip install coverage
+    - python36 setup.py coverage
+
+
+wheel_python:
+  <<: *epel_install
+  cache:
+      key: py_lbi
+      untracked: true
+  artifacts:
+    name: wheel
+    paths:
+      - dist
+  stage: distribute
+  script:
+    - python36 setup.py bdist_wheel
