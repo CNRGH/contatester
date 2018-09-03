@@ -7,9 +7,10 @@ import sys
 
 
 # Functions
+from typing import Sequence, Tuple, List
 
 
-def arguments():
+def arguments(parameters: Sequence[str] = sys.argv[1:]) -> Tuple[List[str], str, str, bool, str]:
     '''
     Recuperation and manipulation of argparse arguments
     '''
