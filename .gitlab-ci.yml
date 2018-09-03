@@ -31,6 +31,7 @@ build_python:
       untracked: true
   stage: build
   script:
+    - cd contatester
     - python36 setup.py clean
     - python36 setup.py build
 
@@ -42,6 +43,7 @@ test_python:
       untracked: true
   stage: test
   script:
+    - cd contatester
     - python36 setup.py test
 
 
@@ -56,6 +58,7 @@ coverage_python:
       - htmlcov
   stage: test
   script:
+    - cd contatester
     - pip install coverage
     - python36 setup.py coverage
 
@@ -71,4 +74,5 @@ wheel_python:
       - dist
   stage: distribute
   script:
+    - cd contatester
     - python36 setup.py bdist_wheel
