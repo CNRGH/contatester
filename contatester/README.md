@@ -1,6 +1,32 @@
-# Python project starter
+# Contatester Wrapper project
 
-This is a minimal python project designed to follow python standard development guideline.
+Wrapper for the detection and determination of the presence of cross
+contaminant using pegasus for high efficiency
+
+## Usage
+
+```
+usage: contatester [options]
+
+Wrapper for the detection and determination of the presence of cross
+contaminant
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -f FILE, --file FILE  VCF file version 4.2 to process. If -f is used don't
+                        use -l (Mandatory)
+  -l LIST, --list LIST  input text file, one vcf by lane. If -l is used don't
+                        use -f (Mandatory)
+  -o OUTDIR, --outdir OUTDIR
+                        folder for storing all output files (optional)
+                        [default: current directory]
+  -r, --report          create a pdf report for contamination estimation
+                        [default: no report]
+  -c, --check           enable contaminant check for the list of VCF provided
+                        if a VCF is marked as contaminated
+  -m MAIL, --mail MAIL  send an email at the end of the job
+
+```
 
 ## Before to code
 
@@ -9,7 +35,7 @@ You have to rename the python project, for this task:
     - Change the value of `name` variable
     - If it is an application:
       - Change the entry point `console_scripts`
-      - Rename the directory `src/fr/cea/lbi/MyAwesomeProject` by your project name
+      - Rename the directory `src/fr/cea/lbi/contatester` by your project name
     - if it is a library
       - Remove tne entry point `console_scripts`
 
