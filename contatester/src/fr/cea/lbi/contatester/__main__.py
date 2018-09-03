@@ -13,7 +13,7 @@ def arguments():
     '''
     Recuperation and manipulation of argparse arguments
     '''
-    parser = argparse.ArgumentParser(prog="__main__.py",
+    parser = argparse.ArgumentParser(prog="contatester",
                                      usage="%(prog)s [options]",
                                      description=("Wrapper for the detection"
                                                   " and determination of "
