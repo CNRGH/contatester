@@ -82,11 +82,11 @@ def get_cli_args(parameters: Sequence[str] = sys.argv[1:]) \
                         help="send an email at the end of the job")
 
     # keep arguments
-    args = parser.parse_args()
+    args = parser.parse_args(parameters)
 
     vcf_file = [args.file]
     vcf_list = args.list
-    out_dir = args.outdir
+    out_dir = abspath(args.outdir)
     check = args.check
     mail = args.mail
 
