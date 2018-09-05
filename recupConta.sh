@@ -145,7 +145,7 @@ if [[ ! -d $contadir ]]; then
 fi
 
 beddir=$(dirname $bedfile )
-if [[ ! -d $bedfile ]]; then 
+if [[ ! -d $beddir ]]; then 
     mkdir --parents $bedfile
 fi
 
