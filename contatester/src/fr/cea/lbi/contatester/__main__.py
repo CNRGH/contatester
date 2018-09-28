@@ -2,7 +2,7 @@
 
 from pathlib import Path
 from os import access, R_OK, getcwd, makedirs, remove, popen
-from os.path import isfile, abspath, isdir, join
+from os.path import isfile, abspath, isdir, join, exists
 from typing import Sequence, Tuple, List, BinaryIO
 import argparse
 import io
@@ -96,6 +96,9 @@ def get_cli_args(parameters: Sequence[str] = sys.argv[1:]) \
     else:
         vcfs = vcf_file
 
+    if not exists(out_dir):
+        makedirs(out_dir)
+
     if args.report:
         report = "--report"
     else:
@@ -118,6 +121,15 @@ def write_intermediate_task(file_handler: BinaryIO, conf: str, cmd: str,
                             task_a: str, task_b: str) -> None:
     write_binary(file_handler, conf + "\"" + cmd + "\"\n")
     write_binary(file_handler, "EDGE " + task_a + " " + task_b + "\n")
+
+
+def task_cmd_if(conta_file: str, cmd: str) -> str:
+    awk_cmd = "{printf \$NF}"
+    awk_if_fmt = ("if [[ $( awk \\'END{awk_cmd}\\' {conta_fi}) = TRUE ]];"
+                  " then {cmd} ; fi")
+    task_cmd = awk_if_fmt.format(awk_cmd=awk_cmd, conta_fi=conta_file,
+                                 cmd=cmd)
+    return task_cmd
 
 
 def create_report(basename_vcf: str, conta_file: str, dag_f: BinaryIO,
@@ -143,24 +155,24 @@ def create_report(basename_vcf: str, conta_file: str, dag_f: BinaryIO,
     basename_conta = join(out_dir, filename + "_" + file_extension)
     vcf_conta = basename_conta + "_noLCRnoDUP.vcf"
     bedfile = basename_conta + "_noLCRnoDUP.bed"
-    awk_if_fmt = ("if [[ $( awk \\'END{printf $NF}\\' {conta_fi}) = TRUE ]];"
-                  " then {cmd} ; fi")
     # select potentialy contaminant variants
     task_id3 = "RecupConta_" + basename_vcf
     task_conf = task_fmt.format(id=task_id3, core=4)
-    cmd = ("recupConta.sh - f " + current_vcf + " -c " + vcf_conta + " -b "
+    cmd = ("recupConta.sh -f " + current_vcf + " -c " + vcf_conta + " -b "
            + bedfile)
-    task_cmd = awk_if_fmt.format(conta_fi=conta_file, cmd=cmd)
+    task_cmd = task_cmd_if(conta_file, cmd)
     write_intermediate_task(dag_f, task_conf, task_cmd, task_id2, task_id3)
     # summary file for comparisons
     summary_file = join(out_dir, basename_vcf + "_comparisonSummary.txt")
     task_id3b = "SummaryFile_" + basename_vcf
     task_conf = task_fmt.format(id=task_id3b, core=1)
-    cmd = ("echo 'comparison' 'QUALThreshold' 'NumMatchTest' 'NumNonMatchTest' "
-           "'FDR=nonMatchTest/(matchTest+nonMatchTest)' 'decreasingFDR' "
-           "'TPR=matchTest/totalKey' 'FPR=nonMatchTest/totalKey' "
-           "'PPV=matchTest/(matchTest+nonMatchTest)' > " + summary_file)
-    task_cmd = awk_if_fmt.format(conta_fi=conta_file, cmd=cmd)
+    cmd = ("echo \\'comparison\\' \\'QUALThreshold\\' \\'NumMatchTest\\' "
+           "\\'NumNonMatchTest\\' "
+           "\\'FDR=nonMatchTest/(matchTest+nonMatchTest)\\' "
+           "\\'decreasingFDR\\' "
+           "\\'TPR=matchTest/totalKey\\' \\'FPR=nonMatchTest/totalKey\\' "
+           "\\'PPV=matchTest/(matchTest+nonMatchTest)\\' > " + summary_file)
+    task_cmd = task_cmd_if(conta_file, cmd)
     write_intermediate_task(dag_f, task_conf, task_cmd, task_id3, task_id3b)
     # comparisons with other vcf
     for vcf_compare in vcfs:
@@ -171,11 +183,11 @@ def create_report(basename_vcf: str, conta_file: str, dag_f: BinaryIO,
                 basename_vcf2.split("_BOTH.HC.annot ")[0]
             task_id4 = ("Compare_" + basename_vcf + "_" +
                         vcf_compare_basename)
-            task_conf = task_fmt.format(id=task_id4, core=7)
+            task_conf = task_fmt.format(id=task_id4, core=14)
             cmd = ("checkContaminant.sh -f " + vcf_compare + " -b " + bedfile +
                    " -c " + vcf_conta + " -s " + summary_file +
                    " -o " + out_dir)
-            task_cmd = awk_if_fmt.format(conta_fi=conta_file, cmd=cmd)
+            task_cmd = task_cmd_if(conta_file, cmd)
             write_intermediate_task(dag_f, task_conf, task_cmd, task_id3b,
                                     task_id4)
 
@@ -239,9 +251,9 @@ def write_batch_file(dag_file: str, mail: str, msub_file: str, nb_task: int,
         write_binary(msub_f,
                      "#!/bin/bash\n" +
                      "#MSUB -r " + script_name + "\n" +
-                     "#MSUB -n " + str(nb_task - 1) + "\n" +
-                     "#MSUB -c 7 \n" +
-                     "#MSUB -T 28800 \n" +
+                     "#MSUB -n " + str(nb_task) + "\n" +
+                     "#MSUB -c 14 \n" +
+                     "#MSUB -T 86400 \n" +
                      "#MSUB -o " + out_dir + script_name + "%j.out\n" +
                      "#MSUB -e " + out_dir + script_name + "%j.err\n")
 
@@ -265,7 +277,7 @@ def write_batch_file(dag_file: str, mail: str, msub_file: str, nb_task: int,
                      "module load bedtools\n" +
                      "module load bedops\n" +
                      "module load useq\n" +
-                     "mpirun -oversubscribe -n " + str(nb_task) +
+                     "mpirun -oversubscribe -n " + str(nb_task + 1) +
                      " pegasus-mpi-cluster " + dag_file + "\n")
 
 
@@ -280,12 +292,13 @@ def main():
     task_fmt = "TASK {id} -c {core} bash -c "
     write_dag_file(check, dag_file, out_dir, report, task_fmt, vcfs)
 
-    nb_task = 2
     nb_vcf = len(vcfs)
     if nb_vcf > 48:
         nb_task = 48
     elif nb_vcf > 1:
-        nb_task = nb_vcf + 1
+        nb_task = nb_vcf
+    else:
+        nb_task = 1
 
     write_batch_file(dag_file, mail, msub_file, nb_task, out_dir)
 
