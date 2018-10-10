@@ -258,7 +258,7 @@ def write_batch_file(dag_file: str, mail: str, msub_file: str, nb_task: int,
                      "#MSUB -e " + out_dir + script_name + "%j.err\n")
 
         if len(mail) > 0:
-            msub_f.write(b"#MSUB -@ ${mail}:end\n")
+            write_binary(msub_f, "#MSUB -@ " + mail + ":end\n")
 
         # Clusters parameters
         hostname = popen("dnsdomainname").read()
