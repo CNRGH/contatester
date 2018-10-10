@@ -131,12 +131,8 @@ fileB=$vcfconta
 fileB_name=$(basename $(basename $fileB .gz) .vcf)
 filout=${outdir}/${fileA_name}_${fileB_name}
 
-# mod for CCRT
-VCFComparator_path=$(which VCFComparator)
-java -Xmx10G -jar $VCFComparator_path -a $fileA -b $bedfile -c $fileB \
--d $bedfile -s -p $filout
 
-# VCFComparator -a $fileA -b $bedfile -c $fileB -d $bedfile -s -p $filout
+VCFComparator -a $fileA -b $bedfile -c $fileB -d $bedfile -s -p $filout
 res=$(grep none ${filout}/comparison_SNP_${fileA_name}_${fileB_name}.xls)
 echo ${fileA_name}_${fileB_name} $res >> $summaryfile
 
