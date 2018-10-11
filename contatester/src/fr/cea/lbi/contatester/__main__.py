@@ -8,6 +8,7 @@ import argparse
 import io
 import subprocess
 import sys
+import glob
 
 script_name = "contaTester"
 
@@ -303,8 +304,11 @@ def main():
     write_batch_file(dag_file, mail, msub_file, nb_task, out_dir)
 
     # Start Script
-    if isfile((dag_file + ".res*")):
-        remove((dag_file + ".res*"))
+    res_files = glob.glob(dag_file + ".res*")
+    for res in res_files:
+        if isfile(res):
+            remove(res)
+
     cmd = ["/usr/bin/ccc_msub", msub_file]
     p = subprocess.call(cmd)
     if p != 0:
