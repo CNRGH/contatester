@@ -153,6 +153,6 @@ bcftools view $vcfin --output-type v --types snps \
 --thread $nbthread --targets ^$LCRSEGDUPgnomad | \
 # parsing du vcf version 4.2 parsing de la colone AD 
 awk -F '\t' '{if($1 !~ /^#/ ) {split($10, a, ":") ; split(a[2], b, ","); \
-if((b[2]+b[1]+b[3]) != 0 && b[2]/(b[2]+b[1]+b[3]) > ABstart && \
-b[2]/(b[2]+b[1]+b[3]) < ABend ) {print}} else {print}}' \
+if((b[2]+b[1]+b[3]) != 0 && b[2]/(b[2]+b[1]+b[3]) >= ABstart && \
+b[2]/(b[2]+b[1]+b[3]) <= ABend ) {print}} else {print}}' \
 ABstart="$ABstart" ABend="$ABend"| tee $vcfconta | vcf2bed > $bedfile
