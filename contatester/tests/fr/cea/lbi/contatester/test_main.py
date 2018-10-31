@@ -49,6 +49,8 @@ def mock_os(mocker):
                           (('-f', 'foo.input', '-o', 'my_out_dir'),                                  (([abspath('foo.input')], abspath('my_out_dir'), "", False, ""))),
                           (('-f', 'foo.input', '-o', 'my_out_dir', '-r'),                            (([abspath('foo.input')], abspath('my_out_dir'), '--report', False, ""))),
                           (('-f', 'foo.input', '-o', 'my_out_dir', '-r', '-c', '-m', 'foo@foo.com'), (([abspath('foo.input')], abspath('my_out_dir'), '--report', True, "foo@foo.com"))),
+                          (('-f', 'foo.input', '-o', 'my_out_dir', '-r', '-c', '-A', 'fg0000'),      (([abspath('foo.input')], abspath('my_out_dir'), '--report', True, 'fg0000'))),
+                          (('-f', 'foo.input', '-o', 'my_out_dir', '-r', '-c', '-d', 'test.dagfile'),(([abspath('foo.input')], abspath('my_out_dir'), '--report', True, 'test.dagfile'))),
                           (('-l', 'foo.input', '-o', 'my_out_dir'),                                  (([abspath('foo.input')], abspath('my_out_dir'), "", False, ""))),
                           (('-l', 'foo.input', '-o', 'my_out_dir', '-r'),                            (([abspath('foo.input')], abspath('my_out_dir'), '--report', False, ""))),
                           (('-l', 'foo.input', '-o', 'my_out_dir', '-r', '-c', '-m', 'foo@foo.com'), (([abspath('foo.input')], abspath('my_out_dir'), '--report', True, "foo@foo.com")))
@@ -72,6 +74,5 @@ def test_allowed_usage(parameters: Sequence[str], fields_expected: List[Union[st
 def test_not_allowed_usage(parameters: Sequence[str]):
     with pytest.raises(SystemExit):
         args = get_cli_args(parameters)
-
 
 
