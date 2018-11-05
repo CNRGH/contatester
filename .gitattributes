@@ -30,3 +30,6 @@ gradlew text eol=lf
 *.jpg binary
 *.zip binary
 *.jar binary
+*.tbi binary
+*.gz  binary
+*.rda binary
