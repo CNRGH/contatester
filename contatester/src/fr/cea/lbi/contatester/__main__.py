@@ -118,7 +118,7 @@ def get_cli_args(parameters: Sequence[str] = sys.argv[1:]) \
     return vcfs, out_dir, report, check, mail, accounting, dagname
 
 
-def default_dagfile_name() -> str :
+def default_dagfile_name() -> str:
     dt = datetime.today()
     dag_filename = ("contatest_" + str(dt.year) + str(dt.month) + str(dt.day) +
                     str(dt.hour) + str(dt.minute) + str(dt.second) + ".dagfile")
@@ -268,7 +268,7 @@ def write_batch_file(dag_file: str, mail: str, msub_file: str, nb_task: int,
     with open(msub_file, "wb", ) as msub_f:
         clust_param = machine_param()
 
-        if clust_param.get("cea_clust") :
+        if clust_param.get("cea_clust"):
             # Parametres MSUB
             write_binary(msub_f,
                          "#!/bin/bash\n" +
@@ -317,7 +317,7 @@ def write_batch_file(dag_file: str, mail: str, msub_file: str, nb_task: int,
             # write_binary(msub_f, mpi_exe + " " + mpi_opt + " -n " +
             #              str(nb_task + 1) + " pegasus-mpi-cluster --host-cpus " +
             #              str(host_cpus) + " " + dag_file + "\n")
-        else :
+        else:
             write_binary(msub_f, "#!/bin/bash\n" + "pegasus-mpi-cluster " +
                          dag_file + "\n")
 
@@ -394,8 +394,8 @@ def machine_param() -> Dict[str, Union[bool, str]]:
 
     return clust_param
 
-def nb_tasks(vcfs:List[str]) -> int:
 
+def nb_tasks(vcfs: List[str]) -> int:
     nb_vcf = len(vcfs)
     if nb_vcf > 48:
         nb_task = 48
@@ -404,6 +404,7 @@ def nb_tasks(vcfs:List[str]) -> int:
     else:
         nb_task = 1
     return nb_task
+
 
 # Main
 def main():
@@ -441,4 +442,3 @@ def main():
 if __name__ == '__main__':
     # execute only if run as a script
     main()
-
