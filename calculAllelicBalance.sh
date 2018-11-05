@@ -74,8 +74,8 @@ fi
 while [[ $# -gt 0 ]]
 do
     case $1 in
-        -f|--file)   vcfin=$(testArg $2);         shift;;
-        -t|--thread) nbthread=$(testArg $2);      shift;;
+        -f|--file)   vcfin=$(testArg "$2");         shift;;
+        -t|--thread) nbthread=$(testArg "$2");      shift;;
         -h|--help) display_usage && exit 0 ;;
         --) shift; break;;
         -*) echo "$0: error - unrecognized option $1" >&2; exit 1;;
