@@ -142,7 +142,7 @@ def write_intermediate_task(file_handler: BinaryIO, conf: str, cmd: str,
 
 
 def task_cmd_if(conta_file: str, cmd: str) -> str:
-    awk_cmd = "{printf \$NF}"
+    awk_cmd = "{printf \\$NF}"
     awk_if_fmt = ("if [[ $( awk \\'END{awk_cmd}\\' {conta_fi}) = TRUE ]];"
                   " then {cmd} ; fi")
     task_cmd = awk_if_fmt.format(awk_cmd=awk_cmd, conta_fi=conta_file,
