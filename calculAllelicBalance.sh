@@ -34,7 +34,7 @@ testArg() {
 }
 
 display_usage() {
-  cat - <<EOF
+  echo "
   USAGE :
     ${NAME} [options] 
       -f, --file <vcf_file>
@@ -51,8 +51,7 @@ display_usage() {
     Output to stdout
 
   EXAMPLE :
-    ${NAME} -f file.vcf 
-EOF
+    ${NAME} -f file.vcf"
 
   return 0
 }
