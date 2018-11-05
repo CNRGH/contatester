@@ -35,23 +35,23 @@ testArg() {
 
 display_usage() {
   echo "
-  USAGE :
-    ${NAME} [options] 
-      -f, --file <vcf_file>
-            vcf file version 4.2 to process (Mandatory)  
-      -t, --thread <integer>
-            number of threads used by bcftools (optional) [default:4]
-      -h, --help
-            print help
+USAGE :
+${NAME} [options]
+  -f, --file <vcf_file>
+        vcf file version 4.2 to process (Mandatory)
+  -t, --thread <integer>
+        number of threads used by bcftools (optional) [default:4]
+  -h, --help
+        print help
 
-  DESCRIPTION :
-    ${NAME} calcul the Allelic Balance of a sample from a VCF file, check if
-    a cross human contamination is present and estim the degree of 
-    contamination.
-    Output to stdout
+DESCRIPTION :
+${NAME} calcul the Allelic Balance of a sample from a VCF file, check if
+a cross human contamination is present and estim the degree of
+contamination.
+Output to stdout
 
-  EXAMPLE :
-    ${NAME} -f file.vcf"
+EXAMPLE :
+${NAME} -f file.vcf"
 
   return 0
 }
