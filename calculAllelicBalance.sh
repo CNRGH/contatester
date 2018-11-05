@@ -60,9 +60,9 @@ display_usage() {
 # Main
 
 # initialisation des variables
-NAME=$(basename $0)
-vcfin=""
-nbthread=4
+declare -r NAME=$(basename $0)
+declare vcfin=""
+declare -i nbthread=4
 
 # Argument parsing
 
