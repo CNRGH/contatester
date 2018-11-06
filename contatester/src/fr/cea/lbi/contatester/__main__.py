@@ -253,8 +253,8 @@ def write_dag_file(check: bool, dag_file: str, out_dir: str, report: str,
                               task_fmt, task_id2, current_vcf, vcfs)
 
 
-def write_batch_file(dag_file: str, mail: str, msub_file: str, nb_task: int,
-                     out_dir: str, accounting: str) -> None:
+def write_batch_file(dag_file: str, msub_file: str, nb_task: int, out_dir: str,
+                     mail: Union[str, None] = None, accounting: Union[str, None] = None) -> None:
     """Write a Batch file to be processed by SLURM
 
     Args:
@@ -274,16 +274,18 @@ def write_batch_file(dag_file: str, mail: str, msub_file: str, nb_task: int,
                          "#!/bin/bash\n" +
                          "#MSUB -r " + script_name + "\n" +
                          "#MSUB -n " + str(nb_task) + "\n" +
-                         "#MSUB -o " + out_dir + script_name + "%j.out\n" +
-                         "#MSUB -e " + out_dir + script_name + "%j.err\n")
+                         "#MSUB -o " + join(out_dir, script_name) + "%j.out\n" +
+                         "#MSUB -e " + join(out_dir, script_name) + "%j.err\n")
             # Clusters parameters
             write_binary(msub_f, clust_param.get("msub_info"))
 
-            if len(mail) > 0:
-                write_binary(msub_f, "#MSUB -@ " + mail + ":end\n")
+            if mail is not None:
+                if len(mail) > 0:
+                    write_binary(msub_f, "#MSUB -@ " + mail + ":end\n")
 
-            if len(accounting) > 0:
-                write_binary(msub_f, "#MSUB -A " + accounting + "\n")
+            if accounting is not None:
+                if len(accounting) > 0 :
+                    write_binary(msub_f, "#MSUB -A " + accounting + "\n")
 
             # Clusters parameters
 
@@ -351,9 +353,9 @@ def machine_param() -> Dict[str, Union[bool, str]]:
         mpi_opt = "-E '--overcommit '"
         nb_core = 14
         # host_cpus = 28
-        msub_info = ("#MSUB -c " + str(nb_core) + " \n" +
+        msub_info = ("#MSUB -c " + str(nb_core) + "\n" +
                      "#MSUB -q broadwell\n" +
-                     "#MSUB -T 86400 \n")
+                     "#MSUB -T 86400\n")
         msub_module_load = ("module load extenv/ig\n" +
                             common_load)
     elif isdir("/env/cnrgh"):
@@ -365,9 +367,9 @@ def machine_param() -> Dict[str, Union[bool, str]]:
         mpi_opt = "-E '--oversubscribe'"
         nb_core = 7
         # host_cpus = 32
-        msub_info = ("#MSUB -c " + str(nb_core) + " \n" +
+        msub_info = ("#MSUB -c " + str(nb_core) + "\n" +
                      "#MSUB -q normal\n" +
-                     "#MSUB -T 86400 \n")
+                     "#MSUB -T 86400\n")
         msub_module_load = common_load
     else:
         # Default machine
@@ -418,7 +420,7 @@ def main():
     write_dag_file(check, dag_file, out_dir, report, task_fmt, vcfs)
 
     nb_task = nb_tasks(vcfs)
-    write_batch_file(dag_file, mail, msub_file, nb_task, out_dir, accounting)
+    write_batch_file(dag_file, msub_file, nb_task, out_dir, mail, accounting)
 
     # remove rescue file and ressource file
     res_files = glob.glob(dag_file + ".res*")
