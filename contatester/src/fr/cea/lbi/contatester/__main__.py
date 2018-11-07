@@ -284,7 +284,7 @@ def write_batch_file(dag_file: str, msub_file: str, nb_task: int, out_dir: str,
                     write_binary(msub_f, "#MSUB -@ " + mail + ":end\n")
 
             if accounting is not None:
-                if len(accounting) > 0 :
+                if len(accounting) > 0:
                     write_binary(msub_f, "#MSUB -A " + accounting + "\n")
 
             # Clusters parameters
@@ -322,6 +322,10 @@ def write_batch_file(dag_file: str, msub_file: str, nb_task: int, out_dir: str,
         else:
             write_binary(msub_f, "#!/bin/bash\n" + "pegasus-mpi-cluster " +
                          dag_file + "\n")
+            if mail is not None:
+                if len(mail) > 0:
+                    write_binary(msub_f, 'mail -s "[Contatester] is terminate" '
+                                 + mail + ' < /dev/null\n')
 
 
 def machine_param() -> Dict[str, Union[bool, str]]:
@@ -350,7 +354,7 @@ def machine_param() -> Dict[str, Union[bool, str]]:
         batch_exe = "ccc_msub"
         run_exe = "ccc_mprun"
         mpi_exe = "ccc_mprun"
-        mpi_opt = "-E '--overcommit '"
+        mpi_opt = "-E '--overcommit'"
         nb_core = 14
         # host_cpus = 28
         msub_info = ("#MSUB -c " + str(nb_core) + "\n" +

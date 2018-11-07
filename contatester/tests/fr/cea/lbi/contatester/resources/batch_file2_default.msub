@@ -1,0 +1,3 @@
+#!/bin/bash
+pegasus-mpi-cluster test1.dag
+mail -s "[Contatester] is terminate" foo@compagny.com < /dev/null

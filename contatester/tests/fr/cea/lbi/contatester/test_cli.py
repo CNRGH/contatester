@@ -1,9 +1,10 @@
 import os
 from os.path import isfile, isdir, abspath
 from typing import Sequence, List, Union
+from pytest_mock import mocker
 
 import pytest
-from unittest.mock import mock_open, patch
+from unittest.mock import mock_open
 
 from fr.cea.lbi.contatester.__main__ import get_cli_args
 
@@ -70,7 +71,7 @@ def test_allowed_usage(parameters: Sequence[str], fields_expected: List[Union[st
                           ('-f', 'foo.input', '-r', 'foo.result'),
                           ('-f', 'my_input_dir')
                          ])
-@ pytest.mark.usefixtures('mock_os')
+@pytest.mark.usefixtures('mock_os')
 def test_not_allowed_usage(parameters: Sequence[str]):
     with pytest.raises(SystemExit):
         args = get_cli_args(parameters)

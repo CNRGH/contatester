@@ -1,0 +1,16 @@
+#!/bin/bash
+#MSUB -r contaTester
+#MSUB -n 5
+#MSUB -o /tmp/contaTester%j.out
+#MSUB -e /tmp/contaTester%j.err
+#MSUB -c 14
+#MSUB -q broadwell
+#MSUB -T 86400
+#MSUB -@ foo@compagny.com:end
+module load extenv/ig
+module load pegasus
+module load bcftools
+module load bedtools
+module load bedops
+module load useq
+ccc_mprun -E '--overcommit' -n 6 pegasus-mpi-cluster test1.dag
