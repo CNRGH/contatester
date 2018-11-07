@@ -21,7 +21,7 @@ def is_cnrgh_env_dir(dir: str):
     result = False
     if dir == '/env/cnrgh':
         result = True
-    if dir == '/ccc':
+    elif dir == '/ccc':
         result = False
     else:
         result = isdir(dir)
