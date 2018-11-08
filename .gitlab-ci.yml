@@ -17,32 +17,42 @@ variables:
   LANG: en_US.UTF-8
 
 
-build contatester:
+build_contatester:
   stage: build
   tags:
     - nodind
   cache:
       key: py_lbi
       untracked: true
+  before_script:
+    - pip3 install setuptools wheel
+    - pip3 install --upgrade pip
+    - pip3 install --upgrade wheel
+    - pip3 install --upgrade setuptools
   script:
     - cd contatester
     - python3 setup.py clean
     - python3 setup.py build
 
 
-test contatester:
+test_contatester:
   stage: test
   tags:
     - nodind
   cache:
       key: py_lbi
       untracked: true
+  before_script:
+    - pip3 install setuptools wheel
+    - pip3 install --upgrade pip
+    - pip3 install --upgrade wheel
+    - pip3 install --upgrade setuptools
   script:
     - cd contatester
     - python3 setup.py test
 
 
-coverage contatester:
+coverage_contatester:
   stage: test
   tags:
     - nodind
@@ -53,13 +63,18 @@ coverage contatester:
     name: reports
     paths:
       - htmlcov
+  before_script:
+    - pip3 install setuptools wheel
+    - pip3 install --upgrade pip
+    - pip3 install --upgrade wheel
+    - pip3 install --upgrade setuptools
   script:
     - cd contatester
     - pip install coverage
     - python3 setup.py coverage
 
 
-wheel contatester:
+wheel_contatester:
   stage: distribute
   tags:
     - nodind
@@ -70,11 +85,16 @@ wheel contatester:
     name: wheel
     paths:
       - dist
+  before_script:
+    - pip3 install setuptools wheel
+    - pip3 install --upgrade pip
+    - pip3 install --upgrade wheel
+    - pip3 install --upgrade setuptools
   script:
     - cd contatester
     - python3 setup.py bdist_wheel
 
-build contatester image:
+build_contatester_image:
   stage: build_image
   image: docker
   tags:
@@ -85,7 +105,7 @@ build contatester image:
     - docker build --pull -t $CI_IMAGE  .
     - docker push $CI_IMAGE
 
-test contatester image:
+test_contatester_image:
   stage: test_image
   image: docker
   tags:
@@ -96,13 +116,11 @@ test contatester image:
     - docker pull $CI_IMAGE
     - docker run $CI_IMAGE
 
-release image:
-  stage: distribute
+release_image:
+  stage: test_image
   image: docker
   tags:
     - dind
-  dependencies:
-    - test contatester image
   before_script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.cnrgh.fr
   script:
