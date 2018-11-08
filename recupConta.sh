@@ -92,8 +92,8 @@ vcfin=""
 scriptPath=$(dirname $0)
 LCRSEGDUPgnomad=${scriptPath}/lcr_seg_dup_gnomad_2.0.2.bed.gz
 # AB range
-ABstart=0
-ABend=0.2
+ABstart=0.01
+ABend=0.12
 # 
 filename=$(basename $(basename $(basename $vcfin .gz) .vcf) _BOTH.HC.annot )
 fileExtension=AB_${ABstart}to${ABend}
