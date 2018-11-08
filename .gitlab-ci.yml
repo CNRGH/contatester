@@ -2,20 +2,12 @@ stages:
   - build
   - test
   - distribute
+  - build_image
+  - test_image
+  - distribute_image
 
 
-image: centos:7.5.1804
-
-.epel_install: &epel_install
-  before_script:
-    - yum install -y epel-release
-    - yum install -y python36  python36-setuptools
-    - curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-    - python36 get-pip.py
-    - python36 -m venv linux_venv
-    - source linux_venv/bin/activate
-    - pip install wheel
-    - pip install  --upgrade pip setuptools wheel virtualenv
+image: registry.cnrgh.fr/images/sources/python-36-centos7:latest
 
 
 variables:
@@ -24,31 +16,35 @@ variables:
     LANG: en_US.UTF-8
 
 
-build_python:
-  <<: *epel_install
+build contatester:
+  stage: build
+  tags:
+    - nodind
   cache:
       key: py_lbi
       untracked: true
-  stage: build
   script:
     - cd contatester
     - python36 setup.py clean
     - python36 setup.py build
 
 
-test_python:
-  <<: *epel_install
+test contatester:
+  stage: test
+  tags:
+    - nodind
   cache:
       key: py_lbi
       untracked: true
-  stage: test
   script:
     - cd contatester
     - python36 setup.py test
 
 
-coverage_python:
-  <<: *epel_install
+coverage contatester:
+  stage: test
+  tags:
+    - nodind
   cache:
       key: py_lbi
       untracked: true
@@ -56,15 +52,16 @@ coverage_python:
     name: reports
     paths:
       - htmlcov
-  stage: test
   script:
     - cd contatester
     - pip install coverage
     - python36 setup.py coverage
 
 
-wheel_python:
-  <<: *epel_install
+wheel contatester:
+  stage: distribute
+  tags:
+    - nodind
   cache:
       key: py_lbi
       untracked: true
@@ -72,7 +69,28 @@ wheel_python:
     name: wheel
     paths:
       - dist
-  stage: distribute
   script:
     - cd contatester
     - python36 setup.py bdist_wheel
+
+build contatester image:
+  stage: build_image
+  image: docker
+  tags:
+    - dind
+  before_script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.cnrgh.fr
+  script:
+    - docker build --pull -t $CI_IMAGE:$CI_COMMIT_SHA -t  $CI_IMAGE:latest .
+    - docker push $CI_IMAGE:$CI_COMMIT_SHA
+
+test contatester image:
+  stage: test_image
+  image: docker
+  tags:
+    - dind
+  before_script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.cnrgh.fr
+  script:
+    - docker pull $CI_IMAGE:$CI_COMMIT_SHA
+    - docker run $CI_IMAGE:$CI_COMMIT_SHA
