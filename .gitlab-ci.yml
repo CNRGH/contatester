@@ -4,16 +4,17 @@ stages:
   - distribute
   - build_image
   - test_image
-  - distribute_image
+  - release_image
 
 
 image: registry.cnrgh.fr/images/sources/python-36-centos7:latest
 
 
 variables:
-    CI_IMAGE: registry.cnrgh.fr/lbi/python_starter_project/ci:1.0.0-0
-    DOCKER_DRIVER: overlay2
-    LANG: en_US.UTF-8
+  CI_IMAGE: registry.cnrgh.fr/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$CI_PROJECT_NAME:CI_COMMIT_SHA
+  RELEASE_IMAGE: registry.cnrgh.fr/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$CI_PROJECT_NAME
+  DOCKER_DRIVER: overlay2
+  LANG: en_US.UTF-8
 
 
 build contatester:
@@ -81,8 +82,8 @@ build contatester image:
   before_script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.cnrgh.fr
   script:
-    - docker build --pull -t $CI_IMAGE:$CI_COMMIT_SHA -t  $CI_IMAGE:latest .
-    - docker push $CI_IMAGE:$CI_COMMIT_SHA
+    - docker build --pull -t $CI_IMAGE  .
+    - docker push $CI_IMAGE
 
 test contatester image:
   stage: test_image
@@ -92,5 +93,23 @@ test contatester image:
   before_script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.cnrgh.fr
   script:
-    - docker pull $CI_IMAGE:$CI_COMMIT_SHA
-    - docker run $CI_IMAGE:$CI_COMMIT_SHA
+    - docker pull $CI_IMAGE
+    - docker run $CI_IMAGE
+
+release image:
+  stage: distribute
+  image: docker
+  tags:
+    - dind
+  dependencies:
+    - test contatester image
+  before_script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.cnrgh.fr
+  script:
+    - docker pull $CI_IMAGE
+    - docker tag $CI_IMAGE $RELEASE_IMAGE:$CI_COMMIT_TAG
+    - docker push $RELEASE_IMAGE:$CI_COMMIT_TAG
+    - docker tag $CI_IMAGE $RELEASE_IMAGE:latest
+    - docker push $RELEASE_IMAGE:latest
+  only:
+    - tags
