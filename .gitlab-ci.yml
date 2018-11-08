@@ -26,8 +26,8 @@ build contatester:
       untracked: true
   script:
     - cd contatester
-    - python36 setup.py clean
-    - python36 setup.py build
+    - python3 setup.py clean
+    - python3 setup.py build
 
 
 test contatester:
@@ -39,7 +39,7 @@ test contatester:
       untracked: true
   script:
     - cd contatester
-    - python36 setup.py test
+    - python3 setup.py test
 
 
 coverage contatester:
@@ -56,7 +56,7 @@ coverage contatester:
   script:
     - cd contatester
     - pip install coverage
-    - python36 setup.py coverage
+    - python3 setup.py coverage
 
 
 wheel contatester:
@@ -72,7 +72,7 @@ wheel contatester:
       - dist
   script:
     - cd contatester
-    - python36 setup.py bdist_wheel
+    - python3 setup.py bdist_wheel
 
 build contatester image:
   stage: build_image
