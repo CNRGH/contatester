@@ -40,7 +40,7 @@ ${NAME} [options]
   -f, --file <vcf_file>
         vcf file version 4.2 to process (Mandatory)
   -t, --thread <integer>
-        number of threads used by bcftools (optional) [default:4]
+        number of threads used by bcftools (optional) [default:${nbthread}]
   -h, --help
         print help
 
