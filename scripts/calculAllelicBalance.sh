@@ -71,7 +71,7 @@ if (( $# == 0 )) ; then
     echo "ERROR : No argument provided" >&2 && display_usage >&2 && exit 1
 fi
 
-while (( $# >= 0 ))
+while (( $# > 0 ))
 do
     case $1 in
         -f|--file)   vcfin=$(testArg "$2");         shift;;
