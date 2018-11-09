@@ -35,41 +35,40 @@ testArg() {
 }
 
 display_usage() {
-  cat - <<EOF
-  USAGE :
-    ${NAME} [options] 
-      -f, --file <vcf_file>
-            VCF file version 4.2 to process (Mandatory)
-      -c, --vcfconta <vcf_file>
-            name of the output VCF file with selected variants (optional)
-            [default: {VCFbasename}_AB_{ABstart}to{ABend}_noLCRnoDUP.vcf]
-      -b, --bedfile <bed_file>
-            name of the output BED file for selected variants (optional)
-            [default: {VCFbasename}_AB_{ABstart}to{ABend}_noLCRnoDUP.bed]
-      -g, --gnomad <bed_file>
-            BED file used to exclude regions with Low Complexity Repeats (LCR)
-            and Segmental Duplications (seg_dup) (optional)
-            [default: {ScriptPath}/lcr_seg_dup_gnomad_2.0.2.bed.gz]
-      -s,--ABstart <float>
-            Allele balance starting value for variant selection (optional)
-            [default: 0]
-      -e,--ABend <float>
-            Allele balance ending value for variant selection (optional)
-            [default: 0.2] 
-      -t, --thread <integer>
-            number of threads used by bcftools (optional) [default: 4]
-      -h, --help                 
-            print help
+    echo "
+USAGE :
+${NAME} [options] 
+  -f, --file <vcf_file>
+        VCF file version 4.2 to process (Mandatory)
+  -c, --vcfconta <vcf_file>
+        name of the output VCF file with selected variants (optional)
+        [default: {VCFbasename}_AB_{ABstart}to{ABend}_noLCRnoDUP.vcf]
+  -b, --bedfile <bed_file>
+        name of the output BED file for selected variants (optional)
+        [default: {VCFbasename}_AB_{ABstart}to{ABend}_noLCRnoDUP.bed]
+  -g, --gnomad <bed_file>
+        BED file used to exclude regions with Low Complexity Repeats (LCR)
+        and Segmental Duplications (seg_dup) (optional)
+        [default: {ScriptPath}/lcr_seg_dup_gnomad_2.0.2.bed.gz]
+  -s, --ABstart <float>
+        Allele balance starting value for variant selection (optional)
+        [default: 0]
+  -e, --ABend <float>
+        Allele balance ending value for variant selection (optional)
+        [default: 0.2] 
+  -t, --thread <integer>
+        number of threads used by bcftools (optional) [default: 4]
+  -h, --help                 
+        print help
 
-  DESCRIPTION :
-    ${NAME} select variants from a VCF file in a range of Allelic Balance and 
-    exclude position given by the gnomad befile
-    Output a VCF file and a BED file 
+DESCRIPTION :
+${NAME} select variants from a VCF file in a range of Allelic Balance and 
+exclude position given by the gnomad befile
+Output a VCF file and a BED file 
 
-  EXAMPLE :
-    ${NAME} -f file.vcf -c vcfconta.vcf -b file.bed \
-                   -g lcr_seg_dup_gnomad_2.0.2.bed -s 0 -e 0.2 -t 4
-EOF
+EXAMPLE :
+${NAME} -f file.vcf -c vcfconta.vcf -b file.bed \
+        -g lcr_seg_dup_gnomad_2.0.2.bed -s 0 -e 0.2 -t 4"
 
   return 0
 }
