@@ -110,20 +110,20 @@ bedfile=${filename}_${fileExtension}_noLCRnoDUP.bed
 # Argument parsing
 
 # if no arguments, display usage
-if [[ $# -eq 0 ]] ; then
+if (( $# == 0 )) ; then
     echo "ERROR : No argument provided" >&2 && display_usage >&2 && exit 1
 fi
 
-while [[ $# -gt 0 ]]
+while (( $# > 0 ))
 do
     case $1 in
-        -f|--file)     vcfin=$(testArg $2);    shift;;
-        -c|--vcfconta) vcfconta=$(testArg $2); shift;;
-        -b|--bedfile)  bedfile=$(testArg $2);  shift;;
-        -g|--gnomad)   LCRSEGDUPgnomad=$(testArg $2); shift;;
-        -s|--ABstart)  ABstart=$(testArg $2);  shift;;
-        -e|--ABend)    ABend=$(testArg $2);    shift;;
-        -t|--thread)   nbthread=$(testArg $2); shift;;
+        -f|--file)     vcfin=$(testArg "$2");    shift;;
+        -c|--vcfconta) vcfconta=$(testArg "$2"); shift;;
+        -b|--bedfile)  bedfile=$(testArg "$2");  shift;;
+        -g|--gnomad)   LCRSEGDUPgnomad=$(testArg "$2"); shift;;
+        -s|--ABstart)  ABstart=$(testArg "$2");  shift;;
+        -e|--ABend)    ABend=$(testArg "$2");    shift;;
+        -t|--thread)   nbthread=$(testArg "$2"); shift;;
         -h|--help) display_usage && exit 0 ;;
         --) shift; break;; 
         -*) echo "$0: error - unrecognized option $1" >&2; exit 1;;

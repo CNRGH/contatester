@@ -85,18 +85,18 @@ declare outdir="."
 # Argument parsing
 
 # if no arguments, display usage
-if [[ $# -eq 0 ]] ; then
+if (( $# == 0 )) ; then
     echo "ERROR : No argument provided" >&2 && display_usage >&2 && exit 1
 fi
 
-while [[ $# -gt 0 ]]
+while (( $# > 0 )
 do
     case $1 in
-        -f|--file)        vcfcompare=$(testArg $2);    shift;;
-        -c|--vcfconta)    vcfconta=$(testArg $2); shift;;
-        -b|--bedfile)     bedfile=$(testArg $2);  shift;;
-        -s|--summaryfile) summaryfile=$(testArg $2); shift;;
-        -o|--outdir)      outdir=$(testArg $2); shift;;
+        -f|--file)        vcfcompare=$(testArg "$2");    shift;;
+        -c|--vcfconta)    vcfconta=$(testArg "$2"); shift;;
+        -b|--bedfile)     bedfile=$(testArg "$2");  shift;;
+        -s|--summaryfile) summaryfile=$(testArg "$2"); shift;;
+        -o|--outdir)      outdir=$(testArg "$2"); shift;;
         -h|--help) display_usage && exit 0 ;;
         --) shift; break;; 
         -*) echo "$0: error - unrecognized option $1" >&2; exit 1;;
