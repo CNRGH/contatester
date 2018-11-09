@@ -49,15 +49,15 @@ ${NAME} [options]
   -g, --gnomad <bed_file>
         BED file used to exclude regions with Low Complexity Repeats (LCR)
         and Segmental Duplications (seg_dup) (optional)
-        [default: {ScriptPath}/lcr_seg_dup_gnomad_2.0.2.bed.gz]
+        [default: {scriptPath}/lcr_seg_dup_gnomad_2.0.2.bed.gz]
   -s, --ABstart <float>
         Allele balance starting value for variant selection (optional)
-        [default: 0]
+        [default: ${ABstart}]
   -e, --ABend <float>
         Allele balance ending value for variant selection (optional)
-        [default: 0.2] 
+        [default: ${ABend}] 
   -t, --thread <integer>
-        number of threads used by bcftools (optional) [default: 4]
+        number of threads used by bcftools (optional) [default: ${nbthread}]
   -h, --help                 
         print help
 
@@ -68,7 +68,7 @@ Output a VCF file and a BED file
 
 EXAMPLE :
 ${NAME} -f file.vcf -c vcfconta.vcf -b file.bed \
-        -g lcr_seg_dup_gnomad_2.0.2.bed -s 0 -e 0.2 -t 4"
+        -g lcr_seg_dup_gnomad_2.0.2.bed -s 0.01 -e 0.12 -t 4"
 
   return 0
 }
@@ -84,24 +84,24 @@ module load bedops
 # Main
 
 # Variables initialisation
-NAME=$(basename $0)
+declare -r NAME=$(basename $0)
+declare -i nbthread=4
 # vcf file to process
-vcfin=""
+declare vcfin=""
 # All-in-one LCR & SEG DUP
-scriptPath=$(dirname $0)
-LCRSEGDUPgnomad=${scriptPath}/lcr_seg_dup_gnomad_2.0.2.bed.gz
+declare -r scriptPath=$(dirname $0)
+declare LCRSEGDUPgnomad=${scriptPath}/lcr_seg_dup_gnomad_2.0.2.bed.gz
 # AB range
-ABstart=0.01
-ABend=0.12
+declare -i ABstart=0.01
+declare -i ABend=0.12
 # 
 filename=$(basename $(basename $(basename $vcfin .gz) .vcf) _BOTH.HC.annot )
-fileExtension=AB_${ABstart}to${ABend}
+delcare fileExtension=AB_${ABstart}to${ABend}
 # processed vcf file name
-vcfconta=${filename}_${fileExtension}_noLCRnoDUP.vcf
+delacre vcfconta=${filename}_${fileExtension}_noLCRnoDUP.vcf
 # processed bed file name
 bedfile=${filename}_${fileExtension}_noLCRnoDUP.bed
 
-nbthread=4
 
 
 # Use an output folder

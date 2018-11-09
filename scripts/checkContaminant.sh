@@ -29,32 +29,31 @@ testArg() {
 }
 
 display_usage() {
-  cat - <<EOF
-  USAGE :
-    ${NAME} [options] 
-      -f, --file <vcf_file>
-            VCF file version 4.2 to process (Mandatory)
-      -c, --vcfconta <vcf_file>
-            VCF file with selected variants (Mandatory)
-      -b, --bedfile <bed_file>
-            BED file for selected variants (Mandatory)
-      -s, --summaryfile <text_file>
-            text file for result output (Mandatory)
-      -o,--outdir <folder>
-            folder for storing all output files (optional) 
-            [default: current directory]
-      -h, --help 
-            print help
+    echo "
+USAGE :
+${NAME} [options] 
+  -f, --file <vcf_file>
+        VCF file version 4.2 to process (Mandatory)
+  -c, --vcfconta <vcf_file>
+        VCF file with selected variants (Mandatory)
+  -b, --bedfile <bed_file>
+        BED file for selected variants (Mandatory)
+  -s, --summaryfile <text_file>
+        text file for result output (Mandatory)
+  -o,--outdir <folder>
+        folder for storing all output files (optional) 
+        [default: current directory]
+  -h, --help 
+        print help
 
-  DESCRIPTION :
-    ${NAME} compare selected variants from a VCF file with an over VCF 
-    Output : 
-        - Standard VCFComparator output 
-        - Write important informations in summary file
+DESCRIPTION :
+${NAME} compare selected variants from a VCF file with an over VCF 
+Output : 
+    - Standard VCFComparator output 
+    - Write important informations in summary file
 
-  EXAMPLE :
-    ${NAME} -f file.vcf -c vcfconta.vcf -b file.bed
-EOF
+EXAMPLE :
+${NAME} -f file.vcf -c vcfconta.vcf -b file.bed"
 
   return 0
 }
@@ -71,20 +70,17 @@ module load useq
 
 
 # Variables initialisation
-NAME=$(basename $0)
+declare -r NAME=$(basename $0)
 # vcf file to compare
-vcfcompare=""
+declare vcfcompare=""
 # possibly contaminated vcf file to process
-vcfconta=""
+declare vcfconta=""
 # bed file name for comparison
-bedfile=""
+declare bedfile=""
 # summary file for results
-summaryfile=""
+declare summaryfile=""
 # output directory
-outdir="."
-
-# Use an output folder
-# foldout=$2
+declare outdir="."
 
 # Argument parsing
 
