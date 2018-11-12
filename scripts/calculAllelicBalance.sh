@@ -27,7 +27,7 @@ testArg() {
     # Used for the parsing of Arguments
     # Test if a string start with a "-" or empty
     if [[ $1 =~ ^[-] || -z $1 ]]; then 
-        echo "ERROR : Missing Argument for $1" >&2; exit 1
+        echo "ERROR : Missing Argument for $1" >&2 && display_usage && exit 1
     else
         echo $1 
     fi
@@ -68,7 +68,7 @@ declare -i nbthread=4
 
 # if no arguments, display usage
 if (( $# == 0 )) ; then
-    echo "ERROR : No argument provided" >&2 && display_usage >&2 && exit 1
+    echo "ERROR : No argument provided" >&2 && display_usage && exit 1
 fi
 
 while (( $# > 0 ))
@@ -78,7 +78,8 @@ do
         -t|--thread) nbthread=$(testArg "$2"); shift;;
         -h|--help) display_usage && exit 0 ;;
         --) shift; break;;
-        -*) echo "$0: error - unrecognized option $1" >&2; exit 1;;
+        -*) echo "$0: error - unrecognized option $1" >&2 && \
+            display_usage && exit 1;;
         *)  break;;
     esac
     shift
@@ -86,7 +87,8 @@ done
 
 # for mandatory arg
 if [[ -z $vcfin ]]; then
-    echo '[ERROR] -f|--file was not supplied (mandatory option)' >&2 && exit 1
+    echo '[ERROR] -f|--file was not supplied (mandatory option)' >&2 && \
+    display_usage && exit 1
 fi
 
 # Command

@@ -28,7 +28,7 @@ testArg() {
     # Used for the parsing of Arguments
     # Test if a string start with a "-" or empty
     if [[ $1 =~ ^[-] || -z $1 ]]; then 
-        echo "ERROR : Missing Argument for $1" >&2; exit 1
+        echo "ERROR : Missing Argument for $1" >&2 && display_usage && exit 1
     else
         echo $1 
     fi
@@ -88,21 +88,14 @@ declare -r NAME=$(basename $0)
 declare -i nbthread=4
 # vcf file to process
 declare vcfin=""
+declare vcfconta=""
+declare bedfile=""
 # All-in-one LCR & SEG DUP
 declare -r scriptPath=$(dirname $0)
 declare LCRSEGDUPgnomad=${scriptPath}/lcr_seg_dup_gnomad_2.0.2.bed.gz
 # AB range
 declare -i ABstart=0.01
 declare -i ABend=0.12
-# 
-filename=$(basename $(basename $(basename $vcfin .gz) .vcf) _BOTH.HC.annot )
-delcare fileExtension=AB_${ABstart}to${ABend}
-# processed vcf file name
-delacre vcfconta=${filename}_${fileExtension}_noLCRnoDUP.vcf
-# processed bed file name
-bedfile=${filename}_${fileExtension}_noLCRnoDUP.bed
-
-
 
 # Use an output folder
 # foldout="./"
@@ -124,28 +117,44 @@ do
         -s|--ABstart)  ABstart=$(testArg "$2");         shift;;
         -e|--ABend)    ABend=$(testArg "$2");           shift;;
         -t|--thread)   nbthread=$(testArg "$2");        shift;;
-        -h|--help) display_usage && exit 0 ;;
+        -h|--help)     display_usage && exit 0 ;;
         --) shift; break;; 
-        -*) echo "$0: error - unrecognized option $1" >&2; exit 1;;
+        -*) echo "$0: error - unrecognized option $1" >&2 && \
+            display_usage && exit 1;;
         *)  break;;  
     esac
     shift
 done
 
+filename=$(basename $(basename $(basename $vcfin .gz) .vcf) _BOTH.HC.annot )
+fileExtension=AB_${ABstart}to${ABend}
+
 # for mandatory arg
 if [[ -z $vcfin ]]; then
-    echo '[ERROR] -f|--file was not supplied (mandatory option)' >&2 && exit 1
+    echo '[ERROR] -f|--file was not supplied (mandatory option)' >&2 && \
+    display_usage && exit 1
 fi
+
+# processed vcf file name
+if [[ -z vcfconta ]]; then
+    vcfconta=${filename}_${fileExtension}_noLCRnoDUP.vcf
+fi 
 
 contadir=$(dirname $vcfconta )
 if [[ ! -d $contadir ]]; then 
     mkdir --parents $contadir
 fi
 
+# processed bed file name
+if [[ -z bedfile ]]; then
+    bedfile=${filename}_${fileExtension}_noLCRnoDUP.bed
+fi 
+
 beddir=$(dirname $bedfile )
 if [[ ! -d $beddir ]]; then 
-    mkdir --parents $bedfile
+    mkdir --parents $beddir
 fi
+
 
 # Command
 bcftools view $vcfin --output-type v --types snps \

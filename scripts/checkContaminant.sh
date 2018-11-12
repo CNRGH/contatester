@@ -22,7 +22,7 @@ testArg() {
     # Used for the parsing of Arguments
     # Test if a string start with a "-" or empty
     if [[ $1 =~ ^[-] || -z $1 ]]; then 
-        echo "ERROR : Missing Argument for $1" >&2; exit 1
+        echo "ERROR : Missing Argument for $1" >&2 && display_usage && exit 1
     else
         echo $1 
     fi
@@ -99,7 +99,8 @@ do
         -o|--outdir)      outdir=$(testArg "$2");      shift;;
         -h|--help) display_usage && exit 0 ;;
         --) shift; break;; 
-        -*) echo "$0: error - unrecognized option $1" >&2; exit 1;;
+        -*) echo "$0: error - unrecognized option $1" >&2 && \
+            display_usage && exit 1;;
         *)  break;;  
     esac
     shift
@@ -107,7 +108,8 @@ done
 
 # for mandatory arg
 if [[ -z $vcfcompare || -z $vcfconta || -z $bedfile || -z $summaryfile ]]; then
-    echo '[ERROR] All arguments are mandatory' >&2 && exit 1
+    echo '[ERROR] All arguments are mandatory' >&2 && \
+    display_usage && exit 1
 fi
 
 summarydir=$(dirname $summaryfile)
