@@ -11,7 +11,7 @@ import sys
 import glob
 from datetime import datetime
 
-script_name = "contaTester"
+script_name = "contatester"
 
 
 def readable_file(prospective_file: str) -> str:
@@ -51,7 +51,6 @@ def get_cli_args(parameters: Sequence[str] = sys.argv[1:]) \
         A flag to enable contaminant check
     """
     parser = argparse.ArgumentParser(prog=script_name,
-                                     usage="%(prog)s [options]",
                                      description=("Wrapper for the detection"
                                                   " and determination of "
                                                   "the presence of cross "
