@@ -16,12 +16,19 @@
 
 set -uo pipefail
 
-################################################################################
-
-module load bcftools # actually 1.6
+# initialisation des variables
+declare -r NAME=$(basename $0)
+declare vcfin=""
+declare -i nbthread=4
 
 ################################################################################
 # Functions :
+
+module_load() {
+    # Used to load programs with module load function
+    module load bcftools # actually 1.6
+    return 0
+}
 
 testArg() {
     # Used for the parsing of Arguments
@@ -59,10 +66,7 @@ ${NAME} -f file.vcf"
 ################################################################################
 # Main
 
-# initialisation des variables
-declare -r NAME=$(basename $0)
-declare vcfin=""
-declare -i nbthread=4
+
 
 # Argument parsing
 
@@ -90,6 +94,8 @@ if [[ -z $vcfin ]]; then
     echo '[ERROR] -f|--file was not supplied (mandatory option)' >&2 && \
     display_usage && exit 1
 fi
+
+module_load
 
 # Command
 bcftools view $vcfin --no-header --output-type v --types snps --thread $nbthread | \

@@ -15,8 +15,27 @@
 
 set -uo pipefail
 
+# Variables initialisation
+declare -r NAME=$(basename $0)
+# vcf file to compare
+declare vcfcompare=""
+# possibly contaminated vcf file to process
+declare vcfconta=""
+# bed file name for comparison
+declare bedfile=""
+# summary file for results
+declare summaryfile=""
+# output directory
+declare outdir="."
+
 ################################################################################
 # Functions :
+
+module_load() {
+    # Used to load programs with module load function
+    module load useq
+    return 0
+}
 
 testArg() {
     # Used for the parsing of Arguments
@@ -58,29 +77,9 @@ ${NAME} -f file.vcf -c vcfconta.vcf -b file.bed"
   return 0
 }
 
-################################################################################
-# Load Modules
-
-# module unload varscope
-module load useq
-
 
 ################################################################################
 # Main
-
-
-# Variables initialisation
-declare -r NAME=$(basename $0)
-# vcf file to compare
-declare vcfcompare=""
-# possibly contaminated vcf file to process
-declare vcfconta=""
-# bed file name for comparison
-declare bedfile=""
-# summary file for results
-declare summaryfile=""
-# output directory
-declare outdir="."
 
 # Argument parsing
 
@@ -120,6 +119,8 @@ fi
 if [[ ! -d $outdir ]]; then 
     mkdir --parents $outdir
 fi
+
+module_load
 
 ####
 # comparaison des variants avec un echantillon 

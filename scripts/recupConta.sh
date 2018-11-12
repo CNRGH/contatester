@@ -21,8 +21,33 @@
 
 set -uo pipefail
 
+# Variables initialisation
+declare -r NAME=$(basename $0)
+declare -i nbthread=4
+# vcf file to process
+declare vcfin=""
+declare vcfconta=""
+declare bedfile=""
+# All-in-one LCR & SEG DUP
+declare -r scriptPath=$(dirname $0)
+declare LCRSEGDUPgnomad=${scriptPath}/lcr_seg_dup_gnomad_2.0.2.bed.gz
+# AB range
+declare -i ABstart=0.01
+declare -i ABend=0.12
+
+# Use an output folder
+# foldout="./"
+
+
 ################################################################################
 # Functions :
+
+module_load() {
+    # Used to load programs with module load function
+    module load bcftools
+    module load bedops
+    return 0
+}
 
 testArg() {
     # Used for the parsing of Arguments
@@ -74,31 +99,8 @@ ${NAME} -f file.vcf -c vcfconta.vcf -b file.bed \
 }
 
 
-
-################################################################################
-# Modules
-module load bcftools
-module load bedops
-
 ################################################################################
 # Main
-
-# Variables initialisation
-declare -r NAME=$(basename $0)
-declare -i nbthread=4
-# vcf file to process
-declare vcfin=""
-declare vcfconta=""
-declare bedfile=""
-# All-in-one LCR & SEG DUP
-declare -r scriptPath=$(dirname $0)
-declare LCRSEGDUPgnomad=${scriptPath}/lcr_seg_dup_gnomad_2.0.2.bed.gz
-# AB range
-declare -i ABstart=0.01
-declare -i ABend=0.12
-
-# Use an output folder
-# foldout="./"
 
 # Argument parsing
 
@@ -155,6 +157,7 @@ if [[ ! -d $beddir ]]; then
     mkdir --parents $beddir
 fi
 
+module_load
 
 # Command
 bcftools view $vcfin --output-type v --types snps \
