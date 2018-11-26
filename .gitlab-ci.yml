@@ -11,8 +11,8 @@ image: registry.cnrgh.fr/images/sources/python-36-centos7:latest
 
 
 variables:
-  CI_IMAGE:      registry.cnrgh.fr/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/contatester:$CI_COMMIT_SHA
-  RELEASE_IMAGE: registry.cnrgh.fr/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/contatester
+  CI_IMAGE:      registry.cnrgh.fr/$CI_PROJECT_NAMESPACE/contatester/contatester:$CI_COMMIT_SHA
+  RELEASE_IMAGE: registry.cnrgh.fr/$CI_PROJECT_NAMESPACE/contatester/contatester
   DOCKER_DRIVER: overlay2
   LANG: en_US.UTF-8
 
@@ -70,7 +70,7 @@ coverage_contatester:
     - pip3 install --upgrade setuptools
   script:
     - cd contatester
-    - pip install coverage
+    - pip3 install coverage
     - python3 setup.py coverage
 
 
@@ -101,6 +101,9 @@ build_contatester_image:
     - dind
   before_script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.cnrgh.fr
+    - docker ps -a
+    - docker stop $(docker ps -a -q -f status=exited)
+    - docker rm $(docker ps -a -q -f status=exited)
   script:
     - docker build --pull -t $CI_IMAGE  .
     - docker push $CI_IMAGE
@@ -114,6 +117,7 @@ test_contatester_image:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.cnrgh.fr
   script:
     - docker pull $CI_IMAGE
+    - docker ps -a
     - docker run $CI_IMAGE
 
 release_image:
