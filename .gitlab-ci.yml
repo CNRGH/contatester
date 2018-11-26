@@ -11,8 +11,7 @@ image: registry.cnrgh.fr/images/sources/python-36-centos7:latest
 
 
 variables:
-  CI_IMAGE:      registry.cnrgh.fr/$CI_PROJECT_NAMESPACE/contatester/contatester:$CI_COMMIT_SHA
-  RELEASE_IMAGE: registry.cnrgh.fr/$CI_PROJECT_NAMESPACE/contatester/contatester
+  CI_IMAGE:      registry.cnrgh.fr/$CI_PROJECT_NAMESPACE/contatester/contatester
   DOCKER_DRIVER: overlay2
   LANG: en_US.UTF-8
 
@@ -101,12 +100,9 @@ build_contatester_image:
     - dind
   before_script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.cnrgh.fr
-    - docker ps -a
-    - docker stop $(docker ps -a -q -f status=exited)
-    - docker rm $(docker ps -a -q -f status=exited)
   script:
-    - docker build --pull -t $CI_IMAGE  .
-    - docker push $CI_IMAGE
+    - docker build --pull -t $CI_IMAGE:$CI_COMMIT_SHA  .
+    - docker push $CI_IMAGE:$CI_COMMIT_SHA
 
 test_contatester_image:
   stage: test_image
@@ -116,9 +112,9 @@ test_contatester_image:
   before_script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.cnrgh.fr
   script:
-    - docker pull $CI_IMAGE
-    - docker ps -a
-    - docker run $CI_IMAGE
+    - docker pull $CI_IMAGE:$CI_COMMIT_SHA
+    - docker images
+    - docker run $CI_IMAGE:$CI_COMMIT_SHA
 
 release_image:
   stage: test_image
@@ -128,10 +124,10 @@ release_image:
   before_script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.cnrgh.fr
   script:
-    - docker pull $CI_IMAGE
-    - docker tag $CI_IMAGE $RELEASE_IMAGE:$CI_COMMIT_TAG
-    - docker push $RELEASE_IMAGE:$CI_COMMIT_TAG
-    - docker tag $CI_IMAGE $RELEASE_IMAGE:latest
-    - docker push $RELEASE_IMAGE:latest
+    - docker pull $CI_IMAGE:$CI_COMMIT_SHA
+    - docker tag  $CI_IMAGE:$CI_COMMIT_SHA $CI_IMAGE:$CI_COMMIT_TAG
+    - docker tag  $CI_IMAGE $CI_IMAGE:latest
+    - docker push $CI_IMAGE:$CI_COMMIT_TAG
+    - docker push $CI_IMAGE:latest
   only:
     - tags
