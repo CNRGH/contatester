@@ -11,8 +11,8 @@ image: registry.cnrgh.fr/images/sources/python-36-centos7:latest
 
 
 variables:
-  CI_IMAGE: registry.cnrgh.fr/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$CI_PROJECT_NAME:CI_COMMIT_SHA
-  RELEASE_IMAGE: registry.cnrgh.fr/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$CI_PROJECT_NAME
+  CI_IMAGE:      registry.cnrgh.fr/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/contatester:$CI_COMMIT_SHA
+  RELEASE_IMAGE: registry.cnrgh.fr/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/contatester
   DOCKER_DRIVER: overlay2
   LANG: en_US.UTF-8
 

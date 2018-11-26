@@ -110,7 +110,6 @@ if __name__ == '__main__':
         author_email='bioinfo@cng.fr',
         license='CeCILL',
         classifiers=[
-            # complete classifier list: http://pypi.python.org/pypi?%3Aaction=list_classifiers
             'Development Status :: 3 - Alpha'
             # 'Development Status :: 4 - Beta'
             # 'Development Status :: 5 - Production/Stable',
@@ -124,7 +123,7 @@ if __name__ == '__main__':
         package_dir={'': 'src'},
         include_package_data=True,
         install_requires=['wheel >= 0.31.0'],
-        setup_requires=['pytest-runner'],
+        setup_requires=['pytest-runner', 'setuptools >= 40.0.0 '],
         tests_require=['pytest  >= 3.4.0',
                        'pytest-dependency >= 0.3.0',
                        'pytest-mock >= 1.10.0',
