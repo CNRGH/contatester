@@ -5,5 +5,7 @@ RUN pip3 install --upgrade pip wheel setuptools
 RUN cd contatester \
     && python3 setup.py install \
     && python3 setup.py clean
+RUN ls /opt/app-root/bin
+RUN type contatester
 
-CMD [ "contatester" ]
+ENTRYPOINT [ 'contatester' ]

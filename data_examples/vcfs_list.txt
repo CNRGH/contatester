@@ -1,0 +1,2 @@
+/test_1.vcf.gz
+/test_2.vcf.gz
