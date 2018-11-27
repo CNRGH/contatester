@@ -114,8 +114,8 @@ test_contatester_image:
   script:
     - docker pull $CI_IMAGE:$CI_COMMIT_SHA
     - docker images
-    - docker run -v data_examples/test_1.vcf.gz:/test_1.vcf.gz \
-                 -v data_examples/test_2.vcf.gz:/test_2.vcf.gz \
+    - docker run -v $(pwd)/data_examples/test_1.vcf.gz:/test_1.vcf.gz
+                 -v $(pwd)/data_examples/test_2.vcf.gz:/test_2.vcf.gz 
                  $CI_IMAGE:$CI_COMMIT_SHA -l data_examples/vcfs_list.txt
 
 release_image:
