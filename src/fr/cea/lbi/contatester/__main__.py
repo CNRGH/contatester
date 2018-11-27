@@ -167,6 +167,8 @@ def create_report(basename_vcf: str, conta_file: str, dag_f: BinaryIO,
         current_vcf: Path to current vcf analysed
         vcfs: A list of vcf file path
     """
+    clust_param = machine_param(out_dir, 1)
+    compare_nb_core = clust_param.get("nb_core")
     file_extension = "AB_0.01_to_0.12"
     basename_conta = join(out_dir, basename_vcf + "_" + file_extension)
     vcf_conta = basename_conta + "_noLCRnoDUP.vcf"
@@ -193,15 +195,11 @@ def create_report(basename_vcf: str, conta_file: str, dag_f: BinaryIO,
     # comparisons with other vcf
     for vcf_compare in vcfs:
         if vcf_compare != current_vcf:
-            # path_obj = Path(vcf_compare)
-            # basename_vcf2 = path_obj.stem
             vcf_name = basename(vcf_compare)
             vcf_compare_basename = vcf_name.split(".vcf")[0]
-            # vcf_compare_basename = \
-            #     basename_vcf2.split("_BOTH.HC.annot ")[0]
             task_id4 = ("Compare_" + basename_vcf + "_" +
                         vcf_compare_basename)
-            task_conf = task_fmt.format(id=task_id4, core=14)
+            task_conf = task_fmt.format(id=task_id4, core=compare_nb_core)
             cmd = ("checkContaminant.sh -f " + vcf_compare + " -b " + bedfile +
                    " -c " + vcf_conta + " -s " + summary_file +
                    " -o " + out_dir)
@@ -328,7 +326,8 @@ def machine_param(out_dir: str, nb_task: int) -> Dict[str, Union[bool, str]]:
     :return: dictionary
     """
 
-    common_load = ("module load pegasus\n" +
+    common_load = ("module load extenv/ig\n"+
+                   "module load pegasus\n" +
                    "module load bcftools\n" +
                    "module load bedtools\n" +
                    "module load bedops\n" +
