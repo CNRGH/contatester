@@ -32,8 +32,8 @@ declare bedfile=""
 declare -r scriptPath=$(dirname $0)
 declare LCRSEGDUPgnomad=${scriptPath}/lcr_seg_dup_gnomad_2.0.2.bed.gz
 # AB range
-declare -i ABstart=0.01
-declare -i ABend=0.12
+ABstart=0.01
+ABend=0.12
 
 # Use an output folder
 # foldout="./"
