@@ -31,6 +31,9 @@ variables:
   image: docker
   tags:
     - dind
+  cache:
+      key: docker_lbi
+      untracked: true
   before_script:
   - eval export TODAY=$(date +'%Y%m%d')
   - eval export CI_SHORT_COMMIT_SHA="${CI_COMMIT_SHA:0:8}"
@@ -82,11 +85,14 @@ wheel_contatester:
 build_contatester_image:
   stage: build_image
   extends: .docker_jobs
+  artifacts:
+    name: docker_image
+    paths:
+      - contatester-*.tar.gz
   script:
     - docker build --pull -t "${CI_IMAGE}:${TEST_IMAGE_TAG}" .
-    - docker save "${CI_IMAGE}:${TEST_IMAGE_TAG}" | gzip -c > ${IMAGE_FILE}
-    - ls
-    - readlink -f ${IMAGE_FILE}
+    - docker save "${CI_IMAGE}:${TEST_IMAGE_TAG}" | gzip -c > "${IMAGE_FILE}"
+    - du -sh "${IMAGE_FILE}"
 
 test_contatester_image:
   stage: test_image
