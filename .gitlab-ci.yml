@@ -31,14 +31,11 @@ variables:
   image: docker
   tags:
     - dind
-  artifacts:
-    paths:
-      - ${IMAGE_FILE}
   before_script:
   - eval export TODAY=$(date +'%Y%m%d')
-  - eval export CI_SHORT_COMMIT_SHA=${CI_COMMIT_SHA:0:8}
-  - eval export TEST_IMAGE_TAG=${TODAY}_${CI_SHORT_COMMIT_SHA}
-  - eval export IMAGE_FILE=${CI_IMAGE}-${TEST_IMAGE_TAG}.tar.gz
+  - eval export CI_SHORT_COMMIT_SHA="${CI_COMMIT_SHA:0:8}"
+  - eval export TEST_IMAGE_TAG="${TODAY}_${CI_SHORT_COMMIT_SHA}"
+  - eval export IMAGE_FILE="contatester-${TEST_IMAGE_TAG}.tar.gz"
   - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} registry.cnrgh.fr
 
 build_contatester:
@@ -87,10 +84,13 @@ build_contatester_image:
   extends: .docker_jobs
   script:
     - docker build --pull -t "${CI_IMAGE}:${TEST_IMAGE_TAG}" .
-    - docker save "${CI_IMAGE}:${TEST_IMAGE_TAG}" | gzip -cf - > ${IMAGE_FILE}
+    - docker save "${CI_IMAGE}:${TEST_IMAGE_TAG}" | gzip -c > ${IMAGE_FILE}
+    - ls
+    - readlink -f ${IMAGE_FILE}
 
 test_contatester_image:
   stage: test_image
+  extends: .docker_jobs
   script:
     - docker load --input ${IMAGE_FILE}
     - |
@@ -100,6 +100,7 @@ test_contatester_image:
 
 master_image:
   stage: release_image
+  extends: .docker_jobs
   script:
     - docker load --input ${IMAGE_FILE}
     - docker tag  "${CI_IMAGE}:${TEST_IMAGE_TAG}" ${CI_IMAGE}:latest
@@ -109,6 +110,7 @@ master_image:
 
 release_image:
   stage: release_image
+  extends: .docker_jobs
   script:
     - docker load --input ${IMAGE_FILE}
     - docker tag  "${CI_IMAGE}:${TEST_IMAGE_TAG}" "${CI_IMAGE}:${CI_COMMIT_TAG}"
