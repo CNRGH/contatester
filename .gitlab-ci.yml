@@ -17,12 +17,7 @@ variables:
   TODAY:                date +'%Y%m%d'
   CI_SHORT_COMMIT_SHA:  '$${CI_COMMIT_SHA:0:8}'
   TEST_IMAGE_TAG:       '$${TODAY}_$${CI_SHORT_COMMIT_SHA}'
-  IMAGE_FILE:           '$${$CI_IMAGE}-$${TEST_IMAGE_TAG}.tar.gz'
-
-before_script:
-  - eval export CI_SHORT_COMMIT_SHA=${CI_SHORT_COMMIT_SHA}
-  - eval export TEST_IMAGE_TAG=${TEST_IMAGE_TAG}
-  - eval export IMAGE_FILE=${IMAGE_FILE}
+  IMAGE_FILE:           '$${CI_IMAGE}-$${TEST_IMAGE_TAG}.tar.gz'
 
 .prepare_python_env:
   tags:
@@ -44,7 +39,10 @@ before_script:
     paths:
       - ${IMAGE_FILE}
   before_script:
-    - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} registry.cnrgh.fr
+  - eval export CI_SHORT_COMMIT_SHA=${CI_SHORT_COMMIT_SHA}
+  - eval export TEST_IMAGE_TAG=${TEST_IMAGE_TAG}
+  - eval export IMAGE_FILE=${IMAGE_FILE}
+  - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} registry.cnrgh.fr
 
 build_contatester:
   extends: .prepare_python_env
