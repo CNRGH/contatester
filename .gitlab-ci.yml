@@ -89,10 +89,12 @@ build_contatester_image:
     name: docker_image
     paths:
       - contatester-*.tar.gz
+    expire_in: 3d
   script:
-    - docker build --pull -t "${CI_IMAGE}:${TEST_IMAGE_TAG}" .
+    - docker build -t "${CI_IMAGE}:${TEST_IMAGE_TAG}" .
     - docker save "${CI_IMAGE}:${TEST_IMAGE_TAG}" | gzip -c > "${IMAGE_FILE}"
     - du -sh "${IMAGE_FILE}"
+    - ls
 
 test_contatester_image:
   stage: test_image
