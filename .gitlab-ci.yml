@@ -14,10 +14,6 @@ variables:
   DOCKER_DRIVER:        overlay2
   LANG:                 en_US.UTF-8
   CI_IMAGE:             registry.cnrgh.fr/$CI_PROJECT_NAMESPACE/contatester/contatester
-  TODAY:                date +'%Y%m%d'
-  CI_SHORT_COMMIT_SHA:  '$${CI_COMMIT_SHA:0:8}'
-  TEST_IMAGE_TAG:       '$${TODAY}_$${CI_SHORT_COMMIT_SHA}'
-  IMAGE_FILE:           '$${CI_IMAGE}-$${TEST_IMAGE_TAG}.tar.gz'
 
 .prepare_python_env:
   tags:
@@ -39,9 +35,10 @@ variables:
     paths:
       - ${IMAGE_FILE}
   before_script:
-  - eval export CI_SHORT_COMMIT_SHA=${CI_SHORT_COMMIT_SHA}
-  - eval export TEST_IMAGE_TAG=${TEST_IMAGE_TAG}
-  - eval export IMAGE_FILE=${IMAGE_FILE}
+  - eval export TODAY=$(date +'%Y%m%d')
+  - eval export CI_SHORT_COMMIT_SHA=${CI_COMMIT_SHA:0:8}
+  - eval export TEST_IMAGE_TAG=${TODAY}_${CI_SHORT_COMMIT_SHA}
+  - eval export IMAGE_FILE=${CI_IMAGE}-${TEST_IMAGE_TAG}.tar.gz
   - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} registry.cnrgh.fr
 
 build_contatester:
@@ -89,8 +86,8 @@ build_contatester_image:
   stage: build_image
   extends: .docker_jobs
   script:
-    - docker build --pull -t ${CI_IMAGE}:${TEST_IMAGE_TAG}  .
-    - docker save ${CI_IMAGE}:${TEST_IMAGE_TAG} | gzip -cf - > ${IMAGE_FILE}
+    - docker build --pull -t "${CI_IMAGE}:${TEST_IMAGE_TAG}" .
+    - docker save "${CI_IMAGE}:${TEST_IMAGE_TAG}" | gzip -cf - > ${IMAGE_FILE}
 
 test_contatester_image:
   stage: test_image
@@ -99,14 +96,14 @@ test_contatester_image:
     - |
       docker run --volume $(pwd)/data_examples/test_1.vcf.gz:/test_1.vcf.gz \
                  --volume $(pwd)/data_examples/test_2.vcf.gz:/test_2.vcf.gz \
-                 ${CI_IMAGE}:${TEST_IMAGE_TAG} -l data_examples/vcfs_list.txt
+                 "${CI_IMAGE}:${TEST_IMAGE_TAG}" -l data_examples/vcfs_list.txt
 
 master_image:
   stage: release_image
   script:
     - docker load --input ${IMAGE_FILE}
-    - docker tag  ${CI_IMAGE}:${TEST_IMAGE_TAG} ${CI_IMAGE}:latest
-    - docker push ${CI_IMAGE}:latest
+    - docker tag  "${CI_IMAGE}:${TEST_IMAGE_TAG}" ${CI_IMAGE}:latest
+    - docker push "${CI_IMAGE}:latest"
   only:
     - master
 
@@ -114,7 +111,7 @@ release_image:
   stage: release_image
   script:
     - docker load --input ${IMAGE_FILE}
-    - docker tag  ${CI_IMAGE}:${TEST_IMAGE_TAG} ${CI_IMAGE}:${CI_COMMIT_TAG}
-    - docker push ${CI_IMAGE}:${CI_COMMIT_TAG}
+    - docker tag  "${CI_IMAGE}:${TEST_IMAGE_TAG}" "${CI_IMAGE}:${CI_COMMIT_TAG}"
+    - docker push "${CI_IMAGE}:${CI_COMMIT_TAG}"
   only:
     - tags
