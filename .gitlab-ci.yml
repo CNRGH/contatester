@@ -5,6 +5,7 @@ stages:
   - build_image
   - test_image
   - release_image
+  - clean
 
 
 image: registry.cnrgh.fr/images/sources/python-36-centos7:latest
@@ -42,17 +43,6 @@ variables:
     - eval export TEST_IMAGE_TAG="${TODAY}_${CI_SHORT_COMMIT_SHA}"
     - eval export IMAGE_FILE="contatester-${TEST_IMAGE_TAG}.tar.gz"
     - echo "${CI_JOB_TOKEN}" | docker login -u gitlab-ci-token --password-stdin registry.cnrgh.fr
-  after_script:
-    - eval export TODAY=$(date +'%Y%m%d')
-    - eval export CI_SHORT_COMMIT_SHA="${CI_COMMIT_SHA:0:8}"
-    - eval export TEST_IMAGE_TAG="${TODAY}_${CI_SHORT_COMMIT_SHA}"
-    - eval export IMAGE_FILE="contatester-${TEST_IMAGE_TAG}.tar.gz"
-    # Stop any running containers, if they are not running anymore (since its not a run -d), ignore errors about that.
-    - docker rm -f "${DOCKER_REPO}${IMAGE_NAME}:${TEST_IMAGE_TAG}" ${IMAGE_NAME} || true
-    # Remove pulled images
-    - docker rmi -f "${DOCKER_REPO}${IMAGE_NAME}:${TEST_IMAGE_TAG}" || true
-    # Remove all images (current et previouslys build container missed) [Optional]
-    #- docker images | awk -v pattern="${DOCKER_REPO}${IMAGE_NAME}" '{if( $1 ~ /^pattern/ ){ print $1":"$2; system(docker rmi -f $1":"$2) }}'
 
 build_contatester:
   extends: .prepare_python_env
@@ -77,11 +67,13 @@ coverage_contatester:
   artifacts:
     name: reports
     paths:
-      - htmlcov
+      - htmlcov/*
   script:
     - cd contatester
+    - ls
     - pip3 install coverage
     - python3 setup.py coverage
+    - ls
 
 
 wheel_contatester:
@@ -104,10 +96,11 @@ build_contatester_image:
       - contatester-*.tar.gz
     expire_in: 3d
   script:
+    - ls *.tar.gz
+    - rm -f *.tar.gz
+    - du -shc *
     - docker build -t "${DOCKER_REPO}${IMAGE_NAME}:${TEST_IMAGE_TAG}" .
     - docker save "${DOCKER_REPO}${IMAGE_NAME}:${TEST_IMAGE_TAG}" | gzip -c > "${IMAGE_FILE}"
-    - du -sh "${IMAGE_FILE}"
-    - ls
 
 test_contatester_image:
   stage: test_image
@@ -138,3 +131,25 @@ release_image:
     - docker push "$${DOCKER_REPO}{IMAGE_NAME}:${CI_COMMIT_TAG}"
   only:
     - tags
+
+remove image:
+  stage: clean
+  extends: .docker_jobs
+  when: always
+  script:
+    - docker images
+    # Stop any running containers, if they are not running anymore (since its not a run -d), ignore errors about that.
+    - docker rm -f "${DOCKER_REPO}${IMAGE_NAME}:${TEST_IMAGE_TAG}" ${IMAGE_NAME} || true
+    # Remove pulled images
+    - docker rmi -f "${DOCKER_REPO}${IMAGE_NAME}:${TEST_IMAGE_TAG}" || true
+    # Remove all images (current et previouslys build container missed) [Optional]
+    #- docker images | awk -v pattern="${DOCKER_REPO}${IMAGE_NAME}" '{if( $1 ~ /^pattern/ ){ print $1":"$2; system(docker rmi -f $1":"$2) }}'
+
+remove image file:
+  stage: clean
+  when: always
+  script:
+    - ls
+    - if [[ -e "${IMAGE_FILE}" ]]; then rm "${IMAGE_FILE}"; fi
+    - rm -f "contatester*.tar.gz"
+    - ls
