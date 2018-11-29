@@ -11,9 +11,10 @@ image: registry.cnrgh.fr/images/sources/python-36-centos7:latest
 
 
 variables:
-  DOCKER_DRIVER:        overlay2
-  LANG:                 en_US.UTF-8
-  CI_IMAGE:             registry.cnrgh.fr/$CI_PROJECT_NAMESPACE/contatester/contatester
+  DOCKER_DRIVER:  overlay2
+  LANG:           'en_US.UTF-8'
+  DOCKER_REPO:    'registry.cnrgh.fr/$CI_PROJECT_NAMESPACE/contatester/'
+  IMAGE_NAME:     'contatester'
 
 .prepare_python_env:
   tags:
@@ -34,12 +35,27 @@ variables:
   cache:
       key: docker_lbi
       untracked: true
+  # No var expansion as bash do see: https://www.trek10.com/blog/making-ci-easier-with-gitlab/
   before_script:
-  - eval export TODAY=$(date +'%Y%m%d')
-  - eval export CI_SHORT_COMMIT_SHA="${CI_COMMIT_SHA:0:8}"
-  - eval export TEST_IMAGE_TAG="${TODAY}_${CI_SHORT_COMMIT_SHA}"
-  - eval export IMAGE_FILE="contatester-${TEST_IMAGE_TAG}.tar.gz"
-  - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} registry.cnrgh.fr
+    - eval export TODAY=$(date +'%Y%m%d')
+    - eval export CI_SHORT_COMMIT_SHA="${CI_COMMIT_SHA:0:8}"
+    - eval export TEST_IMAGE_TAG="${TODAY}_${CI_SHORT_COMMIT_SHA}"
+    - eval export IMAGE_FILE="contatester-${TEST_IMAGE_TAG}.tar.gz"
+    - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} registry.cnrgh.fr
+  after_script:
+    - eval export TODAY=$(date +'%Y%m%d')
+    - eval export CI_SHORT_COMMIT_SHA="${CI_COMMIT_SHA:0:8}"
+    - eval export TEST_IMAGE_TAG="${TODAY}_${CI_SHORT_COMMIT_SHA}"
+    - eval export IMAGE_FILE="contatester-${TEST_IMAGE_TAG}.tar.gz"
+    - docker images
+    # Stop any running containers, if they are not running anymore (since its not a run -d), ignore errors about that.
+    - docker rm -f "${DOCKER_REPO}${IMAGE_NAME}:${TEST_IMAGE_TAG}" ${IMAGE_NAME} || true
+    # Remove pulled images
+    - docker rmi -f "${DOCKER_REPO}${IMAGE_NAME}:${TEST_IMAGE_TAG}" || true
+    # Remove all images (current et previouslys build container missed) [Optional]
+    - docker images | awk 'NR > 1 { print $1":"$2 }'
+    - docker images | awk -v pattern="${DOCKER_REPO}${IMAGE_NAME}" '{if( $1 ~ /^pattern/ ){ print $1":"$2 }}'
+    - docker images | awk -v pattern="${DOCKER_REPO}${IMAGE_NAME}" '{if( $1 ~ /^pattern/ ){ print $1":"$2; system(docker rmi -f $1":"$2) }}'
 
 build_contatester:
   extends: .prepare_python_env
@@ -91,8 +107,8 @@ build_contatester_image:
       - contatester-*.tar.gz
     expire_in: 3d
   script:
-    - docker build -t "${CI_IMAGE}:${TEST_IMAGE_TAG}" .
-    - docker save "${CI_IMAGE}:${TEST_IMAGE_TAG}" | gzip -c > "${IMAGE_FILE}"
+    - docker build -t "${DOCKER_REPO}${IMAGE_NAME}:${TEST_IMAGE_TAG}" .
+    - docker save "${DOCKER_REPO}${IMAGE_NAME}:${TEST_IMAGE_TAG}" | gzip -c > "${IMAGE_FILE}"
     - du -sh "${IMAGE_FILE}"
     - ls
 
@@ -104,15 +120,15 @@ test_contatester_image:
     - |
       docker run --volume $(pwd)/data_examples/test_1.vcf.gz:/test_1.vcf.gz \
                  --volume $(pwd)/data_examples/test_2.vcf.gz:/test_2.vcf.gz \
-                 "${CI_IMAGE}:${TEST_IMAGE_TAG}" -l data_examples/vcfs_list.txt
+                 "${DOCKER_REPO}${IMAGE_NAME}:${TEST_IMAGE_TAG}" -l data_examples/vcfs_list.txt
 
 master_image:
   stage: release_image
   extends: .docker_jobs
   script:
     - docker load --input ${IMAGE_FILE}
-    - docker tag  "${CI_IMAGE}:${TEST_IMAGE_TAG}" ${CI_IMAGE}:latest
-    - docker push "${CI_IMAGE}:latest"
+    - docker tag  "${DOCKER_REPO}${IMAGE_NAME}:${TEST_IMAGE_TAG}" ${DOCKER_REPO}${IMAGE_NAME}:latest
+    - docker push "${DOCKER_REPO}${IMAGE_NAME}:latest"
   only:
     - master
 
@@ -121,7 +137,7 @@ release_image:
   extends: .docker_jobs
   script:
     - docker load --input ${IMAGE_FILE}
-    - docker tag  "${CI_IMAGE}:${TEST_IMAGE_TAG}" "${CI_IMAGE}:${CI_COMMIT_TAG}"
-    - docker push "${CI_IMAGE}:${CI_COMMIT_TAG}"
+    - docker tag  "${DOCKER_REPO}${IMAGE_NAME}:${TEST_IMAGE_TAG}" "${DOCKER_REPO}${IMAGE_NAME}:${CI_COMMIT_TAG}"
+    - docker push "$${DOCKER_REPO}{IMAGE_NAME}:${CI_COMMIT_TAG}"
   only:
     - tags
