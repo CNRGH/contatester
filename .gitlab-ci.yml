@@ -21,7 +21,7 @@ variables:
   tags:
     - nodind
   cache:
-    key: py_lbi
+    key: ${CI_PIPELINE_ID}-py_lbi
     untracked: true
   before_script:
     - pip3 install setuptools wheel
@@ -34,7 +34,7 @@ variables:
   tags:
     - dind
   cache:
-    key: docker_lbi
+    key: ${CI_PIPELINE_ID}-docker_lbi
     untracked: true
   # No var expansion as bash do see: https://www.trek10.com/blog/making-ci-easier-with-gitlab/
   before_script:
@@ -159,7 +159,7 @@ docker remove all temp files:
   stage: clean
   when: always
   cache:
-    key: docker_lbi
+    key: ${CI_PIPELINE_ID}-docker_lbi
   script:
     - rm -fr ${CI_COMMIT_SHA}/
 
@@ -168,7 +168,7 @@ python remove all temp files:
   stage: clean
   when: always
   cache:
-    key: py_lbi
+    key: ${CI_PIPELINE_ID}-py_lbi
   script:
     - rm -fr .eggs .pytest_cache/ build/ dist/ htmlcov/ src/contatester.egg-info/
     - find . -name __pycache__ | xargs rm -fr
