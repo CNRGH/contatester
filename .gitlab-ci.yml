@@ -162,3 +162,13 @@ docker remove all temp files:
     key: docker_lbi
   script:
     - rm -fr ${CI_COMMIT_SHA}/
+
+
+python remove all temp files:
+  stage: clean
+  when: always
+  cache:
+    key: py_lbi
+  script:
+    - rm -fr .eggs .pytest_cache/ build/ dist/ htmlcov/ src/contatester.egg-info/
+    - find . -name __pycache__ | xargs rm -fr
