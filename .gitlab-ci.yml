@@ -66,7 +66,6 @@ coverage_contatester:
   stage: test
   artifacts:
     name: reports
-    untracked: true
     paths:
       - contatester/htmlcov/*
   script:
@@ -81,7 +80,6 @@ wheel_contatester:
   stage: distribute
   artifacts:
     name: wheel
-    untracked: true
     paths:
       - dist
   script:
@@ -93,7 +91,6 @@ build_contatester_image:
   extends: .docker_jobs
   artifacts:
     name: docker_image
-    untracked: true
     paths:
       - "/tmp/${CI_COMMIT_SHA}/image/*.tar.gz"
     expire_in: 3d
