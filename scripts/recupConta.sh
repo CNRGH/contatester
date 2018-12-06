@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 #####
 ##### Controle de contamination
@@ -44,6 +44,8 @@ ABend=0.12
 
 module_load() {
     # Used to load programs with module load function
+    module unload python/3.6
+    module load python/2.7
     module load bcftools
     module load bedops
     return 0
