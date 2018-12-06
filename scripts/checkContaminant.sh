@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 #####
 ##### Controle de contamination
 #####
@@ -74,7 +76,7 @@ Output :
 EXAMPLE :
 ${NAME} -f file.vcf -c vcfconta.vcf -b file.bed"
 
-  return 0
+    return 0
 }
 
 
@@ -88,7 +90,7 @@ if (( $# == 0 )) ; then
     echo "ERROR : No argument provided" >&2 && display_usage >&2 && exit 1
 fi
 
-while (( $# > 0 )
+while (( $# > 0 ))
 do
     case $1 in
         -f|--file)        vcfcompare=$(testArg "$2");  shift;;
@@ -100,7 +102,7 @@ do
         --) shift; break;; 
         -*) echo "$0: error - unrecognized option $1" >&2 && \
             display_usage && exit 1;;
-        *)  break;;  
+        *)  break;;
     esac
     shift
 done
