@@ -140,7 +140,7 @@ if [[ -z $vcfin ]]; then
 fi
 
 # processed vcf file name
-if [[ -z vcfconta ]]; then
+if [[ -z $vcfconta ]]; then
     vcfconta=${filename}_${fileExtension}_noLCRnoDUP.vcf
 fi 
 
@@ -150,7 +150,7 @@ if [[ ! -d $contadir ]]; then
 fi
 
 # processed bed file name
-if [[ -z bedfile ]]; then
+if [[ -z $bedfile ]]; then
     bedfile=${filename}_${fileExtension}_noLCRnoDUP.bed
 fi 
 
