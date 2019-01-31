@@ -1,12 +1,25 @@
 import itertools
+from os import path
+
 import os
 import shutil
 import subprocess
 from distutils.command.clean import clean
+from glob import glob
 from typing import List
 
 from pkg_resources.extern import packaging
 from setuptools import setup, find_packages, Command
+
+NAME = 'contatester'
+VERSION = '0.0.1'
+DESCRIPTION = 'Detect human contamination for whole genome non-tumorous human' \
+              ' sequencing.'
+KEYWORDS = 'contamination, vcf, allelic balance, Whole Genome'
+
+
+def get_files(directory: str) -> str:
+    return glob(path.join(directory, '*'))
 
 
 class ExtendedClean(clean):
@@ -103,16 +116,14 @@ class Coverage(Command):
 
 if __name__ == '__main__':
     setup(
-        name='contatester',
-        version='0.0.1',
-        description='',
+        name=NAME,
+        version=VERSION,
+        description=DESCRIPTION,
         author='CEA / CNRGH / LBI',
         author_email='bioinfo@cng.fr',
         license='CeCILL',
         classifiers=[
-            'Development Status :: 3 - Alpha'
-            # 'Development Status :: 4 - Beta'
-            # 'Development Status :: 5 - Production/Stable',
+            'Development Status :: 5 - Production/Stable',
             'Intended Audience :: Developers',
             'License :: CeCILL Free Software License Agreement (CeCILL)',
             'Programming Language :: Python :: 3.6'
@@ -122,6 +133,8 @@ if __name__ == '__main__':
         packages=find_packages('src'),
         package_dir={'': 'src'},
         include_package_data=True,
+        data_files=[('share/{}/'.format(NAME), get_files('data'))],
+        scripts=get_files('scripts'),
         install_requires=['wheel >= 0.31.0'],
         setup_requires=['pytest-runner', 'setuptools >= 40.0.0 '],
         tests_require=['pytest  >= 3.4.0',

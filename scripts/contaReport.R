@@ -292,9 +292,10 @@ filout = argv$output
 pdfout = argv$reportName
 
 scriptPath = dirname(getFilename())
+datadir = paste(scriptPath, "/../share/contatester")
 
 # load dataset
-load(paste(scriptPath, "contaIntraProjet.rda", sep="/"))
+load(paste(datadir, "contaIntraProjet.rda", sep="/"))
 
 # Data Treatment 
 sample_test = merge_data(filin)

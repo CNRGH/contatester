@@ -30,7 +30,8 @@ declare vcfconta=""
 declare bedfile=""
 # All-in-one LCR & SEG DUP
 declare -r scriptPath=$(dirname $0)
-declare LCRSEGDUPgnomad=${scriptPath}/lcr_seg_dup_gnomad_2.0.2.bed.gz
+declare -r datadir="${scriptPath}"/../share/contatester
+declare LCRSEGDUPgnomad="${datadir}"/contatester/lcr_seg_dup_gnomad_2.0.2.bed.gz
 # AB range
 ABstart=0.01
 ABend=0.12
@@ -76,7 +77,7 @@ ${NAME} [options]
   -g, --gnomad <bed_file>
         BED file used to exclude regions with Low Complexity Repeats (LCR)
         and Segmental Duplications (seg_dup) (optional)
-        [default: {scriptPath}/lcr_seg_dup_gnomad_2.0.2.bed.gz]
+        [default: ${datadir}/contatester/lcr_seg_dup_gnomad_2.0.2.bed.gz]
   -s, --ABstart <float>
         Allele balance starting value for variant selection (optional)
         [default: ${ABstart}]
