@@ -326,8 +326,7 @@ def machine_param(out_dir: str, nb_task: int) -> Dict[str, Union[bool, str]]:
     :return: dictionary
     """
 
-    common_load = ("module load extenv/ig\n"+
-                   "module load pegasus\n" +
+    common_load = ("module load pegasus\n" +
                    "module load bcftools\n" +
                    "module load bedtools\n" +
                    "module load bedops\n" +

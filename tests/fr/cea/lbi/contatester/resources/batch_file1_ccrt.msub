@@ -1,8 +1,8 @@
 #!/bin/bash
-#MSUB -r contaTester
+#MSUB -r contatester
 #MSUB -n 5
-#MSUB -o /tmp/contaTester%j.out
-#MSUB -e /tmp/contaTester%j.err
+#MSUB -o /tmp/contatester%j.out
+#MSUB -e /tmp/contatester%j.err
 #MSUB -c 14
 #MSUB -q broadwell
 #MSUB -T 86400

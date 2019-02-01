@@ -9,7 +9,7 @@ from os.path import isdir
 
 def is_default_env_dir(dir: str):
     result = False
-    if dir in ('/ccc', '/env/cnrgh'):
+    if dir in ('/ccc', '/env/cng'):
         result = False
     else:
         result = isdir(dir)
@@ -19,7 +19,7 @@ def is_default_env_dir(dir: str):
 
 def is_cnrgh_env_dir(dir: str):
     result = False
-    if dir == '/env/cnrgh':
+    if dir == '/env/cng':
         result = True
     elif dir == '/ccc':
         result = False
@@ -32,7 +32,7 @@ def is_ccrt_env_dir(dir: str):
     result = False
     if dir == '/ccc':
         result = True
-    elif dir == '/env/cnrgh':
+    elif dir == '/env/cng':
         result = False
     else:
         result = isdir(dir)

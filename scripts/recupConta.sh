@@ -31,7 +31,7 @@ declare bedfile=""
 # All-in-one LCR & SEG DUP
 declare -r scriptPath=$(dirname $0)
 declare -r datadir="${scriptPath}"/../share/contatester
-declare LCRSEGDUPgnomad="${datadir}"/contatester/lcr_seg_dup_gnomad_2.0.2.bed.gz
+declare LCRSEGDUPgnomad="${datadir}"/lcr_seg_dup_gnomad_2.0.2.bed.gz
 # AB range
 ABstart=0.01
 ABend=0.12
