@@ -10,4 +10,4 @@ dist/
 __pycache__/
 *.egg-info/
 All_in_one_contatester3.sh
-venv/
+*env/
