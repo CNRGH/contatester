@@ -57,6 +57,19 @@ This project include:
  You have to run `python setup.py coverage` before each production release and most of other times. These tools
  generate html reports into the directory `htmlcov`
 
+## TEMP Install 
+
+'''
+# deactivate
+# rm -r el7_env/ dist/ build/
+python3 -m venv el7_env
+source el7_env/bin/activate
+pip install --upgrade pip wheel setuptools
+python setup.py bdist_wheel 
+pip install dist/contatester-0.0.1-py2.py3-none-any.whl
+ls el7_env/
+'''
+
 ## Development environment
 
 In order to test your application and all dependencies are well declared, you have to create a virtual env
