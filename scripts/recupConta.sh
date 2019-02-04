@@ -73,7 +73,7 @@ ${NAME} [options]
   -g, --gnomad <bed_file>
         BED file used to exclude regions with Low Complexity Repeats (LCR)
         and Segmental Duplications (seg_dup) (optional)
-        [default: ${datadir}/contatester/lcr_seg_dup_gnomad_2.0.2.bed.gz]
+        [default: ${datadir}/lcr_seg_dup_gnomad_2.0.2.bed.gz]
   -s, --ABstart <float>
         Allele balance starting value for variant selection (optional)
         [default: ${ABstart}]
