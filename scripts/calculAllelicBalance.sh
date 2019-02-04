@@ -10,13 +10,13 @@
 #
 
 #
-# Utilisation :
-# Calcul de la balance allelique
+# Usage :
+#    Script for allelic balance calculation
 #
 
 set -uo pipefail
 
-# initialisation des variables
+# Variables initialisation
 declare -r NAME=$(basename $0)
 declare vcfin=""
 declare -i nbthread=4
@@ -99,7 +99,7 @@ module_load
 
 # Command
 bcftools view $vcfin --no-header --output-type v --types snps --thread $nbthread | \
-# parsing du vcf version 4.2 parsing de la colone AD 
+# parsing of AD column of vcf version 4.2
 awk -F '\t' '{if($1 !~ /^#/ ) {split($10, a, ":") ; split(a[2], b, ","); \
 if((b[2]+b[1]+b[3]) != 0) {printf "%.2f\n", b[2]/(b[2]+b[1]+b[3])}}}' | \
 sort | uniq -c

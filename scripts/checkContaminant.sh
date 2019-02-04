@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #####
-##### Controle de contamination
+##### Contamination Search
 #####
 
 #
@@ -11,13 +11,12 @@
 
 #
 # Objectifs : 
-# 
-# Verrifier qu'il n'y a pas de contamination croisées entre différentes sequences
+#     Check for the presence of sample cross-contamiantion
 #
 
 set -uo pipefail
 
-# Variables initialisation
+# Variable initialisation
 declare -r NAME=$(basename $0)
 # vcf file to compare
 declare vcfcompare=""
@@ -125,7 +124,7 @@ fi
 module_load
 
 ####
-# comparaison des variants avec un echantillon 
+# Comparaison of selected variants with other sample 
 fileA=$vcfcompare
 fileA_name=$(basename $(basename $fileA .gz) .vcf)
 fileB=$vcfconta

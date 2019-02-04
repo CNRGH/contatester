@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #####
-##### Controle de contamination
+##### Check for contamination
 #####
 
 #
@@ -10,13 +10,12 @@
 #
 
 #
-# Utilisation :
-# Selection de SNP dans un range d'allele balance
+# Usage :
+#    SNP Selection in a given allelic balance range
 ####
-# Recuperation des variants dans un range d'allele balance
-# selection des variants avec Allele Balance  [0.00:0.20]
-# transformation du vcf en bed
-# et soustraction des regions complexes
+#    Variant recovery in allelic range default : [0.01 - 0.12]
+#    VCF transformation into BED
+#    Exclude complexes regions 
 # 
 
 set -uo pipefail
@@ -35,9 +34,6 @@ declare LCRSEGDUPgnomad="${datadir}"/lcr_seg_dup_gnomad_2.0.2.bed.gz
 # AB range
 ABstart=0.01
 ABend=0.12
-
-# Use an output folder
-# foldout="./"
 
 
 ################################################################################
@@ -165,7 +161,8 @@ module_load
 # Command
 bcftools view $vcfin --output-type v --types snps \
 --thread $nbthread --targets ^$LCRSEGDUPgnomad | \
-# parsing du vcf version 4.2 parsing de la colone AD 
+# parsing of AD column of vcf version 4.2 
+# and SNP selection
 awk -F '\t' '{if($1 !~ /^#/ ) {split($10, a, ":") ; split(a[2], b, ","); \
 if((b[2]+b[1]+b[3]) != 0 && b[2]/(b[2]+b[1]+b[3]) >= ABstart && \
 b[2]/(b[2]+b[1]+b[3]) <= ABend ) {print}} else {print}}' \
