@@ -292,7 +292,7 @@ filout = argv$output
 pdfout = argv$reportName
 
 scriptPath = dirname(getFilename())
-datadir = paste(scriptPath, "/../share/contatester")
+datadir = paste(scriptPath, "../share/contatester", sep="/")
 
 # load dataset
 load(paste(datadir, "contaIntraProjet.rda", sep="/"))
