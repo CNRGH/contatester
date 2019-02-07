@@ -12,7 +12,7 @@ from pkg_resources.extern import packaging
 from setuptools import setup, find_packages, Command
 
 NAME = 'contatester'
-VERSION = '0.0.1'
+VERSION = '1.0.0'
 DESCRIPTION = 'Detect human contamination for whole genome non-tumorous human' \
               ' sequencing.'
 KEYWORDS = 'contamination, vcf, allelic balance, Whole Genome'
