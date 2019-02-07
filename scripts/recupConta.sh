@@ -18,7 +18,7 @@
 #    Exclude complexes regions 
 # 
 
-set -uo pipefail
+set -euo pipefail
 
 # Variables initialisation
 declare -r NAME=$(basename $0)

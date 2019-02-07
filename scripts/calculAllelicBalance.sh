@@ -14,7 +14,7 @@
 #    Script for allelic balance calculation
 #
 
-set -uo pipefail
+set -euo pipefail
 
 # Variables initialisation
 declare -r NAME=$(basename $0)
