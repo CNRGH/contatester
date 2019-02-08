@@ -8,7 +8,7 @@ stages:
   - clean
 
 
-image: registry.cnrgh.fr/images/sources/python-36-centos7:latest
+image: registry.cnrgh.fr/images/sources/ibfj-bioinfo-analysis-r:latest
 
 
 variables:
@@ -62,12 +62,8 @@ test_shell_scripts:
   extends: .prepare_python_env
   stage: test
   script:
-    - yum install -y samtools
     - python3 setup.py bdist_wheel
     - pip3 install dist/contatester-1.0.0-py2.py3-none-any.whl
-    - python3 setup.py bdist_wheel
-    - ls /opt/app-root/{bin,lib,share}
-    - ls /opt/app-root/lib/python3.6/site-packages
     - calculAllelicBalance.sh -f ./data_examples/test_1.vcf.gz > ./data_examples/calculAllelicBalance_output.hist
     - |
       contaReport.R --input ./data_examples/distrib_allele_balance.hist \
