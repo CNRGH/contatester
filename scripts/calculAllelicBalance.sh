@@ -26,7 +26,15 @@ declare -i nbthread=4
 
 module_load() {
     # Used to load programs with module load function
-    module load bcftools # actually 1.6
+    if [[ 'x'"${IG_MODULESHOME}" != 'x' ]]; then
+      module load bcftools/1.6 # actually 1.6
+    else
+      if ! $(command -v bcftools &> /dev/null); then
+        echo "ERROR : Missing tools: bcftools" >&2
+        exit 1
+      fi
+      
+    fi
     return 0
 }
 
