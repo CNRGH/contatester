@@ -49,7 +49,7 @@ build_contatester:
   stage: build
   script:
     - python3 setup.py clean
-    - python3 setup.py build
+    - python3 setup.py bdist_wheel
 
 
 test_contatester:
@@ -57,10 +57,34 @@ test_contatester:
   stage: test
   script:
     - python3 setup.py test
+
+test_shell_scripts:
+  extends: .prepare_python_env
+  stage: test
+  script:
+    - yum install -y samtools
+    - python3 setup.py bdist_wheel
+    - pip3 install dist/contatester-1.0.0-py2.py3-none-any.whl
+    - python3 setup.py bdist_wheel
+    - ls /opt/app-root/{bin,lib,share}
+    - ls /opt/app-root/lib/python3.6/site-packages
     - calculAllelicBalance.sh -f ./data_examples/test_1.vcf.gz > ./data_examples/calculAllelicBalance_output.hist
-    - contaReport.R --input ./data_examples/distrib_allele_balance.hist  --output ./data_examples/distrib_allele_balance.conta --report --reportName ./data_examples/distrib_allele_balance.pdf
-    - recupConta.sh -f ./data_examples/test_1.vcf.gz -c ./data_examples/test_1_AB_0.01_to_0.12_noLCRnoDUP.vcf -b ./data_examples/test_1_AB_0.01_to_0.12_noLCRnoDUP.bed
-    - checkContaminant.sh -f ./data_examples/test_2.vcf.gz -b ./data_examples/test_1_AB_0.01_to_0.12_noLCRnoDUP.bed -c ./data_examples/test_1_AB_0.01_to_0.12_noLCRnoDUP.vcf -s ./data_examples/test_1_comparisonSummary.txt -o ./data_examples/
+    - |
+      contaReport.R --input ./data_examples/distrib_allele_balance.hist \
+                    --output ./data_examples/distrib_allele_balance.conta \
+                    --report \
+                    --reportName \
+                    ./data_examples/distrib_allele_balance.pdf
+    - |
+      recupConta.sh -f ./data_examples/test_1.vcf.gz \
+                    -c ./data_examples/test_1_AB_0.01_to_0.12_noLCRnoDUP.vcf \
+                    -b ./data_examples/test_1_AB_0.01_to_0.12_noLCRnoDUP.bed
+    - |
+      checkContaminant.sh -f ./data_examples/test_2.vcf.gz \
+                          -b ./data_examples/test_1_AB_0.01_to_0.12_noLCRnoDUP.bed \
+                          -c ./data_examples/test_1_AB_0.01_to_0.12_noLCRnoDUP.vcf \
+                          -s ./data_examples/test_1_comparisonSummary.txt \
+                          -o ./data_examples/
 
 
 coverage_contatester:
