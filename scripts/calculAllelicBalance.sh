@@ -26,7 +26,7 @@ declare -i nbthread=4
 
 module_load() {
     # Used to load programs with module load function
-    if [[ 'x'"${IG_MODULESHOME}" != 'x' ]]; then
+    if [[ -n "${IG_MODULESHOME}" ]]; then
       module load bcftools/1.6 # actually 1.6
     else
       if ! $(command -v bcftools &> /dev/null); then
