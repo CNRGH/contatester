@@ -18,17 +18,17 @@
 #    Exclude complexes regions 
 # 
 
-set -euo pipefail
+set -eo pipefail
 
 # Variables initialisation
-declare -r NAME=$(basename $0)
+declare -r NAME=$(basename "$0")
 declare -i nbthread=4
 # vcf file to process
 declare vcfin=""
 declare vcfconta=""
 declare bedfile=""
 # All-in-one LCR & SEG DUP
-declare -r scriptPath=$(dirname $0)
+declare -r scriptPath=$(dirname "$0")
 declare -r datadir="${scriptPath}"/../share/contatester
 declare LCRSEGDUPgnomad="${datadir}"/lcr_seg_dup_gnomad_2.0.2.bed.gz
 # AB range
@@ -38,15 +38,27 @@ ABend=0.12
 
 ################################################################################
 # Functions :
-
 module_load() {
-    # Used to load programs with module load function
-    module unload python/3.6
-    module load python/2.7
-    module load bcftools
-    module load bedops
+      # Used to load programs with module load function
+      if [[ -n "${IG_MODULESHOME}" ]]; then
+        module unload python/3.6
+        module load "$@"
+      else
+        for dependency in "$@"; do
+          local -r dep_name="${dependency%/*}"
+          local -r dep_version="${dependency#*/}"
+          local -ri is_present=$(command -v "${dep_name}" &> /dev/null)
+          if ! "${is_present}"; then
+            echo "ERROR : Missing tools: ${dep_name}" >&2
+            exit 1
+          elif [[ -n "${dep_version}" ]]; then
+            echo 'TODO'
+          fi
+        done
+      fi
     return 0
 }
+
 
 testArg() {
     # Used for the parsing of Arguments
@@ -54,7 +66,7 @@ testArg() {
     if [[ $1 =~ ^[-] || -z $1 ]]; then 
         echo "ERROR : Missing Argument for $1" >&2 && display_usage && exit 1
     else
-        echo $1 
+        echo "$1" 
     fi
 }
 
@@ -127,8 +139,8 @@ do
     shift
 done
 
-filename=$(basename $(basename $(basename $vcfin .gz) .vcf) _BOTH.HC.annot )
-fileExtension=AB_${ABstart}to${ABend}
+filename="${vcfin%_BOTH.HC.annot.vcf.gz }"
+fileExtension="AB_${ABstart}to${ABend}"
 
 # for mandatory arg
 if [[ -z $vcfin ]]; then
@@ -141,29 +153,41 @@ if [[ -z $vcfconta ]]; then
     vcfconta=${filename}_${fileExtension}_noLCRnoDUP.vcf
 fi 
 
-contadir=$(dirname $vcfconta )
-if [[ ! -d $contadir ]]; then 
-    mkdir --parents $contadir
+contadir=$(dirname "${vcfconta}" )
+if [[ ! -d "${contadir}" ]]; then 
+    mkdir --parents "${contadir}"
 fi
 
 # processed bed file name
-if [[ -z $bedfile ]]; then
-    bedfile=${filename}_${fileExtension}_noLCRnoDUP.bed
+if [[ -z "${bedfile}" ]]; then
+    bedfile="${filename}_${fileExtension}_noLCRnoDUP.bed"
 fi 
 
-beddir=$(dirname $bedfile )
-if [[ ! -d $beddir ]]; then 
-    mkdir --parents $beddir
+beddir=$(dirname "${bedfile}" )
+if [[ ! -d "${beddir}" ]]; then 
+    mkdir --parents "${beddir}"
 fi
 
-module_load
+module_load 'python/2.7' 'bcftools' 'bedops'
 
 # Command
-bcftools view $vcfin --output-type v --types snps \
---thread $nbthread --targets ^$LCRSEGDUPgnomad | \
+bcftools view "${vcfin}"  --output-type v --types snps \
+                          --thread "${nbthread}" \
+                          --targets "^${LCRSEGDUPgnomad}" | \
 # parsing of AD column of vcf version 4.2 
 # and SNP selection
-awk -F '\t' '{if($1 !~ /^#/ ) {split($10, a, ":") ; split(a[2], b, ","); \
-if((b[2]+b[1]+b[3]) != 0 && b[2]/(b[2]+b[1]+b[3]) >= ABstart && \
-b[2]/(b[2]+b[1]+b[3]) <= ABend ) {print}} else {print}}' \
-ABstart="$ABstart" ABend="$ABend"| tee $vcfconta | vcf2bed > $bedfile
+awk -F '\t' -v ABstart="$ABstart" -v ABend="$ABend" '{
+  if($1 !~ /^#/ ) {
+    split($10, a, ":");
+    split(a[2], b, ",");
+    if( (b[2]+b[1]+b[3]) != 0 
+        && b[2]/(b[2]+b[1]+b[3]) >= ABstart 
+        && b[2]/(b[2]+b[1]+b[3]) <= ABend ) {
+      print
+    }
+  } 
+  else {
+    print
+  }
+}' \
+ | tee "${vcfconta}" | vcf2bed > "${bedfile}"
