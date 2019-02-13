@@ -50,8 +50,8 @@ module_load() {
         for dependency in "$@"; do
           dep_name="${dependency%/*}"
           dep_version="${dependency#*/}"
-          is_present=$(command -v "${dep_name}" &> /dev/null)
-          if (( is_present != 0)); then
+          is_present=$(command -v "${dep_name}" &> /dev/null && echo true || echo false)
+          if "${is_present}"; then
             echo "ERROR : Missing tools: ${dep_name}" >&2
             exit 1
           elif [[ -n "${dep_version}" ]]; then
