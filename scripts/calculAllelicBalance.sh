@@ -29,8 +29,8 @@ module_load() {
     if [[ -n "${IG_MODULESHOME}" ]]; then
       module load bcftools/1.6 # actually 1.6
     else
-      local -ri is_present=$(command -v bcftools &> /dev/null && echo true || echo false)
-      if "${is_present}"; then
+      local -r is_present=$(command -v bcftools &> /dev/null && echo true || echo false)
+      if ! "${is_present}"; then
         echo "ERROR : Missing tools: bcftools" >&2
         exit 1
       fi

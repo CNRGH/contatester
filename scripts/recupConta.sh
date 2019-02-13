@@ -46,13 +46,13 @@ module_load() {
       else
         local dep_name=""
         local dep_version=""
-        local -i is_present=1
+        local is_present=false
         for dependency in "$@"; do
           dep_name="${dependency%/*}"
           dep_version="${dependency#*/}"
           is_present=$(command -v "${dep_name}" &> /dev/null && echo true || echo false)
-          if "${is_present}"; then
-            echo "ERROR : Missing tools: ${dep_name}" >&2
+          if ! "${is_present}"; then
+            echo "ERROR: Missing tools: ${dep_name}" >&2
             exit 1
           elif [[ -n "${dep_version}" ]]; then
             echo 'TODO'
@@ -183,8 +183,8 @@ awk -F '\t' -v ABstart="$ABstart" -v ABend="$ABend" '{
   if($1 !~ /^#/ ) {
     split($10, a, ":");
     split(a[2], b, ",");
-    if( (b[2]+b[1]+b[3]) != 0 
-        && b[2]/(b[2]+b[1]+b[3]) >= ABstart 
+    if( (b[2]+b[1]+b[3]) != 0 \ 
+        && b[2]/(b[2]+b[1]+b[3]) >= ABstart \ 
         && b[2]/(b[2]+b[1]+b[3]) <= ABend ) {
       print
     }
