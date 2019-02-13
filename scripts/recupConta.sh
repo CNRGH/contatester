@@ -19,7 +19,7 @@
 # 
 
 set -eo pipefail
-
+set -x
 # Variables initialisation
 declare -r NAME=$(basename "$0")
 declare -i nbthread=4
