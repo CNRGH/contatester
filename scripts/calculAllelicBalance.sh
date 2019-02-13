@@ -17,7 +17,7 @@
 set -eo pipefail
 
 # Variables initialisation
-declare -r NAME=$(basename $0)
+declare -r NAME=$(basename "$0")
 declare vcfin=""
 declare -i nbthread=4
 
@@ -29,7 +29,8 @@ module_load() {
     if [[ -n "${IG_MODULESHOME}" ]]; then
       module load bcftools/1.6 # actually 1.6
     else
-      if ! $(command -v bcftools &> /dev/null); then
+      local -ri is_present=$(command -v bcftools &> /dev/null)
+      if ! "${is_present}"; then
         echo "ERROR : Missing tools: bcftools" >&2
         exit 1
       fi
@@ -44,7 +45,7 @@ testArg() {
     if [[ $1 =~ ^[-] || -z $1 ]]; then 
         echo "ERROR : Missing Argument for $1" >&2 && display_usage && exit 1
     else
-        echo $1 
+        echo "$1" 
     fi
 }
 
@@ -106,9 +107,16 @@ fi
 module_load
 
 # Command
-bcftools view $vcfin --no-header --output-type v --types snps --thread $nbthread | \
+bcftools view "${vcfin}" --no-header --output-type v --types snps --thread "${nbthread}" | \
 # parsing of AD column of vcf version 4.2
-awk -F '\t' '{if($1 !~ /^#/ ) {split($10, a, ":") ; split(a[2], b, ","); \
-if((b[2]+b[1]+b[3]) != 0) {printf "%.2f\n", b[2]/(b[2]+b[1]+b[3])}}}' | \
+awk -F '\t' '{
+  if($1 !~ /^#/ ) {
+    split($10, a, ":");
+    split(a[2], b, ",");
+    if((b[2]+b[1]+b[3]) != 0) {
+      printf "%.2f\n", b[2]/(b[2]+b[1]+b[3])
+    }
+  }
+}' | \
 sort | uniq -c
 
