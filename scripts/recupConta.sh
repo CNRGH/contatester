@@ -44,10 +44,13 @@ module_load() {
         module unload python/3.6
         module load "$@"
       else
+        local dep_name=""
+        local dep_version=""
+        local -i is_present=1
         for dependency in "$@"; do
-          local -r dep_name="${dependency%/*}"
-          local -r dep_version="${dependency#*/}"
-          local -ri is_present=$(command -v "${dep_name}" &> /dev/null)
+          dep_name="${dependency%/*}"
+          dep_version="${dependency#*/}"
+          is_present=$(command -v "${dep_name}" &> /dev/null)
           if (( is_present != 0)); then
             echo "ERROR : Missing tools: ${dep_name}" >&2
             exit 1
