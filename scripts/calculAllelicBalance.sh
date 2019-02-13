@@ -30,7 +30,7 @@ module_load() {
       module load bcftools/1.6 # actually 1.6
     else
       local -ri is_present=$(command -v bcftools &> /dev/null)
-      if ! "${is_present}"; then
+      if (( is_present != 0)); then
         echo "ERROR : Missing tools: bcftools" >&2
         exit 1
       fi

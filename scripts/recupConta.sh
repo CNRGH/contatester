@@ -48,7 +48,7 @@ module_load() {
           local -r dep_name="${dependency%/*}"
           local -r dep_version="${dependency#*/}"
           local -ri is_present=$(command -v "${dep_name}" &> /dev/null)
-          if ! "${is_present}"; then
+          if (( is_present != 0)); then
             echo "ERROR : Missing tools: ${dep_name}" >&2
             exit 1
           elif [[ -n "${dep_version}" ]]; then
