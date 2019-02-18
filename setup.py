@@ -128,7 +128,7 @@ if __name__ == '__main__':
             'License :: CeCILL Free Software License Agreement (CeCILL)',
             'Programming Language :: Python :: 3.6'
         ],
-        keywords='foo, bar',
+        keywords=KEYWORDS,
         cmdclass={'clean': ExtendedClean, 'coverage': Coverage},
         packages=find_packages('src'),
         package_dir={'': 'src'},
