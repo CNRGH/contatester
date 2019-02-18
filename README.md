@@ -59,16 +59,14 @@ This project include:
 
 ## TEMP Install 
 
-'''
-# deactivate
-# rm -r el7_env/ dist/ build/
-python3 -m venv el7_env
-source el7_env/bin/activate
-pip install --upgrade pip wheel setuptools
-python setup.py bdist_wheel 
-pip install dist/contatester-0.0.1-py2.py3-none-any.whl
-ls el7_env/
-'''
+```bash
+$ rm -r el7_env/ dist/ build/
+$ python3 -m venv el7_env
+$ source el7_env/bin/activate
+$ pip install --upgrade pip wheel setuptools
+$ python setup.py bdist_wheel 
+$ pip install dist/contatester-0.0.1-py2.py3-none-any.whl
+```
 
 ## Development environment
 
@@ -107,6 +105,15 @@ After each commit you can download (by clicking `Download` a list menu appear):
 
   - Reports: `Download 'test_python'`
   - Python:  `Download 'python_wheel'`
+
+## Dependencies
+  - python 3.6
+  - python libraries : pathlib, os, typing, argparse, io, subprocess, sys, glob, datetime
+  - R 3.3.1
+  - R libraries : optparse, grid, gridBase, gridExtra 
+  - bcftools >= 1.6
+  - useq >= 9.0.7
+  - pegasus >= 4.8.2
 
 ## Conclusion
 
