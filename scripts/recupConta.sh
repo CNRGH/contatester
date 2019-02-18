@@ -41,7 +41,6 @@ ABend=0.12
 module_load() {
       # Used to load programs with module load function
       if [[ -n "${IG_MODULESHOME}" ]]; then
-        module unload python/3.6
         module load "$@"
       else
         local dep_name=""
@@ -142,7 +141,9 @@ do
     shift
 done
 
-filename="${vcfin%_BOTH.HC.annot.vcf.gz }"
+filename_no_gz=$(basename $vcfin .gz)
+filename_no_vcf=$(basename $filename_no_gz .vcf)
+filename=$(basename $filename_no_vcf _BOTH.HC.annot)
 fileExtension="AB_${ABstart}to${ABend}"
 
 # for mandatory arg
@@ -171,7 +172,7 @@ if [[ ! -d "${beddir}" ]]; then
     mkdir --parents "${beddir}"
 fi
 
-module_load 'python/2.7' 'bcftools' 'bedops'
+module_load 'bcftools'
 
 # Command
 bcftools view "${vcfin}"  --output-type v --types snps \
@@ -179,18 +180,20 @@ bcftools view "${vcfin}"  --output-type v --types snps \
                           --targets "^${LCRSEGDUPgnomad}" | \
 # parsing of AD column of vcf version 4.2 
 # and SNP selection
-awk -F '\t' -v ABstart="$ABstart" -v ABend="$ABend" '{
+awk -F '\t' -v ABstart="$ABstart" -v ABend="$ABend" \
+-v bedfile="$bedfile" -v vcfconta="$vcfconta" \
+'{
   if($1 !~ /^#/ ) {
     split($10, a, ":");
     split(a[2], b, ",");
     if( (b[2]+b[1]+b[3]) != 0 \ 
         && b[2]/(b[2]+b[1]+b[3]) >= ABstart \ 
         && b[2]/(b[2]+b[1]+b[3]) <= ABend ) {
-      print
+      print $0 > vcfconta ;
+      print $1 FS $2-1 FS $2 > bedfile ;
     }
   } 
   else {
-    print
+    print  $0 > vcfconta
   }
-}' \
- | tee "${vcfconta}" | vcf2bed > "${bedfile}"
+}'
