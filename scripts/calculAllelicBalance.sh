@@ -111,10 +111,10 @@ bcftools view "${vcfin}" --no-header --output-type v --types snps --thread "${nb
 # parsing of AD column of vcf version 4.2
 awk -F '\t' '{
   if($1 !~ /^#/ ) {
-    split($10, a, ":");
-    split(a[2], b, ",");
-    if((b[2]+b[1]+b[3]) != 0) {
-      printf "%.2f\n", b[2]/(b[2]+b[1]+b[3])
+    split($10, tab_INFO, ":");
+    split(tab_INFO[2], tab_AD, ",");
+    if((tab_AD[2]+tab_AD[1]+tab_AD[3]) != 0) {
+      printf "%.2f\n", tab_AD[2]/(tab_AD[2]+tab_AD[1]+tab_AD[3])
     }
   }
 }' | \

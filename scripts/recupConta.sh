@@ -184,11 +184,11 @@ awk -F '\t' -v ABstart="$ABstart" -v ABend="$ABend" \
 -v bedfile="$bedfile" -v vcfconta="$vcfconta" \
 '{
   if($1 !~ /^#/ ) {
-    split($10, a, ":");
-    split(a[2], b, ",");
-    if( (b[2]+b[1]+b[3]) != 0 \ 
-        && b[2]/(b[2]+b[1]+b[3]) >= ABstart \ 
-        && b[2]/(b[2]+b[1]+b[3]) <= ABend ) {
+    split($10, tab_INFO, ":");
+    split(tab_INFO[2], tab_AD, ",");
+    if( (tab_AD[2]+tab_AD[1]+tab_AD[3]) != 0 \ 
+        && tab_AD[2]/(tab_AD[2]+tab_AD[1]+tab_AD[3]) >= ABstart \ 
+        && tab_AD[2]/(tab_AD[2]+tab_AD[1]+tab_AD[3]) <= ABend ) {
       print $0 > vcfconta ;
       print $1 FS $2-1 FS $2 > bedfile ;
     }
