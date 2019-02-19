@@ -11,3 +11,4 @@ __pycache__/
 *.egg-info/
 All_in_one_contatester3.sh
 *env/
+data_examples/
