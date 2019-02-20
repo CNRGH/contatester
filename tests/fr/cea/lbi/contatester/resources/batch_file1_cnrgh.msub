@@ -10,6 +10,5 @@
 module load pegasus
 module load bcftools
 module load bedtools
-module load bedops
 module load useq
 mpirun -oversubscribe -n 6 pegasus-mpi-cluster test1.dag

@@ -11,6 +11,5 @@ module load extenv/ig
 module load pegasus
 module load bcftools
 module load bedtools
-module load bedops
 module load useq
 ccc_mprun -E '--overcommit' -n 6 pegasus-mpi-cluster test1.dag
