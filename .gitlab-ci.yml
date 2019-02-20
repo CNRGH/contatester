@@ -29,6 +29,7 @@ variables:
     - pip3 install --upgrade wheel
     - pip3 install --upgrade setuptools
     - echo 'options(repos = c(CRAN = "https://cran.rstudio.com"))' > .Rprofile
+    - ./rPackageInstaller.r
 
 .docker_jobs:
   image: docker
