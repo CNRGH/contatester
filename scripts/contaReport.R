@@ -16,21 +16,11 @@
 # optionaly output a report with graph
 #
 
-###############
-### Libraries
-###############
+library("grid")
+library("gridBase")
+library("gridExtra")
+library("optparse")
 
-check.packages <- function (pkg) {
-  print("Installing required packages, please wait...")
-  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
-  if (length(new.pkg)) {
-    install.packages(new.pkg, dependencies = TRUE)
-  }
-  sapply(pkg, library, character.only = TRUE)
-}
-
-packages <- c("optparse", "grid", "gridBase", "gridExtra")
-check.packages(packages)
 
 #############
 ### function
@@ -81,7 +71,7 @@ argv_mod <- function(argv){
 }
 
 reg_data <- function(d, i1min, i1med, i2med, i2max){
-    #data informations
+    # data informations
     nb_ref   = dim(d)[2]-1
     i_sample = dim(d)[2]
     # Sample ratio left hetero / right hetero
@@ -132,22 +122,8 @@ poly_reg <- function(xconta, ratio_hetero, test_value){
                 "data_lm2" = data_lm2))
 }
 
-# conta_result <- function(name_hit_1tiers, name_hit_3tiers, name_hit_1et3tiers, 
-#                          lin_predict, res_poly){
-#     #' Conditionnal treatment for the contamination's estimation 
-#     
-#     if ( as.numeric(name_hit_1tiers) >= 5 && 
-#          as.numeric(name_hit_3tiers) >= 5 &&
-#          as.numeric(name_hit_1et3tiers) >= 5 &&
-#          round(lin_predict) >= 5 && round(res_poly[1]) >= 5) {
-#         conta_res = "Possible contamination greater than 5% : TRUE"
-#     } else {
-#         conta_res = "Possible contamination greater than 5% : FALSE"
-#     }
-#     return(conta_res)
-# }
 conta_result <- function(res_poly, conta_seuil){
-    #' Conditionnal treatment for the contamination's estimation 
+    # Conditionnal treatment for the contamination's estimation 
     
     if ( round(res_poly$res_poly[1]) >= conta_seuil) {
         conta_res = paste("Possible contamination greater than ", conta_seuil, 
@@ -178,7 +154,7 @@ make_tab_cor <- function(hit_mcor_1tiers, min_ref_1tiers, max_ref_1tiers, name_h
                          hit_mcor_3tiers, min_ref_3tiers, max_ref_3tiers, name_hit_3tiers,
                          hit_mcor_1et3tiers, min_ref_1et3tiers, max_ref_1et3tiers, name_hit_1et3tiers,
                          cor_range1, cor_range2, cor_range3){
-    #' Correlation result formating
+    # Correlation result formating
     # correlation result table 
     
     tab_cor = cbind(c(round(min_ref_1tiers,3), 
@@ -211,8 +187,8 @@ tab_cor_oneLane <- function(hit_mcor_1tiers, min_ref_1tiers, max_ref_1tiers, nam
                             hit_mcor_3tiers, min_ref_3tiers, max_ref_3tiers, name_hit_3tiers,
                             hit_mcor_1et3tiers, min_ref_1et3tiers, max_ref_1et3tiers, name_hit_1et3tiers,
                             cor_range1, cor_range2, cor_range3, lin_predict, res_poly){
-    #' result formating
-    #' return result in one lane
+    # result formating
+    # return result in one lane
     
     tab_res = c(paste("Min. Cor. with Ref.", cor_range1), round(as.double(min_ref_1tiers),3),                 
                 paste("Max. Cor. with Ref.", cor_range1), round(as.double(max_ref_1tiers), 3),                 
@@ -236,7 +212,7 @@ tab_cor_oneLane <- function(hit_mcor_1tiers, min_ref_1tiers, max_ref_1tiers, nam
 
 make_tab_hetero <- function(lin_predict_mod, res_poly1, res_poly2, i1min, i1med,
                             i2med, i2max){
-    #' regression result table formating
+    # regression result table formating
     
     tab_hetero = cbind(lin_predict_mod, res_poly1, res_poly2) 
     
@@ -312,7 +288,7 @@ colnames(d) = c(colnames(contaIntraProjet)[-1], colnames(sample_test)[3])
 # Turn NA into 0
 d <- replace(d, is.na(d), 0)
 
-#data informations
+# data informations
 nb_ref   = dim(d)[2]-1
 i_sample = dim(d)[2]
 
@@ -358,7 +334,7 @@ model_2deg = res_poly$model_2deg
 
 # make a table for resultats
 res_hetero = make_tab_hetero(lin_predict_mod, res_poly1, res_poly2, i1min, i1med,
-                                         i2med, i2max)
+                             i2med, i2max)
 tab_hetero = res_hetero$tab_hetero 
 col_tab_hetero_plot = res_hetero$col_tab_hetero_plot
 
