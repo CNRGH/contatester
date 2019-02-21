@@ -43,7 +43,7 @@ module_load() {
         for dependency in "$@"; do
           dep_name="${dependency%/*}"
           dep_version="${dependency#*/}"
-          if [[ "${dep_name}" == 'useq']]; then
+          if [[ "${dep_name}" == 'useq' ]]; then
             dep_name='VCFComparator'
           fi
           is_present=$(command -v "${dep_name}" &> /dev/null && echo true || echo false)
