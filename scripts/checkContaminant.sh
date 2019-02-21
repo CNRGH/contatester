@@ -14,7 +14,7 @@
 #     Check for the presence of sample cross-contamiantion
 #
 
-set -euo pipefail
+set -eo pipefail
 
 # Variable initialisation
 declare -r NAME=$(basename $0)
