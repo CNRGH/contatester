@@ -107,6 +107,7 @@ After each commit you can download (by clicking `Download` a list menu appear):
   - Python:  `Download 'python_wheel'`
 
 ## Dependencies
+### Runtime
   - python 3.6
   - python libraries : pathlib, os, typing, argparse, io, subprocess, sys, glob, datetime
   - R 3.3.1
@@ -114,6 +115,12 @@ After each commit you can download (by clicking `Download` a list menu appear):
   - bcftools >= 1.6
   - useq >= 9.0.7
   - pegasus >= 4.8.2
+
+### Build time
+  - libcurl-devel
+  - g++
+  - python36
+  - R-devel
 
 ## Conclusion
 
