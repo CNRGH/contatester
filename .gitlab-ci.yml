@@ -26,16 +26,18 @@ variables:
     paths:
       - .cache/pip
       - venv
-      - /usr/lib64/R/library
+      - rlib
   before_script:
     - yum install -y libcurl-devel g++
     - python3 -m venv venv
+    - source venv/bin/activate
     - pip3 install setuptools wheel
     - pip3 install --upgrade pip
     - pip3 install --upgrade wheel
     - pip3 install --upgrade setuptools
-    - source venv/bin/activate
-    - echo 'options(repos = c(CRAN = "https://cran.rstudio.com"))' > .Rprofile
+    - mkdir rlib
+    - echo -e ".libPaths('$(pwd)/rlib')\noptions(repos = c(CRAN = 'https://cran.rstudio.com'))" > .Rprofile
+    - export R_LIBS="$(pwd)/rlib:/ur/lib64/Rlibrary"
     - ./rPackageInstaller.r
 
 .docker_jobs:
