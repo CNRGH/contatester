@@ -43,6 +43,9 @@ module_load() {
         for dependency in "$@"; do
           dep_name="${dependency%/*}"
           dep_version="${dependency#*/}"
+          if [[ "${dep_name}" == 'useq']]; then
+            dep_name='VCFComparator'
+          fi
           is_present=$(command -v "${dep_name}" &> /dev/null && echo true || echo false)
           if ! "${is_present}"; then
             echo "ERROR: Missing tools: ${dep_name}" >&2
