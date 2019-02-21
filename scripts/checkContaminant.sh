@@ -17,7 +17,7 @@
 set -eo pipefail
 
 # Variable initialisation
-declare -r NAME=$(basename $0)
+declare -r NAME=$(basename "$0")
 # vcf file to compare
 declare vcfcompare=""
 # possibly contaminated vcf file to process
@@ -61,7 +61,7 @@ testArg() {
     if [[ $1 =~ ^[-] || -z $1 ]]; then 
         echo "ERROR : Missing Argument for $1" >&2 && display_usage && exit 1
     else
-        echo $1 
+        echo "$1" 
     fi
 }
 
@@ -129,13 +129,13 @@ if [[ -z $vcfcompare || -z $vcfconta || -z $bedfile || -z $summaryfile ]]; then
     display_usage && exit 1
 fi
 
-summarydir=$(dirname $summaryfile)
+summarydir=$(dirname "${summaryfile}")
 if [[ ! -d $summarydir ]]; then 
-    mkdir --parents $summarydir
+    mkdir --parents "${summarydir}"
 fi
 
-if [[ ! -d $outdir ]]; then 
-    mkdir --parents $outdir
+if [[ ! -d "${outdir}" ]]; then 
+    mkdir --parents "${outdir}"
 fi
 
 module_load useq
@@ -143,14 +143,14 @@ module_load useq
 ####
 # Comparaison of selected variants with other sample 
 fileA=$vcfcompare
-fileA_name=$(basename $(basename $fileA .gz) .vcf)
+fileA_name=$(basename $(basename "${fileA}" .gz) .vcf)
 fileB=$vcfconta
-fileB_name=$(basename $(basename $fileB .gz) .vcf)
+fileB_name=$(basename $(basename "${fileB}" .gz) .vcf)
 filout=${outdir}/${fileA_name}_${fileB_name}
 
 
-VCFComparator -a $fileA -b $bedfile -c $fileB -d $bedfile -s -p $filout
-res=$(grep none ${filout}/comparison_SNP_${fileA_name}_${fileB_name}.xls)
-echo ${fileA_name}_${fileB_name} $res >> $summaryfile
+VCFComparator -a "${fileA}" -b "${bedfile}" -c "${fileB}" -d "${bedfile}" -s -p "${filout}"
+res=$(grep none "${filout}/comparison_SNP_${fileA_name}_${fileB_name}.xls")
+echo "${fileA_name}_${fileB_name} ${res}" >> "${summaryfile}"
 
 
