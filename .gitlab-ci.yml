@@ -1,4 +1,5 @@
 stages:
+  - prepare
   - build
   - test
   - distribute
@@ -21,12 +22,13 @@ variables:
   tags:
     - nodind
   cache:
-    key: ${CI_PIPELINE_ID}-py_lbi
+    key: ${CI_COMMIT_REF_SLUG}
     untracked: true
     paths:
       - .cache/pip
       - venv
       - rlib
+      - USeq_9.2.0.zip
   before_script:
     - yum install -y libcurl-devel g++
     - python3 -m venv venv
@@ -35,6 +37,7 @@ variables:
     - pip3 install --upgrade pip
     - pip3 install --upgrade wheel
     - pip3 install --upgrade setuptools
+    - ./.install_useq.sh venv
     - mkdir rlib
     - echo -e ".libPaths('$(pwd)/rlib')\noptions(repos = c(CRAN = 'https://cran.rstudio.com'))" > .Rprofile
     - export R_LIBS="$(pwd)/rlib:/ur/lib64/Rlibrary"
@@ -54,6 +57,7 @@ variables:
     - eval export TEST_IMAGE_TAG="${TODAY}_${CI_SHORT_COMMIT_SHA}"
     - eval export IMAGE_FILE="contatester-${TEST_IMAGE_TAG}.tar.gz"
     - echo "${CI_JOB_TOKEN}" | docker login -u gitlab-ci-token --password-stdin registry.cnrgh.fr
+
 
 build_contatester:
   extends: .prepare_python_env
