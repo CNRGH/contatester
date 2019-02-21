@@ -23,6 +23,8 @@ variables:
   cache:
     key: ${CI_PIPELINE_ID}-py_lbi
     untracked: true
+    paths:
+      - /usr/lib64/R/library
   before_script:
     - pip3 install setuptools wheel
     - pip3 install --upgrade pip
