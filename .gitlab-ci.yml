@@ -28,6 +28,7 @@ variables:
       - venv
       - /usr/lib64/R/library
   before_script:
+    - yum install -y libcurl-devel g++
     - python3 -m venv venv
     - pip3 install setuptools wheel
     - pip3 install --upgrade pip
