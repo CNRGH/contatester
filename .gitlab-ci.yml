@@ -18,30 +18,9 @@ variables:
   DOCKER_REPO:    'registry.cnrgh.fr/$CI_PROJECT_NAMESPACE/contatester/'
   IMAGE_NAME:     'contatester'
 
-.prepare_python_env:
-  tags:
-    - nodind
-  cache:
-    key: ${CI_COMMIT_REF_SLUG}
-    untracked: true
-    paths:
-      - .cache/pip
-      - venv
-      - rlib
-      - USeq_9.2.0.zip
+.active_python_venv:
   before_script:
-    - yum install -y libcurl-devel g++
-    - python3 -m venv venv
     - source venv/bin/activate
-    - pip3 install setuptools wheel
-    - pip3 install --upgrade pip
-    - pip3 install --upgrade wheel
-    - pip3 install --upgrade setuptools
-    - ./.install_useq.sh venv
-    - mkdir rlib
-    - echo -e ".libPaths('$(pwd)/rlib')\noptions(repos = c(CRAN = 'https://cran.rstudio.com'))" > .Rprofile
-    - export R_LIBS="$(pwd)/rlib:/ur/lib64/Rlibrary"
-    - ./rPackageInstaller.r
 
 .docker_jobs:
   image: docker
@@ -59,25 +38,62 @@ variables:
     - echo "${CI_JOB_TOKEN}" | docker login -u gitlab-ci-token --password-stdin registry.cnrgh.fr
 
 
+prepare_python_env:
+  stage: prepare
+  tags:
+    - nodind
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    untracked: true
+    paths:
+      - venv
+      - rlib
+      - USeq_9.2.0.zip
+  artifacts:
+    untracked: true
+    paths:
+      - venv
+      - rlib
+  before_script:
+    - yum install -y libcurl-devel g++
+    - python3 -m venv venv
+    - source venv/bin/activate
+  script:
+    - pip3 install setuptools wheel
+    - pip3 install --upgrade pip
+    - pip3 install --upgrade wheel
+    - pip3 install --upgrade setuptools
+    - ./.install_useq.sh venv
+    - mkdir -p rlib
+    - echo -e ".libPaths('$(pwd)/rlib')\noptions(repos = c(CRAN = 'https://cran.rstudio.com'))" > .Rprofile
+    - export R_LIBS="$(pwd)/rlib:/ur/lib64/Rlibrary"
+    - ./rPackageInstaller.r
+
+
 build_contatester:
-  extends: .prepare_python_env
+  artifacts:
+    untracked: true
+    paths:
+      - venv
+      - rlib
+      - dist/contatester-1.0.0-py2.py3-none-any.whl
   stage: build
+  extends: .active_python_venv
   script:
     - python3 setup.py clean
     - python3 setup.py bdist_wheel
 
 
 test_contatester:
-  extends: .prepare_python_env
   stage: test
+  extends: .active_python_venv
   script:
     - python3 setup.py test
 
 test_shell_scripts:
-  extends: .prepare_python_env
   stage: test
+  extends: .active_python_venv
   script:
-    - python3 setup.py bdist_wheel
     - pip3 install dist/contatester-1.0.0-py2.py3-none-any.whl
     - calculAllelicBalance.sh -f ./data_examples/test_1.vcf.gz > ./data_examples/calculAllelicBalance_output.hist
     - |
@@ -99,8 +115,8 @@ test_shell_scripts:
 
 
 coverage_contatester:
-  extends: .prepare_python_env
   stage: test
+  extends: .active_python_venv
   artifacts:
     name: reports
     paths:
@@ -111,8 +127,8 @@ coverage_contatester:
 
 
 wheel_contatester:
-  extends: .prepare_python_env
   stage: distribute
+  extends: .active_python_venv
   artifacts:
     name: wheel
     paths:
