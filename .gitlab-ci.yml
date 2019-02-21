@@ -21,6 +21,7 @@ variables:
 .active_python_venv:
   before_script:
     - source venv/bin/activate
+    - export R_LIBS="$(pwd)/rlib:/ur/lib64/Rlibrary"
 
 .docker_jobs:
   image: docker
