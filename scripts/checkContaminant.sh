@@ -33,8 +33,25 @@ declare outdir="."
 # Functions :
 
 module_load() {
-    # Used to load programs with module load function
-    module load useq
+      # Used to load programs with module load function
+      if [[ -n "${IG_MODULESHOME}" ]]; then
+        module load "$@"
+      else
+        local dep_name=""
+        local dep_version=""
+        local is_present=false
+        for dependency in "$@"; do
+          dep_name="${dependency%/*}"
+          dep_version="${dependency#*/}"
+          is_present=$(command -v "${dep_name}" &> /dev/null && echo true || echo false)
+          if ! "${is_present}"; then
+            echo "ERROR: Missing tools: ${dep_name}" >&2
+            exit 1
+          elif [[ -n "${dep_version}" ]]; then
+            echo 'TODO'
+          fi
+        done
+      fi
     return 0
 }
 
@@ -121,7 +138,7 @@ if [[ ! -d $outdir ]]; then
     mkdir --parents $outdir
 fi
 
-module_load
+module_load useq
 
 ####
 # Comparaison of selected variants with other sample 

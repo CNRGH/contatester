@@ -25,17 +25,25 @@ declare -i nbthread=4
 # Functions :
 
 module_load() {
-    # Used to load programs with module load function
-    if [[ -n "${IG_MODULESHOME}" ]]; then
-      module load bcftools/1.6 # actually 1.6
-    else
-      local -r is_present=$(command -v bcftools &> /dev/null && echo true || echo false)
-      if ! "${is_present}"; then
-        echo "ERROR : Missing tools: bcftools" >&2
-        exit 1
+      # Used to load programs with module load function
+      if [[ -n "${IG_MODULESHOME}" ]]; then
+        module load "$@"
+      else
+        local dep_name=""
+        local dep_version=""
+        local is_present=false
+        for dependency in "$@"; do
+          dep_name="${dependency%/*}"
+          dep_version="${dependency#*/}"
+          is_present=$(command -v "${dep_name}" &> /dev/null && echo true || echo false)
+          if ! "${is_present}"; then
+            echo "ERROR: Missing tools: ${dep_name}" >&2
+            exit 1
+          elif [[ -n "${dep_version}" ]]; then
+            echo 'TODO'
+          fi
+        done
       fi
-      
-    fi
     return 0
 }
 
@@ -104,7 +112,7 @@ if [[ -z $vcfin ]]; then
     display_usage && exit 1
 fi
 
-module_load
+module_load bcftools/1.6
 
 # Command
 bcftools view "${vcfin}" --no-header --output-type v --types snps --thread "${nbthread}" | \
