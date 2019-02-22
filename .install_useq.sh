@@ -1,12 +1,46 @@
 #!/usr/bin/env bash
-declare -r prefix=$(readlink -f "$1")
-[[ ! -e USeq_9.2.0.zip ]] && curl -LO https://github.com/HuntsmanCancerInstitute/USeq/releases/download/USeq_9.2.0/USeq_9.2.0.zip
-[[ ! -e USeq_9.2.0 ]] && unzip USeq_9.2.0.zip
-mkdir -p "${prefix}/share/useq/"
-for filepath in USeq_9.2.0/Apps/[A-Z]*; do 
-  filename=$(basename "${filepath}")
+
+err_report() {
+  echo "Error on line $1"
+}
+
+trap 'err_report $LINENO' ERR
+
+
+declare -r USEQ_VERSION='9.2.0'
+declare -r PREFIX=$(readlink -f "$1")
+declare -r EXEC_DIR="${PREFIX}/bin/"
+declare -r TOOL_DIR="${PREFIX}/share/useq/ToolJars"
+declare -r LIB_DIR="${PREFIX}/share/useq/LibraryJars"
+
+
+wrapper_creator(){
+  local filepath="$1"
+  local filename=$(basename "${filepath}")
   echo "#!/usr/bin/env bash
-java -jar '${prefix}/share/useq/${filename}' \"\$*\" " > "${prefix}/bin/${filename}"
-  chmod +x "${prefix}/bin/${filename}"
-  install -m 644 "${filepath}" "${prefix}/share/useq/${filename}";
+java -jar '${TOOL_DIR}/${filename}' \"\$*\" " > "${PREFIX}/bin/${filename}"
+  chmod +x "${PREFIX}/bin/${filename}"
+  install -m 0644 "${filepath}" "${TOOL_DIR}/";
+
+}
+
+
+get_useq_binaries(){
+  if [[ ! -e "USeq_${USEQ_VERSION}" ]]; then
+    if [[ ! -e USeq_${USEQ_VERSION}.zip ]]; then
+      curl -LO "https://github.com/HuntsmanCancerInstitute/USeq/releases/download/USeq_${USEQ_VERSION}/USeq_${USEQ_VERSION}.zip"
+    fi
+    unzip "USeq_${USEQ_VERSION}.zip" 
+  fi
+}
+
+
+get_useq_binaries
+
+mkdir -p "${EXEC_DIR}" "${TOOL_DIR}" "${LIB_DIR}"
+
+install -m 0644 USeq_${USEQ_VERSION}/LibraryJars/bioToolsCodeLibrary.jar "${LIB_DIR}"
+
+for filepath in "USeq_${USEQ_VERSION}"/Apps/[A-Z]*; do 
+  wrapper_creator "${filepath}"
 done
