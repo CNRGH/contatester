@@ -12,3 +12,4 @@ __pycache__/
 All_in_one_contatester3.sh
 *env/
 data_examples/
+*.swp
