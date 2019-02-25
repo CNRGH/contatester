@@ -7,7 +7,7 @@ err_report() {
 trap 'err_report $LINENO' ERR
 
 
-declare -r USEQ_VERSION='9.2.0'
+declare -r USEQ_VERSION='9.0.7'
 declare -r PREFIX=$(readlink -f "$1")
 declare -r EXEC_DIR="${PREFIX}/bin/"
 declare -r TOOL_DIR="${PREFIX}/share/useq/ToolJars"
