@@ -18,7 +18,7 @@ wrapper_creator(){
   local filepath="$1"
   local filename=$(basename "${filepath}")
   echo "#!/usr/bin/env bash
-java -jar '${TOOL_DIR}/${filename}' \"\$*\" " > "${PREFIX}/bin/${filename}"
+java -jar '${TOOL_DIR}/${filename}' \$*" > "${PREFIX}/bin/${filename}"
   chmod +x "${PREFIX}/bin/${filename}"
   install -m 0644 "${filepath}" "${TOOL_DIR}/";
 
