@@ -34,7 +34,7 @@ display_banner(){
 init_env(){
   python3 -m venv "${PYTHON_TEST_ENV_NAME}"
   TESTING_ENV_IS_ACTIVATE=true
-  source testing_env/bin/activate
+  source "${PYTHON_TEST_ENV_NAME}"/bin/activate
   pip3 install --upgrade pip wheel setuptools
 }
 
