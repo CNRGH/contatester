@@ -21,6 +21,8 @@ err_report() {
 trap 'err_report $LINENO' ERR
 trap cleanup INT TERM
 
+############################# MAIN #############################
+declare -r CONTATESTER_VERSION=$(grep -Po "(?<=VERSION = ')[\d\.]+" setup.py)
 
 display_banner(){
   local -i i=0
@@ -38,7 +40,15 @@ init_env(){
   pip3 install --upgrade pip wheel setuptools
 }
 
-declare -r CONTATESTER_VERSION=$(grep -Po "(?<=VERSION = ')[\d\.]+" setup.py)
+install_contatester(){
+  local -r wheel_file=dist/contatester-"${CONTATESTER_VERSION}"-py2.py3-none-any.whl
+  python3 setup.py clean
+  if [[ ! -e "${wheel_file}" ]]; then
+    python3 setup.py bdist_wheel
+  fi 
+  pip3 install "${wheel_file}"
+}
+
 display_banner
 
 echo -e '\033[31m- Create a python evironnment for testing scripts\033[0m'
@@ -48,7 +58,7 @@ echo -e '\033[31m- Run python tests\033[0m'
 python3 setup.py test
 
 echo -e '\033[31m- Testing scripts\033[0m'
-pip3 install dist/contatester-"${CONTATESTER_VERSION}"-py2.py3-none-any.whl
+install_contatester
 
 echo -e '\033[34m\t- Testing calculAllelicBalance\033[0m'
 calculAllelicBalance.sh -f ./data_examples/test_1.vcf.gz > ./data_examples/calculAllelicBalance_output.hist
