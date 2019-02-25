@@ -7,7 +7,7 @@ err_report() {
 trap 'err_report $LINENO' ERR
 
 
-declare -r USEQ_VERSION='9.0.7'
+declare -r USEQ_VERSION=$( (($# >=2)) && echo "$2" || echo '9.0.7')
 declare -r PREFIX=$(readlink -f "$1")
 declare -r EXEC_DIR="${PREFIX}/bin/"
 declare -r TOOL_DIR="${PREFIX}/share/useq/ToolJars"
@@ -39,7 +39,7 @@ get_useq_binaries
 
 mkdir -p "${EXEC_DIR}" "${TOOL_DIR}" "${LIB_DIR}"
 
-install -m 0644 USeq_${USEQ_VERSION}/LibraryJars/bioToolsCodeLibrary.jar "${LIB_DIR}"
+install -m 0644 "USeq_${USEQ_VERSION}"/LibraryJars/bioToolsCodeLibrary.jar "${LIB_DIR}"
 
 for filepath in "USeq_${USEQ_VERSION}"/Apps/[A-Z]*; do 
   wrapper_creator "${filepath}"
