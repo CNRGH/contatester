@@ -14,6 +14,15 @@
 #    Script for allelic balance calculation
 #
 
+# Error monitoring
+err_report() {
+  echo "Error on line $1" >&2
+  exit 1
+}
+
+trap 'err_report $LINENO' ERR
+#
+
 set -eo pipefail
 
 # Variables initialisation
