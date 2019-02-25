@@ -96,6 +96,7 @@ test_shell_scripts:
   extends: .active_python_venv
   script:
     - pip3 install dist/contatester-1.0.0-py2.py3-none-any.whl
+    - head ./data_examples/test_1_AB_0.01_to_0.12_noLCRnoDUP.bed
     - calculAllelicBalance.sh -f ./data_examples/test_1.vcf.gz > ./data_examples/calculAllelicBalance_output.hist
     - |
       contaReport.R --input ./data_examples/distrib_allele_balance.hist \
