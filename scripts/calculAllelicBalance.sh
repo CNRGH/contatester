@@ -16,7 +16,7 @@
 
 # Error monitoring
 err_report() {
-  echo "Error on line $1" >&2
+  echo "Error on ${BASH_SOURCE} line $1" >&2
   exit 1
 }
 
