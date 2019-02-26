@@ -24,6 +24,7 @@ variables:
   before_script:
     - source venv/bin/activate
     - export R_LIBS="$(pwd)/rlib:/ur/lib64/Rlibrary"
+    - yum install -y libcurl openssl
 
 .docker_jobs:
   image: docker
@@ -58,7 +59,7 @@ prepare_python_env:
       - venv
       - rlib
   before_script:
-    - yum install -y libcurl-devel g++
+    - yum install -y libcurl-devel g++ openssl-devel
     - python3 -m venv venv
     - source venv/bin/activate
   script:
@@ -79,8 +80,6 @@ build_contatester:
   artifacts:
     untracked: true
     paths:
-      - venv
-      - rlib
       - dist/contatester-${CONTATESTER_VERSION}-py2.py3-none-any.whl
   script:
     - sed -r "/VERSION\s+=\s+'/s/[0-9\.]+/${CONTATESTER_VERSION}/g" setup.py
@@ -93,10 +92,6 @@ test_all:
   extends: .active_python_venv
   artifacts:
    untracked: true
-   paths:
-     - venv
-     - rlib
-     - dist/contatester-${CONTATESTER_VERSION}-py2.py3-none-any.whl
   script:
     - pip3 install dist/contatester-${CONTATESTER_VERSION}-py2.py3-none-any.whl
     - ./run_tests.sh 
@@ -120,7 +115,7 @@ wheel_contatester:
   artifacts:
     name: wheel
     paths:
-      - dist/contatester-*.whl
+      - dist/contatester-${CONTATESTER_VERSION}-py2.py3-none-any.whl
   script:
     - python3 setup.py bdist_wheel
 
@@ -138,8 +133,13 @@ build_contatester_image:
     - mkdir -p ${CI_COMMIT_SHA}/image/
     - archive_file="contatester_src_$(date +'%s').tar.gz" # prevent docker cache
     - |
-      tar czf "${archive_file}" rlib .Rprofile dist/contatester-${CONTATESTER_VERSION}-py2.py3-none-any.whl ./install_useq.sh
-    - docker build --build-arg ARCHIVE_FILE=${archive_file} --build-arg CONTATESTER_VERSION=${CONTATESTER_VERSION} -t "${DOCKER_REPO}${IMAGE_NAME}:${TEST_IMAGE_TAG}" .
+      tar czf "${archive_file}" rlib dist/contatester-${CONTATESTER_VERSION}-py2.py3-none-any.whl ./install_useq.sh
+    - |
+      docker build \
+              --build-arg ARCHIVE_FILE="${archive_file}" \
+              --build-arg CONTATESTER_VERSION="${CONTATESTER_VERSION}" \
+              --build-arg USEQ_VERSION="${USEQ_VERSION}" \
+              -t "${DOCKER_REPO}${IMAGE_NAME}:${TEST_IMAGE_TAG}" .
     - docker save "${DOCKER_REPO}${IMAGE_NAME}:${TEST_IMAGE_TAG}" | gzip -c > "${CI_COMMIT_SHA}/image/${IMAGE_FILE}"
     - du -sh ${CI_COMMIT_SHA}/image/contatester-*.tar.gz
 
