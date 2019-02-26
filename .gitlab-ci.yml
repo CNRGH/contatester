@@ -83,6 +83,7 @@ build_contatester:
       - rlib
       - dist/contatester-${CONTATESTER_VERSION}-py2.py3-none-any.whl
   script:
+    - sed -r "/VERSION\s+=\s+'/s/[0-9\.]+/${CONTATESTER_VERSION}/g" setup.py
     - python3 setup.py clean
     - python3 setup.py bdist_wheel
 
@@ -97,7 +98,7 @@ test_all:
      - rlib
      - dist/contatester-${CONTATESTER_VERSION}-py2.py3-none-any.whl
   script:
-    - pip3 install dist/contatester-1.0.0-py2.py3-none-any.whl
+    - pip3 install dist/contatester-${CONTATESTER_VERSION}-py2.py3-none-any.whl
     - ./run_tests.sh 
 
 
@@ -137,16 +138,8 @@ build_contatester_image:
     - mkdir -p ${CI_COMMIT_SHA}/image/
     - archive_file="contatester_src_$(date +'%s').tar.gz" # prevent docker cache
     - |
-      # [workaround] Create an archive in order to not create multiple COPY directory and save some docker layers
-      tar czf "${archive_file}" data/               \
-                                LICENSE             \
-                                README.md           \
-                                requirements.txt    \
-                                scripts/            \
-                                setup.cfg           \
-                                setup.py            \
-                                src/
-    - docker build --build-arg ARCHIVE_FILE=${archive_file} -t "${DOCKER_REPO}${IMAGE_NAME}:${TEST_IMAGE_TAG}" .
+      tar czf "${archive_file}" rlib .Rprofile dist/contatester-${CONTATESTER_VERSION}-py2.py3-none-any.whl ./install_useq.sh
+    - docker build --build-arg ARCHIVE_FILE=${archive_file} --build-arg CONTATESTER_VERSION=${CONTATESTER_VERSION} -t "${DOCKER_REPO}${IMAGE_NAME}:${TEST_IMAGE_TAG}" .
     - docker save "${DOCKER_REPO}${IMAGE_NAME}:${TEST_IMAGE_TAG}" | gzip -c > "${CI_COMMIT_SHA}/image/${IMAGE_FILE}"
     - du -sh ${CI_COMMIT_SHA}/image/contatester-*.tar.gz
 
