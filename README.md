@@ -65,7 +65,7 @@ $ python3 -m venv el7_env
 $ source el7_env/bin/activate
 $ pip install --upgrade pip wheel setuptools
 $ python setup.py bdist_wheel 
-$ pip install dist/contatester-0.0.1-py2.py3-none-any.whl
+$ pip install dist/contatester-1.0.0-py2.py3-none-any.whl
 ```
 
 ## Development environment
@@ -113,7 +113,7 @@ After each commit you can download (by clicking `Download` a list menu appear):
   - R 3.3.1
   - R libraries : optparse, grid, gridBase, gridExtra 
   - bcftools >= 1.6
-  - useq >= 9.0.7
+  - samtools >= 1.6
   - pegasus >= 4.8.2
 
 ### Build time

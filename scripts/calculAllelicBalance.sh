@@ -48,8 +48,8 @@ module_load() {
           if ! "${is_present}"; then
             echo "ERROR: Missing tools: ${dep_name}" >&2
             exit 1
-          elif [[ -n "${dep_version}" ]]; then
-            echo 'TODO'
+          #elif [[ -n "${dep_version}" ]]; then
+          #  echo 'TODO'
           fi
         done
       fi
@@ -92,8 +92,6 @@ ${NAME} -f file.vcf"
 ################################################################################
 # Main
 
-
-
 # Argument parsing
 
 # if no arguments, display usage
@@ -121,7 +119,7 @@ if [[ -z $vcfin ]]; then
     display_usage && exit 1
 fi
 
-module_load bcftools/1.6
+module_load 'bcftools'
 
 # Command
 bcftools view "${vcfin}" --no-header --output-type v --types snps --thread "${nbthread}" | \
@@ -136,4 +134,3 @@ awk -F '\t' '{
   }
 }' | \
 sort | uniq -c
-

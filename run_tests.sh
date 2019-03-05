@@ -21,8 +21,35 @@ err_report() {
 trap 'err_report $LINENO' ERR
 trap cleanup INT TERM
 
+module_load() {
+      # Used to load programs with module load function
+      if [[ -n "${IG_MODULESHOME}" ]]; then
+        module load "$@"
+      else
+        local dep_name=""
+        local dep_version=""
+        local is_present=false
+        for dependency in "$@"; do
+          dep_name="${dependency%/*}"
+          dep_version="${dependency#*/}"
+          if [[ "${dep_name}" == 'r' ]]; then
+            dep_name='R'
+          fi
+          is_present=$(command -v "${dep_name}" &> /dev/null && echo true || echo false)
+          if ! "${is_present}"; then
+            echo "ERROR: Missing tools: ${dep_name}" >&2
+            exit 1
+          #elif [[ -n "${dep_version}" ]]; then
+          #  echo 'TODO'
+          fi
+        done
+      fi
+    return 0
+}
+
 ############################# MAIN #############################
 declare -r CONTATESTER_VERSION=$(grep -Po "(?<=VERSION = ')[\d\.]+" setup.py)
+
 
 display_banner(){
   local -i i=0
@@ -64,6 +91,7 @@ echo -e '\033[34m\t- Testing calculAllelicBalance\033[0m'
 calculAllelicBalance.sh -f ./data_examples/test_1.vcf.gz > ./data_examples/calculAllelicBalance_output.hist
 
 echo -e '\033[34m\t- Testing contaReport\033[0m'
+module_load r
 contaReport.R --input ./data_examples/distrib_allele_balance.hist \
               --output ./data_examples/distrib_allele_balance.conta \
               --report \
@@ -72,13 +100,10 @@ contaReport.R --input ./data_examples/distrib_allele_balance.hist \
 
 echo -e '\033[34m\t- Testing recupConta\033[0m'
 recupConta.sh -f ./data_examples/test_1.vcf.gz \
-              -c ./data_examples/test_1_AB_0.01_to_0.12_noLCRnoDUP.vcf \
-              -b ./data_examples/test_1_AB_0.01_to_0.12_noLCRnoDUP.bed
+              -c ./data_examples/test_1_AB_0.01_to_0.12_noLCRnoDUP.vcf.gz
 
 echo -e '\033[34m\t- Testing checkContaminant\033[0m'
 checkContaminant.sh -f ./data_examples/test_2.vcf.gz \
-                    -b ./data_examples/test_1_AB_0.01_to_0.12_noLCRnoDUP.bed \
-                    -c ./data_examples/test_1_AB_0.01_to_0.12_noLCRnoDUP.vcf \
-                    -s ./data_examples/test_1_comparisonSummary.txt \
-                    -o ./data_examples/
+                    -c ./data_examples/test_1_AB_0.01_to_0.12_noLCRnoDUP.vcf.gz \
+                    -s ./data_examples/test_1_comparisonSummary.txt
 

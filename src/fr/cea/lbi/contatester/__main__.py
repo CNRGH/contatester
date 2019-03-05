@@ -10,6 +10,7 @@ import subprocess
 import sys
 import glob
 from datetime import datetime
+from math import ceil
 
 script_name = "contatester"
 
@@ -167,31 +168,17 @@ def create_report(basename_vcf: str, conta_file: str, dag_f: BinaryIO,
         current_vcf: Path to current vcf analysed
         vcfs: A list of vcf file path
     """
-    clust_param = machine_param(out_dir, 1)
-    compare_nb_core = clust_param.get("nb_core")
     file_extension = "AB_0.01_to_0.12"
     basename_conta = join(out_dir, basename_vcf + "_" + file_extension)
-    vcf_conta = basename_conta + "_noLCRnoDUP.vcf"
-    bedfile = basename_conta + "_noLCRnoDUP.bed"
+    vcf_conta = basename_conta + "_noLCRnoDUP.vcf.gz"
     # select potentialy contaminant variants
     task_id3 = "RecupConta_" + basename_vcf
     task_conf = task_fmt.format(id=task_id3, core=4)
-    cmd = ("recupConta.sh -f " + current_vcf + " -c " + vcf_conta + " -b "
-           + bedfile)
+    cmd = ("recupConta.sh -f " + current_vcf + " -c " + vcf_conta)
     task_cmd = task_cmd_if(conta_file, cmd)
     write_intermediate_task(dag_f, task_conf, task_cmd, task_id2, task_id3)
     # summary file for comparisons
     summary_file = join(out_dir, basename_vcf + "_comparisonSummary.txt")
-    task_id3b = "SummaryFile_" + basename_vcf
-    task_conf = task_fmt.format(id=task_id3b, core=1)
-    cmd = ("echo \\'comparison\\' \\'QUALThreshold\\' \\'NumMatchTest\\' "
-           "\\'NumNonMatchTest\\' "
-           "\\'FDR=nonMatchTest/(matchTest+nonMatchTest)\\' "
-           "\\'decreasingFDR\\' "
-           "\\'TPR=matchTest/totalKey\\' \\'FPR=nonMatchTest/totalKey\\' "
-           "\\'PPV=matchTest/(matchTest+nonMatchTest)\\' > " + summary_file)
-    task_cmd = task_cmd_if(conta_file, cmd)
-    write_intermediate_task(dag_f, task_conf, task_cmd, task_id3, task_id3b)
     # comparisons with other vcf
     for vcf_compare in vcfs:
         if vcf_compare != current_vcf:
@@ -199,12 +186,12 @@ def create_report(basename_vcf: str, conta_file: str, dag_f: BinaryIO,
             vcf_compare_basename = vcf_name.split(".vcf")[0]
             task_id4 = ("Compare_" + basename_vcf + "_" +
                         vcf_compare_basename)
-            task_conf = task_fmt.format(id=task_id4, core=compare_nb_core)
-            cmd = ("checkContaminant.sh -f " + vcf_compare + " -b " + bedfile +
+            task_conf = task_fmt.format(id=task_id4, core=2)
+            cmd = ("checkContaminant.sh -f " + vcf_compare +
                    " -c " + vcf_conta + " -s " + summary_file +
                    " -o " + out_dir)
             task_cmd = task_cmd_if(conta_file, cmd)
-            write_intermediate_task(dag_f, task_conf, task_cmd, task_id3b,
+            write_intermediate_task(dag_f, task_conf, task_cmd, task_id3,
                                     task_id4)
 
 
@@ -253,21 +240,24 @@ def write_dag_file(check: bool, dag_file: str, out_dir: str, report: str,
                               task_fmt, task_id2, current_vcf, vcfs)
 
 
-def write_batch_file(dag_file: str, msub_file: str, nb_task: int, out_dir: str,
+def write_batch_file(dag_file: str, msub_file: str, nb_vcf: int, out_dir: str,
                      mail: Union[str, None] = None,
-                     accounting: Union[str, None] = None) -> None:
+                     accounting: Union[str, None] = None,
+                     check: bool = False) -> None:
     """Write a Batch file to be processed by SLURM
 
     Args:
         dag_file: The dag file path
         mail: User mail to be notified
         msub_file: path to write the batch file
-        nb_task: number of tasks to process
+        nb_vcf_by_task: number of tasks to process
         out_dir: Directory to put results
         accounting: msub option for calculation time imputation
+        check: option for contaminant identification
     """
     with open(msub_file, "wb", ) as msub_f:
-        clust_param = machine_param(out_dir, nb_task)
+        nb_vcf_by_task = nb_vcf_by_tasks(nb_vcf)
+        clust_param = machine_param(out_dir, nb_vcf, check)
 
         if clust_param.get("cea_clust"):
             # Clusters parameters
@@ -276,9 +266,6 @@ def write_batch_file(dag_file: str, msub_file: str, nb_task: int, out_dir: str,
                 batch_exe_mail = ("#MSUB -@ " + mail + ":end\n")
                 batch_exe_accounting = "#MSUB -A "
             else:
-                # batch_exe_mail = ("#SBATCH --mail-type=END,FAIL\n" +
-                #                  "#SBATCH --mail-user=" + mail +"\n")
-                # batch_exe_accounting = "#SBATCH -A "
                 batch_exe_mail = ("#MSUB -@ " + mail + ":end\n")
                 batch_exe_accounting = "#MSUB -A "
 
@@ -294,13 +281,12 @@ def write_batch_file(dag_file: str, msub_file: str, nb_task: int, out_dir: str,
             write_binary(msub_f, clust_param.get("msub_module_load"))
 
             # PEGASUS Command
-
             mpi_exe = clust_param.get("mpi_exe")
             mpi_opt = clust_param.get("mpi_opt")
 
             # host_cpus = param[4]
             write_binary(msub_f, mpi_exe + " " + mpi_opt + " -n " +
-                         str(nb_task + 1) + " pegasus-mpi-cluster " +
+                         str(nb_vcf_by_task + 1) + " pegasus-mpi-cluster " +
                          dag_file + "\n")
 
         else:
@@ -312,7 +298,8 @@ def write_batch_file(dag_file: str, msub_file: str, nb_task: int, out_dir: str,
                                  + mail + ' < /dev/null\n')
 
 
-def machine_param(out_dir: str, nb_task: int) -> Dict[str, Union[bool, str]]:
+def machine_param(out_dir: str, nb_vcf: int,
+                  check: bool = False) -> Dict[str, Union[bool, str]]:
     """ Test machine and apply a configuration
     Usage :
     clust_param = machine_param(out_dir, nb_task))
@@ -322,14 +309,16 @@ def machine_param(out_dir: str, nb_task: int) -> Dict[str, Union[bool, str]]:
     dag = "dag.txt"
     cmd = mpi_exe + " " + mpi_opt + " -n " + str(tasks) +
     " pegasus-mpi-cluster " + dag
-
+    :param nb_vcf:
+           out_dir:
+           check
     :return: dictionary
     """
+    nb_vcf_by_task = nb_vcf_by_tasks(nb_vcf)
+    pipeline_duration = job_duration(nb_vcf, check)
 
     common_load = ("module load pegasus\n" +
-                   "module load bcftools\n" +
-                   "module load bedtools\n" +
-                   "module load useq\n")
+                   "module load bcftools\n")
 
     if isdir("/ccc"):
         # si machine cobalt
@@ -338,53 +327,37 @@ def machine_param(out_dir: str, nb_task: int) -> Dict[str, Union[bool, str]]:
         run_exe = "ccc_mprun"
         mpi_exe = "ccc_mprun"
         mpi_opt = "-E '--overcommit'"
-        nb_core = 14
+        nb_core = 4
         # host_cpus = 28
 
         msub_info = ("#!/bin/bash\n" +
                      "#MSUB -r " + script_name + "\n" +
-                     "#MSUB -n " + str(nb_task) + "\n" +
+                     "#MSUB -n " + str(nb_vcf_by_task) + "\n" +
                      "#MSUB -o " + join(out_dir, script_name) + "%j.out\n" +
                      "#MSUB -e " + join(out_dir, script_name) + "%j.err\n" +
                      "#MSUB -c " + str(nb_core) + "\n" +
                      "#MSUB -q broadwell\n" +
-                     "#MSUB -T 86400\n")
+                     "#MSUB -T " + str(pipeline_duration) +"\n")
         msub_module_load = ("module load extenv/ig\n" +
                             common_load)
     elif isdir("/env/cng"):
         # # si machine cnrgh
-        # cea_clust = True
-        # batch_exe = "sbatch"
-        # run_exe = "srun"
-        # mpi_exe = "mpirun"
-        # mpi_opt = "-E '--oversubscribe'"
-        # nb_core = 7
-        # # host_cpus = 32
-        #
-        # msub_info = ("#!/bin/bash\n" +
-        #              #w"#SBATCH --reservation=" + script_name + "\n" +
-        #              "#SBATCH -n " + str(nb_task) + "\n" +
-        #              "#SBATCH -o " + join(out_dir, script_name) + "%j.out\n" +
-        #              "#SBATCH -e " + join(out_dir, script_name) + "%j.err\n"+
-        #              "#SBATCH -c " + str(nb_core) + "\n" +
-        #              "#SBATCH -p normal\n" +
-        #              "#SBATCH -t 1440\n")
         cea_clust = True
         batch_exe = "ccc_msub"
         run_exe = "ccc_mprun"
         mpi_exe = "mpirun"
         mpi_opt = "-oversubscribe"
-        nb_core = 7
+        nb_core = 4
         # host_cpus = 32
 
         msub_info = ("#!/bin/bash\n" +
                      "#MSUB -r " + script_name + "\n" +
-                     "#MSUB -n " + str(nb_task) + "\n" +
+                     "#MSUB -n " + str(nb_vcf_by_task) + "\n" +
                      "#MSUB -o " + join(out_dir, script_name) + "%j.out\n" +
                      "#MSUB -e " + join(out_dir, script_name) + "%j.err\n" +
                      "#MSUB -c " + str(nb_core) + "\n" +
                      "#MSUB -q normal\n" +
-                     "#MSUB -T 86400\n")
+                     "#MSUB -T " + str(pipeline_duration) +"\n")
         msub_module_load = common_load
     else:
         # Default machine
@@ -412,16 +385,54 @@ def machine_param(out_dir: str, nb_task: int) -> Dict[str, Union[bool, str]]:
     return clust_param
 
 
-def nb_tasks(vcfs: List[str]) -> int:
-    nb_vcf = len(vcfs)
+def nb_vcf_by_tasks(nb_vcf: int) -> int:
+    """
+    Used to set a maximum number of task to launch in parallele depending of the
+    total number of task
+    :param nb_vcf:
+    :return: nb_vcf_by_task
+    """
     if nb_vcf > 48:
-        nb_task = 48
+        nb_vcf_by_task = 48
     elif nb_vcf > 1:
-        nb_task = nb_vcf
+        nb_vcf_by_task = nb_vcf
     else:
-        nb_task = 1
-    return nb_task
+        nb_vcf_by_task = 1
+    return nb_vcf_by_task
 
+
+def nb_runs(nb_vcf: int, nb_vcf_by_task: int) -> int:
+    nb_run = ceil(nb_vcf / nb_vcf_by_task)
+    return nb_run
+
+
+def job_duration(nb_vcf: int, check: bool = False) -> int:
+    """
+    Used to set an optimised maximum time duration for the job
+    :param vcfs:
+    :return: pipeline_duration
+    """
+    ABcalcul_time = 4 * 60
+    if check:
+        recupConta_time = 4 * 60
+        checkconta_time = 1 * 60
+    else:
+        recupConta_time = 0
+        checkconta_time = 0
+    nb_vcf_by_task = nb_vcf_by_tasks(nb_vcf)
+    nb_run = nb_runs(nb_vcf, nb_vcf_by_task) + 1
+    # Max 1/3 samples are contaminated case
+    nb_conta = ceil(nb_vcf * 1/3)
+    nb_run_recupconta = nb_runs(nb_conta, nb_vcf_by_tasks(nb_conta))
+    nb_checkconta = nb_conta * (nb_vcf - 1)
+    nb_run_checkconta = nb_runs(nb_checkconta, nb_vcf_by_tasks(nb_checkconta))
+    pipeline_duration = (ABcalcul_time * nb_run +
+                         recupConta_time * nb_run_recupconta +
+                         checkconta_time * nb_run_checkconta)
+    # maximum job duration 24h
+    if pipeline_duration > 86400:
+        pipeline_duration = 86400
+    return pipeline_duration
 
 # Main
 def main():
@@ -434,8 +445,9 @@ def main():
     task_fmt = "TASK {id} -c {core} bash -c "
     write_dag_file(check, dag_file, out_dir, report, task_fmt, vcfs)
 
-    nb_task = nb_tasks(vcfs)
-    write_batch_file(dag_file, msub_file, nb_task, out_dir, mail, accounting)
+    nb_vcf = len(vcfs)
+    nb_vcf_by_task = nb_vcf_by_tasks(nb_vcf)
+    write_batch_file(dag_file, msub_file, nb_vcf_by_task, out_dir, mail, accounting)
 
     # remove rescue file and ressource file
     res_files = glob.glob(dag_file + ".res*")
@@ -444,7 +456,7 @@ def main():
             remove(res)
 
     # Start Script
-    clust_param = machine_param(out_dir, nb_task)
+    clust_param = machine_param(out_dir, nb_vcf, check)
     batch_exe = clust_param.get("batch_exe")
     cmd = [batch_exe, msub_file]
 

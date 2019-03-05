@@ -1,7 +1,7 @@
 import pytest
 from typing import List, Union
 from pkg_resources import resource_filename
-from fr.cea.lbi.contatester.__main__ import task_cmd_if, nb_tasks, write_batch_file
+from fr.cea.lbi.contatester.__main__ import task_cmd_if, nb_vcf_by_tasks, write_batch_file
 from os.path import dirname
 from pytest_mock import mocker
 from os.path import isdir
@@ -55,8 +55,8 @@ def test_task_cmd_if(conta_file: str, cmd: str, expected: str) -> None:
                                                 (['file{}.vcf'.format(i) for i in range(0, 48)], 48),
                                                 (['file{}.vcf'.format(i) for i in range(0, 55)], 48))
                         )
-def test_nb_tasks(vcfs: List[str], expected: int) -> None:
-    nb = nb_tasks(vcfs)
+def nb_vcf_by_tasks(vcfs: List[str], expected: int) -> None:
+    nb = nb_vcf_by_tasks(vcfs)
     assert expected == nb
 
 

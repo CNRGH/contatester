@@ -27,12 +27,11 @@ set -eo pipefail
 
 # Variable initialisation
 declare -r NAME=$(basename "$0")
+declare -i nbthread=4
 # vcf file to compare
 declare vcfcompare=""
 # possibly contaminated vcf file to process
 declare vcfconta=""
-# bed file name for comparison
-declare bedfile=""
 # summary file for results
 declare summaryfile=""
 # output directory
@@ -52,15 +51,12 @@ module_load() {
         for dependency in "$@"; do
           dep_name="${dependency%/*}"
           dep_version="${dependency#*/}"
-          if [[ "${dep_name}" == 'useq' ]]; then
-            dep_name='VCFComparator'
-          fi
           is_present=$(command -v "${dep_name}" &> /dev/null && echo true || echo false)
           if ! "${is_present}"; then
             echo "ERROR: Missing tools: ${dep_name}" >&2
             exit 1
-          elif [[ -n "${dep_version}" ]]; then
-            echo 'TODO'
+          #elif [[ -n "${dep_version}" ]]; then
+          #  echo 'TODO'
           fi
         done
       fi
@@ -85,24 +81,25 @@ ${NAME} [options]
         VCF file version 4.2 to process (Mandatory)
   -c, --vcfconta <vcf_file>
         VCF file with selected variants (Mandatory)
-  -b, --bedfile <bed_file>
-        BED file for selected variants (Mandatory)
   -s, --summaryfile <text_file>
         text file for result output (Mandatory)
   -o,--outdir <folder>
         folder for storing all output files (optional) 
         [default: current directory]
+  -t, --thread <integer>
+        number of threads used by bcftools (optional) [default: ${nbthread}]
   -h, --help 
         print help
 
 DESCRIPTION :
-${NAME} compare selected variants from a VCF file with an over VCF 
+${NAME} compare selected variants from a VCF file with an over VCF
+VCF should be uncompressed or ziped with bgzip
 Output : 
-    - Standard VCFComparator output 
+    - Output format : vcfContaName,vcfComparName,nbSNPConta,nbMatch,ratio
     - Write important informations in summary file
 
 EXAMPLE :
-${NAME} -f file.vcf -c vcfconta.vcf -b file.bed"
+${NAME} -f file.vcf -c vcfconta.vcf -s comparisonSummary.csv"
 
     return 0
 }
@@ -123,9 +120,8 @@ do
     case $1 in
         -f|--file)        vcfcompare=$(testArg "$2");  shift;;
         -c|--vcfconta)    vcfconta=$(testArg "$2");    shift;;
-        -b|--bedfile)     bedfile=$(testArg "$2");     shift;;
         -s|--summaryfile) summaryfile=$(testArg "$2"); shift;;
-        -o|--outdir)      outdir=$(testArg "$2");      shift;;
+        -t|--thread)   nbthread=$(testArg "$2");        shift;;
         -h|--help) display_usage && exit 0 ;;
         --) shift; break;; 
         -*) echo "$0: error - unrecognized option $1" >&2 && \
@@ -136,7 +132,7 @@ do
 done
 
 # for mandatory arg
-if [[ -z $vcfcompare || -z $vcfconta || -z $bedfile || -z $summaryfile ]]; then
+if [[ -z $vcfcompare || -z $vcfconta || -z $summaryfile ]]; then
     echo '[ERROR] All arguments are mandatory' >&2 && \
     display_usage && exit 1
 fi
@@ -146,23 +142,23 @@ if [[ ! -d $summarydir ]]; then
     mkdir --parents "${summarydir}"
 fi
 
-if [[ ! -d "${outdir}" ]]; then 
-    mkdir --parents "${outdir}"
+# create summary file if don't exist
+if [[ ! -e "${summaryfile}" ]]; then 
+    echo "vcfContaName,vcfComparName,nbSNPConta,nbMatch,ratio" > "${summaryfile}"
 fi
 
-module_load useq
+module_load 'bcftools'
 
 ####
 # Comparaison of selected variants with other sample 
-fileA=$vcfcompare
-fileA_name=$(basename $(basename "${fileA}" .gz) .vcf)
-fileB=$vcfconta
-fileB_name=$(basename $(basename "${fileB}" .gz) .vcf)
-filout=${outdir}/${fileA_name}_${fileB_name}
 
+vcfconta_name=$(basename "${vcfconta}")
+vcfcompare_name=$(basename "${vcfcompare}")
 
-VCFComparator -a "${fileA}" -b "${bedfile}" -c "${fileB}" -d "${bedfile}" -s -p "${filout}"
-res=$(grep none "${filout}/comparison_SNP_${fileA_name}_${fileB_name}.xls")
-echo "${fileA_name}_${fileB_name} ${res}" >> "${summaryfile}"
+nbvar=$(bcftools view -H -o /dev/stdout -O v --types "snps" \
+          --thread "${nbthread}" "${vcfconta}" | wc -l)
+nbmatch=$(bcftools view -H -o /dev/stdout -O v --types "snps" \
+          --thread "${nbthread}" -T "${vcfconta}" "${vcfcompare}" | wc -l)
+ratio=$(echo "scale=3; ${nbmatch}/${nbvar}" | bc)
 
-
+echo "${vcfconta_name},${vcfcompare_name},${nbvar},${nbmatch},${ratio}" >> "${summaryfile}"

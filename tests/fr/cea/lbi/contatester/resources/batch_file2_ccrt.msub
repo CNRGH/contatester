@@ -3,14 +3,12 @@
 #MSUB -n 5
 #MSUB -o /tmp/contatester%j.out
 #MSUB -e /tmp/contatester%j.err
-#MSUB -c 14
+#MSUB -c 4
 #MSUB -q broadwell
-#MSUB -T 86400
+#MSUB -T 480
 #MSUB -@ foo@compagny.com:end
 #MSUB -A foo
 module load extenv/ig
 module load pegasus
 module load bcftools
-module load bedtools
-module load useq
 ccc_mprun -E '--overcommit' -n 6 pegasus-mpi-cluster test1.dag

@@ -14,7 +14,6 @@
 #    SNP Selection in a given allelic balance range
 ####
 #    Variant recovery in allelic range default : [0.01 - 0.12]
-#    VCF transformation into BED
 #    Exclude complexes regions 
 # 
 
@@ -34,7 +33,6 @@ declare -i nbthread=4
 # vcf file to process
 declare vcfin=""
 declare vcfconta=""
-declare bedfile=""
 # All-in-one LCR & SEG DUP
 declare -r scriptPath=$(dirname "$0")
 declare -r datadir="${scriptPath}"/../share/contatester
@@ -61,8 +59,8 @@ module_load() {
           if ! "${is_present}"; then
             echo "ERROR: Missing tools: ${dep_name}" >&2
             exit 1
-          elif [[ -n "${dep_version}" ]]; then
-            echo 'TODO'
+          #elif [[ -n "${dep_version}" ]]; then
+          #  echo 'TODO'
           fi
         done
       fi
@@ -89,9 +87,6 @@ ${NAME} [options]
   -c, --vcfconta <vcf_file>
         name of the output VCF file with selected variants (optional)
         [default: {VCFbasename}_AB_{ABstart}to{ABend}_noLCRnoDUP.vcf]
-  -b, --bedfile <bed_file>
-        name of the output BED file for selected variants (optional)
-        [default: {VCFbasename}_AB_{ABstart}to{ABend}_noLCRnoDUP.bed]
   -g, --gnomad <bed_file>
         BED file used to exclude regions with Low Complexity Repeats (LCR)
         and Segmental Duplications (seg_dup) (optional)
@@ -110,10 +105,10 @@ ${NAME} [options]
 DESCRIPTION :
 ${NAME} select variants from a VCF file in a range of Allelic Balance and 
 exclude position given by the gnomad befile
-Output a VCF file and a BED file 
+Output a compressed VCF file 
 
 EXAMPLE :
-${NAME} -f file.vcf -c vcfconta.vcf -b file.bed \
+${NAME} -f file.vcf -c vcfconta.vcf.gz
         -g lcr_seg_dup_gnomad_2.0.2.bed -s 0.01 -e 0.12 -t 4"
 
   return 0
@@ -135,7 +130,6 @@ do
     case $1 in
         -f|--file)     vcfin=$(testArg "$2");           shift;;
         -c|--vcfconta) vcfconta=$(testArg "$2");        shift;;
-        -b|--bedfile)  bedfile=$(testArg "$2");         shift;;
         -g|--gnomad)   LCRSEGDUPgnomad=$(testArg "$2"); shift;;
         -s|--ABstart)  ABstart=$(testArg "$2");         shift;;
         -e|--ABend)    ABend=$(testArg "$2");           shift;;
@@ -162,7 +156,7 @@ fi
 
 # processed vcf file name
 if [[ -z $vcfconta ]]; then
-    vcfconta=${filename}_${fileExtension}_noLCRnoDUP.vcf
+    vcfconta=${filename}_${fileExtension}_noLCRnoDUP.vcf.gz
 fi 
 
 contadir=$(dirname "${vcfconta}" )
@@ -170,17 +164,7 @@ if [[ ! -d "${contadir}" ]]; then
     mkdir --parents "${contadir}"
 fi
 
-# processed bed file name
-if [[ -z "${bedfile}" ]]; then
-    bedfile="${filename}_${fileExtension}_noLCRnoDUP.bed"
-fi 
-
-beddir=$(dirname "${bedfile}" )
-if [[ ! -d "${beddir}" ]]; then 
-    mkdir --parents "${beddir}"
-fi
-
-module_load 'bcftools'
+module_load 'bcftools' 'samtools'
 
 # Command
 bcftools view "${vcfin}"  --output-type v --types snps \
@@ -188,8 +172,7 @@ bcftools view "${vcfin}"  --output-type v --types snps \
                           --targets "^${LCRSEGDUPgnomad}" | \
 # parsing of AD column of vcf version 4.2 
 # and SNP selection
-awk -F '\t' -v ABstart="$ABstart" -v ABend="$ABend" \
--v bedfile="$bedfile" -v vcfconta="$vcfconta" \
+awk -F '\t' -v ABstart="$ABstart" -v ABend="$ABend" -v vcfconta="$vcfconta" \
 '{
   if($1 !~ /^#/ ) {
     split($10, tab_INFO, ":");
@@ -197,11 +180,10 @@ awk -F '\t' -v ABstart="$ABstart" -v ABend="$ABend" \
     if( (tab_AD[2]+tab_AD[1]+tab_AD[3]) != 0 \
         && tab_AD[2]/(tab_AD[2]+tab_AD[1]+tab_AD[3]) >= ABstart \
         && tab_AD[2]/(tab_AD[2]+tab_AD[1]+tab_AD[3]) <= ABend ) {
-      print $0 > vcfconta ;
-      print $1 FS $2-1 FS $2 > bedfile ;
+      print $0 | "bgzip >" vcfconta ;
     }
   }
   else {
-    print  $0 > vcfconta
+    print $0 | "bgzip >" vcfconta
   }
-}'
+}' && tabix -f -p vcf $vcfconta

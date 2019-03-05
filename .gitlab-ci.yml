@@ -18,7 +18,6 @@ variables:
   DOCKER_REPO:          'registry.cnrgh.fr/$CI_PROJECT_NAMESPACE/contatester/'
   IMAGE_NAME:           'contatester'
   CONTATESTER_VERSION:  '1.0.0'
-  USEQ_VERSION:         '9.0.7'
 
 .active_python_venv:
   before_script:
@@ -35,9 +34,8 @@ variables:
     untracked: true
   # No var expansion as bash do see: https://www.trek10.com/blog/making-ci-easier-with-gitlab/
   before_script:
-    - eval export TODAY=$(date +'%Y%m%d')
     - eval export CI_SHORT_COMMIT_SHA="${CI_COMMIT_SHA:0:8}"
-    - eval export TEST_IMAGE_TAG="${TODAY}_${CI_SHORT_COMMIT_SHA}"
+    - eval export TEST_IMAGE_TAG="${CI_SHORT_COMMIT_SHA}"
     - eval export IMAGE_FILE="contatester-${TEST_IMAGE_TAG}.tar.gz"
     - echo "${CI_JOB_TOKEN}" | docker login -u gitlab-ci-token --password-stdin registry.cnrgh.fr
 
@@ -52,7 +50,6 @@ prepare_python_env:
     paths:
       - venv
       - rlib
-      - USeq_${USEQ_VERSION}.zip
   artifacts:
     untracked: true
     paths:
@@ -67,7 +64,6 @@ prepare_python_env:
     - pip3 install --upgrade pip
     - pip3 install --upgrade wheel
     - pip3 install --upgrade setuptools
-    - ./install_useq.sh venv "${USEQ_VERSION}"
     - mkdir -p rlib
     - echo -e ".libPaths('$(pwd)/rlib')\noptions(repos = c(CRAN = 'https://cran.rstudio.com'))" > .Rprofile
     - export R_LIBS="$(pwd)/rlib:/ur/lib64/Rlibrary"
@@ -126,52 +122,55 @@ build_contatester_image:
   artifacts:
     name: docker_image
     paths:
-      - ${CI_COMMIT_SHA}/image/contatester-*.tar.gz   # Artifacts can only exist in directories relative to the build directory
+      #- ${CI_COMMIT_SHA}/image/contatester-*.tar.gz   # Artifacts can only exist in directories relative to the build directory
                                                       # Only predefined variables can be used which exclude variables define in script section
     expire_in: 3d
   script:
     - mkdir -p ${CI_COMMIT_SHA}/image/
     - archive_file="contatester_src_$(date +'%s').tar.gz" # prevent docker cache
     - |
-      tar czf "${archive_file}" rlib dist/contatester-${CONTATESTER_VERSION}-py2.py3-none-any.whl ./install_useq.sh
+      tar czf "${archive_file}" rlib dist/contatester-${CONTATESTER_VERSION}-py2.py3-none-any.whl
+    - du -sh rlib dist/contatester-${CONTATESTER_VERSION}-py2.py3-none-any.whl "${archive_file}"
     - |
       docker build \
               --build-arg ARCHIVE_FILE="${archive_file}" \
               --build-arg CONTATESTER_VERSION="${CONTATESTER_VERSION}" \
-              --build-arg USEQ_VERSION="${USEQ_VERSION}" \
-              -t "${DOCKER_REPO}${IMAGE_NAME}:${TEST_IMAGE_TAG}" .
-    - docker save "${DOCKER_REPO}${IMAGE_NAME}:${TEST_IMAGE_TAG}" | gzip -c > "${CI_COMMIT_SHA}/image/${IMAGE_FILE}"
-    - du -sh ${CI_COMMIT_SHA}/image/contatester-*.tar.gz
+              -t "${DOCKER_REPO}${IMAGE_NAME}-devel:${TEST_IMAGE_TAG}" .
+    #- docker save "${DOCKER_REPO}${IMAGE_NAME}:${TEST_IMAGE_TAG}" | gzip -c > "${CI_COMMIT_SHA}/image/${IMAGE_FILE}"
+    - docker push "${DOCKER_REPO}${IMAGE_NAME}-devel:${TEST_IMAGE_TAG}"
 
 
 test_contatester_image:
   stage: test_image
   extends: .docker_jobs
   script:
-    - docker load --input "${CI_COMMIT_SHA}/image/${IMAGE_FILE}"
+    #- docker load --input "${CI_COMMIT_SHA}/image/${IMAGE_FILE}"
+    - docker pull "${DOCKER_REPO}${IMAGE_NAME}-devel:${TEST_IMAGE_TAG}"
     - |
       docker run --volume $(pwd)/data_examples/test_1.vcf.gz:/test_1.vcf.gz \
                  --volume $(pwd)/data_examples/test_2.vcf.gz:/test_2.vcf.gz \
-                 "${DOCKER_REPO}${IMAGE_NAME}:${TEST_IMAGE_TAG}" -l data_examples/vcfs_list.txt
+                 "${DOCKER_REPO}${IMAGE_NAME}-devel:${TEST_IMAGE_TAG}" -l data_examples/vcfs_list.txt
 
 master_image:
   stage: release_image
   extends: .docker_jobs
   script:
-    - docker load --input "${CI_COMMIT_SHA}/image/${IMAGE_FILE}"
-    - docker tag  "${DOCKER_REPO}${IMAGE_NAME}:${TEST_IMAGE_TAG}" ${DOCKER_REPO}${IMAGE_NAME}:latest
+    #- docker load --input "${CI_COMMIT_SHA}/image/${IMAGE_FILE}"
+    - docker pull "${DOCKER_REPO}${IMAGE_NAME}-devel:${TEST_IMAGE_TAG}"
+    - docker tag   "${DOCKER_REPO}${IMAGE_NAME}-devel:${TEST_IMAGE_TAG}" ${DOCKER_REPO}${IMAGE_NAME}:latest
     - docker push "${DOCKER_REPO}${IMAGE_NAME}:latest"
   only:
     - master
 
 
-release_image:
+release_master_image:
   stage: release_image
   extends: .docker_jobs
   script:
-    - docker load --input "${CI_COMMIT_SHA}/image/${IMAGE_FILE}"
-    - docker tag  "${DOCKER_REPO}${IMAGE_NAME}:${TEST_IMAGE_TAG}" "${DOCKER_REPO}${IMAGE_NAME}:${CONTATESTER_VERSION}"
-    - docker push "$${DOCKER_REPO}{IMAGE_NAME}:${CONTATESTER_VERSION}"
+    #- docker load --input "${CI_COMMIT_SHA}/image/${IMAGE_FILE}"
+    - docker pull "${DOCKER_REPO}${IMAGE_NAME}-devel:${TEST_IMAGE_TAG}"
+    - docker tag  "${DOCKER_REPO}${IMAGE_NAME}-devel:${TEST_IMAGE_TAG}" "${DOCKER_REPO}${IMAGE_NAME}:${CONTATESTER_VERSION}"
+    - docker push "${DOCKER_REPO}${IMAGE_NAME}:${CONTATESTER_VERSION}"
   only:
     - tags
 
@@ -183,7 +182,9 @@ remove image:
   script:
     - docker images
     # Stop any running containers, if they are not running anymore (since its not a run -d), ignore errors about that.
-    - docker rm -f "${DOCKER_REPO}${IMAGE_NAME}:${TEST_IMAGE_TAG}" ${IMAGE_NAME} || true
+    - docker rm -f "${DOCKER_REPO}${IMAGE_NAME}-devel:${TEST_IMAGE_TAG}" ${IMAGE_NAME} || true
+    # Remove pulled images
+    - docker rmi -f "${DOCKER_REPO}${IMAGE_NAME}-devel:${TEST_IMAGE_TAG}" || true
     # Remove pulled images
     - docker rmi -f "${DOCKER_REPO}${IMAGE_NAME}:${TEST_IMAGE_TAG}" || true
     # Remove all images (current et previouslys build container missed) [Optional]

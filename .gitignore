@@ -11,5 +11,8 @@ __pycache__/
 *.egg-info/
 All_in_one_contatester3.sh
 *env/
-data_examples/
 *.swp
+testing/
+data_examples/calculAllelicBalance_output.hist
+data_examples/distrib_allele_balance.pdf
+data_examples/test_1_comparisonSummary.*
