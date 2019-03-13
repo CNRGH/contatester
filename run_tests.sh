@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 declare TESTING_ENV_IS_ACTIVATE=false
 declare PYTHON_TEST_ENV_NAME='testing'
+declare PYTHON_WHEEL_FOLDER='dist'
 
 cleanup(){
   if ${TESTING_ENV_IS_ACTIVATE};then
@@ -8,6 +9,9 @@ cleanup(){
   fi
   if [[ -d "${PYTHON_TEST_ENV_NAME}" ]]; then
     rm -fr "${PYTHON_TEST_ENV_NAME}"
+  fi
+  if [[ -d "${PYTHON_WHEEL_FOLDER}" ]]; then
+    rm -fr "${PYTHON_WHEEL_FOLDER}"
   fi
 }
 
@@ -61,6 +65,7 @@ display_banner(){
 }
 
 init_env(){
+  module_load python/3.6.5
   python3 -m venv "${PYTHON_TEST_ENV_NAME}"
   TESTING_ENV_IS_ACTIVATE=true
   source "${PYTHON_TEST_ENV_NAME}"/bin/activate
@@ -84,8 +89,11 @@ init_env
 echo -e '\033[31m- Run python tests\033[0m'
 python3 setup.py test
 
-echo -e '\033[31m- Testing scripts\033[0m'
+echo -e '\033[31m- Testing install\033[0m'
 install_contatester
+
+echo -e '\033[31m- Testing scripts\033[0m'
+contatester -h
 
 echo -e '\033[34m\t- Testing calculAllelicBalance\033[0m'
 calculAllelicBalance.sh -f ./data_examples/test_1.vcf.gz > ./data_examples/calculAllelicBalance_output.hist

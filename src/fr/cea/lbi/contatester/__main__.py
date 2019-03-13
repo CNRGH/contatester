@@ -89,6 +89,9 @@ def get_cli_args(parameters: Sequence[str] = sys.argv[1:]) \
     parser.add_argument("-d", "--dagname", default=default_dagfile_name(),
                         type=str,
                         help="DAG file name for pegasus")
+    parser.add_argument("-t", "--thread", default=4, type=int,
+                        help=("number of threads "
+                              "(optional) [default: 4]"))
 
     # keep arguments
     args = parser.parse_args(parameters)
@@ -100,12 +103,29 @@ def get_cli_args(parameters: Sequence[str] = sys.argv[1:]) \
     mail = args.mail
     accounting = args.accounting
     dagname = args.dagname
-
+    thread = args.thread
+    
     if vcf_list is not None:
-        with open(vcf_list, 'r') as filin:
-            vcfs = filin.read().splitlines()
+        try:
+            with open(vcf_list, 'r') as filin:
+                vcfs = filin.read().splitlines()
+                pass
+        except IOError:
+            print("Error while opening list file {} : "
+                  "file does not exist".format(" ".join(vcf_list)),
+                 file=sys.stderr)
     else:
         vcfs = vcf_file
+
+    #
+    for vcf in vcfs:
+        try:
+            with open(vcf, 'r'):
+                pass
+        except IOError:
+            print("Error while opening VCF file {} : "
+                  "file does not exist".format(" ".join(vcf)),
+                 file=sys.stderr)
 
     if not exists(out_dir):
         makedirs(out_dir)
@@ -114,8 +134,11 @@ def get_cli_args(parameters: Sequence[str] = sys.argv[1:]) \
         report = "--report"
     else:
         report = ""
+        
+    if not thread > 0 :
+        print("Error : --thread must be greather than 0 ", file=sys.stderr)
 
-    return vcfs, out_dir, report, check, mail, accounting, dagname
+    return vcfs, out_dir, report, check, mail, accounting, dagname, thread
 
 
 def default_dagfile_name() -> str:
@@ -152,7 +175,7 @@ def task_cmd_if(conta_file: str, cmd: str) -> str:
 
 def create_report(basename_vcf: str, conta_file: str, dag_f: BinaryIO,
                   out_dir: str, task_fmt: str, task_id2: str, current_vcf: str,
-                  vcfs: List[str]) -> None:
+                  vcfs: List[str], thread: int) -> None:
     """Report generator
 
     This function append some extra tasks to the DAG in order to generate a
@@ -173,7 +196,7 @@ def create_report(basename_vcf: str, conta_file: str, dag_f: BinaryIO,
     vcf_conta = basename_conta + "_noLCRnoDUP.vcf.gz"
     # select potentialy contaminant variants
     task_id3 = "RecupConta_" + basename_vcf
-    task_conf = task_fmt.format(id=task_id3, core=4)
+    task_conf = task_fmt.format(id=task_id3, core=thread)
     cmd = ("recupConta.sh -f " + current_vcf + " -c " + vcf_conta)
     task_cmd = task_cmd_if(conta_file, cmd)
     write_intermediate_task(dag_f, task_conf, task_cmd, task_id2, task_id3)
@@ -186,7 +209,7 @@ def create_report(basename_vcf: str, conta_file: str, dag_f: BinaryIO,
             vcf_compare_basename = vcf_name.split(".vcf")[0]
             task_id4 = ("Compare_" + basename_vcf + "_" +
                         vcf_compare_basename)
-            task_conf = task_fmt.format(id=task_id4, core=2)
+            task_conf = task_fmt.format(id=task_id4, core=ceil(thread/2))
             cmd = ("checkContaminant.sh -f " + vcf_compare +
                    " -c " + vcf_conta + " -s " + summary_file +
                    " -o " + out_dir)
@@ -196,7 +219,7 @@ def create_report(basename_vcf: str, conta_file: str, dag_f: BinaryIO,
 
 
 def write_dag_file(check: bool, dag_file: str, out_dir: str, report: str,
-                   task_fmt: str, vcfs: List[str]) -> None:
+                   task_fmt: str, vcfs: List[str], thread: int) -> None:
     """Write a DAG of tasks into a file
 
     Args:
@@ -220,7 +243,7 @@ def write_dag_file(check: bool, dag_file: str, out_dir: str, report: str,
 
             # calcul allelic balance
             task_id1 = "ABCalc_" + basename_vcf
-            task_conf = task_fmt.format(id=task_id1, core=4)
+            task_conf = task_fmt.format(id=task_id1, core=thread)
             task_cmd = "calculAllelicBalance.sh -f " + current_vcf + " > " \
                        + vcf_hist
             write_binary(dag_f, task_conf + "\"" + task_cmd + "\"\n")
@@ -237,7 +260,7 @@ def write_dag_file(check: bool, dag_file: str, out_dir: str, report: str,
             # proceed to comparison
             if check is True:
                 create_report(basename_vcf, conta_file, dag_f, out_dir,
-                              task_fmt, task_id2, current_vcf, vcfs)
+                              task_fmt, task_id2, current_vcf, vcfs, thread)
 
 
 def write_batch_file(dag_file: str, msub_file: str, nb_vcf: int, out_dir: str,
@@ -290,7 +313,12 @@ def write_batch_file(dag_file: str, msub_file: str, nb_vcf: int, out_dir: str,
                          dag_file + "\n")
 
         else:
-            write_binary(msub_f, "#!/bin/bash\n" + "pegasus-mpi-cluster " +
+            write_binary(msub_f, clust_param.get("msub_info"))
+            # PEGASUS Command
+            mpi_exe = clust_param.get("mpi_exe")
+            mpi_opt = clust_param.get("mpi_opt")
+            write_binary(msub_f, mpi_exe + " " + mpi_opt + " -n " +
+                         str(2) + " pegasus-mpi-cluster --keep-affinity " +
                          dag_file + "\n")
             if mail is not None:
                 if len(mail) > 0:
@@ -318,7 +346,8 @@ def machine_param(out_dir: str, nb_vcf: int,
     pipeline_duration = job_duration(nb_vcf, check)
 
     common_load = ("module load pegasus\n" +
-                   "module load bcftools\n")
+                   "module load bcftools\n" +
+                   "module load samtools\n")
 
     if isdir("/ccc"):
         # si machine cobalt
@@ -362,13 +391,16 @@ def machine_param(out_dir: str, nb_vcf: int,
     else:
         # Default machine
         cea_clust = False
-        batch_exe = ""
+        batch_exe = "bash"
         run_exe = ""
-        mpi_exe = ""
-        mpi_opt = ""
-        nb_core = 4
+        mpi_exe = "mpirun"
+        mpi_opt = "-oversubscribe"
+        nb_core = 1
         # host_cpus = ""
-        msub_info = ""
+        msub_info = ("#!/bin/bash\n" +
+                     "err_report(){ echo \"Error on ${BASH_SOURCE} line $1\" >&2; exit 1; }\n" +
+                     "trap 'err_report $LINENO' ERR\n" +
+                     "set -eo pipefail\n")
         msub_module_load = ""
 
     clust_param = {}
@@ -436,14 +468,14 @@ def job_duration(nb_vcf: int, check: bool = False) -> int:
 
 # Main
 def main():
-    vcfs, out_dir, report, check, mail, accounting, dagname = get_cli_args()
+    vcfs, out_dir, report, check, mail, accounting, dagname, thread = get_cli_args()
 
     dag_file = join(out_dir, dagname)
     msub_file = join(out_dir, dagname[0:-8] + ".msub")
     if isfile(dag_file):
         remove(dag_file)
     task_fmt = "TASK {id} -c {core} bash -c "
-    write_dag_file(check, dag_file, out_dir, report, task_fmt, vcfs)
+    write_dag_file(check, dag_file, out_dir, report, task_fmt, vcfs, thread)
 
     nb_vcf = len(vcfs)
     nb_vcf_by_task = nb_vcf_by_tasks(nb_vcf)

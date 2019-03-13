@@ -61,12 +61,12 @@ def nb_vcf_by_tasks(vcfs: List[str], expected: int) -> None:
 
 
 @pytest.mark.parametrize('env', ('default', 'cnrgh', 'ccrt'))
-@pytest.mark.parametrize('dag_file  , msub_file         , nb_task   , out_dir, mail             , accounting, expected_file', (
+@pytest.mark.parametrize('dag_file  , msub_file         , nb_vcf_by_task   , out_dir, mail             , accounting, expected_file', (
                         ('test1.dag', '/tmp/test1.msub' , 5         , '/tmp/', 'foo@compagny.com', None     , 'batch_file1_{}.msub'),
                         ('test1.dag', '/tmp/test2.msub' , 5         , '/tmp/', 'foo@compagny.com', 'foo'    , 'batch_file2_{}.msub'),
                         ('test1.dag', '/tmp/test3.msub' , 5         , '/tmp/', 'foo@compagny.com', ''       , 'batch_file1_{}.msub'),)
                         )
-def test_write_batch_file(mocker, env: str, dag_file: str, msub_file: str, nb_task: int,
+def test_write_batch_file(mocker, env: str, dag_file: str, msub_file: str, nb_vcf_by_task: int,
                           out_dir: str, mail: Union[str, None],
                           accounting: Union[str, None], expected_file: str):
     if env == 'default':
@@ -78,7 +78,7 @@ def test_write_batch_file(mocker, env: str, dag_file: str, msub_file: str, nb_ta
     else:
         raise Exception('Not yet supported environnement: ' + env)
 
-    write_batch_file(dag_file, msub_file, nb_task, out_dir, mail, accounting)
+    write_batch_file(dag_file, msub_file, nb_vcf_by_task, out_dir, mail, accounting)
     content = open(msub_file, 'r').readlines()
     expected_filename = resource_filename('tests.fr.cea.lbi.contatester.resources', expected_file.format(env))
     expected_content = open(expected_filename, 'r').readlines()

@@ -1,3 +1,6 @@
 #!/bin/bash
-pegasus-mpi-cluster test1.dag
+err_report(){ echo "Error on ${BASH_SOURCE} line $1" >&2; exit 1; }
+trap 'err_report $LINENO' ERR
+set -eo pipefail
+mpirun -oversubscribe -n 2 pegasus-mpi-cluster --keep-affinity test1.dag
 mail -s "[Contatester] is terminate" foo@compagny.com < /dev/null

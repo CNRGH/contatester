@@ -51,16 +51,16 @@ def mock_os(mocker):
 
 
 @pytest.mark.parametrize('parameters, fields_expected',
-                         [(('-f', 'foo.input'),                                                      (([abspath('foo.input')], os.getcwd(),           '',         False, '',            '',       'contatest_19000101000000.dagfile'))),
-                          (('-l', 'foo.input'),                                                      (([abspath('foo.input')], os.getcwd(),           '',         False, '',            '',       'contatest_19000101000000.dagfile'))),
-                          (('-f', 'foo.input', '-o', 'my_out_dir'),                                  (([abspath('foo.input')], abspath('my_out_dir'), '',         False, '',            '',       'contatest_19000101000000.dagfile'))),
-                          (('-f', 'foo.input', '-o', 'my_out_dir', '-r'),                            (([abspath('foo.input')], abspath('my_out_dir'), '--report', False, '',            '',       'contatest_19000101000000.dagfile'))),
-                          (('-f', 'foo.input', '-o', 'my_out_dir', '-r', '-c', '-m', 'foo@foo.com'), (([abspath('foo.input')], abspath('my_out_dir'), '--report', True,  'foo@foo.com', '',       'contatest_19000101000000.dagfile'))),
-                          (('-f', 'foo.input', '-o', 'my_out_dir', '-r', '-c', '-A', 'fg0000'),      (([abspath('foo.input')], abspath('my_out_dir'), '--report', True,  '',            'fg0000', 'contatest_19000101000000.dagfile'))),
-                          (('-f', 'foo.input', '-o', 'my_out_dir', '-r', '-c', '-d', 'test.dagfile'),(([abspath('foo.input')], abspath('my_out_dir'), '--report', True,  '',            '',       'test.dagfile'))),
-                          (('-l', 'foo.input', '-o', 'my_out_dir'),                                  (([abspath('foo.input')], abspath('my_out_dir'), '',         False, '',            '',       'contatest_19000101000000.dagfile'))),
-                          (('-l', 'foo.input', '-o', 'my_out_dir', '-r'),                            (([abspath('foo.input')], abspath('my_out_dir'), '--report', False, '',            '',       'contatest_19000101000000.dagfile'))),
-                          (('-l', 'foo.input', '-o', 'my_out_dir', '-r', '-c', '-m', 'foo@foo.com'), (([abspath('foo.input')], abspath('my_out_dir'), '--report', True,  'foo@foo.com', '',       'contatest_19000101000000.dagfile')))
+                         [(('-f', 'foo.input'),                                                      (([abspath('foo.input')], os.getcwd(),           '',         False, '',            '',       'contatest_19000101000000.dagfile', 4))),
+                          (('-l', 'foo.input'),                                                      (([abspath('foo.input')], os.getcwd(),           '',         False, '',            '',       'contatest_19000101000000.dagfile', 4))),
+                          (('-f', 'foo.input', '-o', 'my_out_dir'),                                  (([abspath('foo.input')], abspath('my_out_dir'), '',         False, '',            '',       'contatest_19000101000000.dagfile', 4))),
+                          (('-f', 'foo.input', '-o', 'my_out_dir', '-r'),                            (([abspath('foo.input')], abspath('my_out_dir'), '--report', False, '',            '',       'contatest_19000101000000.dagfile', 4))),
+                          (('-f', 'foo.input', '-o', 'my_out_dir', '-r', '-c', '-m', 'foo@foo.com'), (([abspath('foo.input')], abspath('my_out_dir'), '--report', True,  'foo@foo.com', '',       'contatest_19000101000000.dagfile', 4))),
+                          (('-f', 'foo.input', '-o', 'my_out_dir', '-r', '-c', '-A', 'fg0000'),      (([abspath('foo.input')], abspath('my_out_dir'), '--report', True,  '',            'fg0000', 'contatest_19000101000000.dagfile', 4))),
+                          (('-f', 'foo.input', '-o', 'my_out_dir', '-r', '-c', '-d', 'test.dagfile'),(([abspath('foo.input')], abspath('my_out_dir'), '--report', True,  '',            '',       'test.dagfile',                     4))),
+                          (('-l', 'foo.input', '-o', 'my_out_dir'),                                  (([abspath('foo.input')], abspath('my_out_dir'), '',         False, '',            '',       'contatest_19000101000000.dagfile', 4))),
+                          (('-l', 'foo.input', '-o', 'my_out_dir', '-r'),                            (([abspath('foo.input')], abspath('my_out_dir'), '--report', False, '',            '',       'contatest_19000101000000.dagfile', 4))),
+                          (('-l', 'foo.input', '-o', 'my_out_dir', '-r', '-c', '-m', 'foo@foo.com'), (([abspath('foo.input')], abspath('my_out_dir'), '--report', True,  'foo@foo.com', '',       'contatest_19000101000000.dagfile', 4)))
                           ])
 @pytest.mark.usefixtures('mock_os')
 def test_allowed_usage(parameters: Sequence[str], fields_expected: List[Union[str, int]]):

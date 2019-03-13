@@ -1,2 +1,2 @@
-/test_1.vcf.gz
-/test_2.vcf.gz
+data_examples/test_1.vcf.gz
+data_examples/test_2.vcf.gz
