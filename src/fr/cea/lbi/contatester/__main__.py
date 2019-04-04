@@ -193,7 +193,7 @@ def create_report(basename_vcf: str, conta_file: str, dag_f: BinaryIO,
     """
     file_extension = "AB_0.01_to_0.12"
     basename_conta = join(out_dir, basename_vcf + "_" + file_extension)
-    vcf_conta = basename_conta + "_noLCRnoDUP.vcf.gz"
+    vcf_conta = join(out_dir, basename_conta + "_noLCRnoDUP.vcf.gz")
     # select potentialy contaminant variants
     task_id3 = "RecupConta_" + basename_vcf
     task_conf = task_fmt.format(id=task_id3, core=thread)
@@ -211,8 +211,7 @@ def create_report(basename_vcf: str, conta_file: str, dag_f: BinaryIO,
                         vcf_compare_basename)
             task_conf = task_fmt.format(id=task_id4, core=ceil(thread/2))
             cmd = ("checkContaminant.sh -f " + vcf_compare +
-                   " -c " + vcf_conta + " -s " + summary_file +
-                   " -o " + out_dir)
+                   " -c " + vcf_conta + " -s " + summary_file)
             task_cmd = task_cmd_if(conta_file, cmd)
             write_intermediate_task(dag_f, task_conf, task_cmd, task_id3,
                                     task_id4)
