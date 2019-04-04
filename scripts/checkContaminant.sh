@@ -83,9 +83,6 @@ ${NAME} [options]
         VCF file with selected variants (Mandatory)
   -s, --summaryfile <text_file>
         text file for result output (Mandatory)
-  -o,--outdir <folder>
-        folder for storing all output files (optional) 
-        [default: current directory]
   -t, --thread <integer>
         number of threads used by bcftools (optional) [default: ${nbthread}]
   -h, --help 
