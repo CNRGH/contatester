@@ -346,7 +346,8 @@ def machine_param(out_dir: str, nb_vcf: int,
 
     common_load = ("module load pegasus\n" +
                    "module load bcftools\n" +
-                   "module load samtools\n")
+                   "module load samtools\n" +
+                   "module load r\n")
 
     if isdir("/ccc"):
         # si machine cobalt

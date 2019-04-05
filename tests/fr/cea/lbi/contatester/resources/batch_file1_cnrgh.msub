@@ -10,4 +10,5 @@
 module load pegasus
 module load bcftools
 module load samtools
+module load r
 mpirun -oversubscribe -n 6 pegasus-mpi-cluster test1.dag
