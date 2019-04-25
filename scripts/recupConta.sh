@@ -68,15 +68,16 @@ module_load() {
 }
 
 
-testArg() {
+testArg(){
     # Used for the parsing of Arguments
     # Test if a string start with a "-" or empty
-    if [[ $1 =~ ^[-] || -z $1 ]]; then 
+    if [[ $2 =~ ^[-] || -z $2 ]]; then 
         echo "ERROR : Missing Argument for $1" >&2 && display_usage && exit 1
     else
-        echo "$1" 
+        echo "$2" 
     fi
 }
+
 
 display_usage() {
     echo "
@@ -128,12 +129,12 @@ fi
 while (( $# > 0 ))
 do
     case $1 in
-        -f|--file)     vcfin=$(testArg "$2");           shift;;
-        -c|--vcfconta) vcfconta=$(testArg "$2");        shift;;
-        -g|--gnomad)   LCRSEGDUPgnomad=$(testArg "$2"); shift;;
-        -s|--ABstart)  ABstart=$(testArg "$2");         shift;;
-        -e|--ABend)    ABend=$(testArg "$2");           shift;;
-        -t|--thread)   nbthread=$(testArg "$2");        shift;;
+        -f|--file)     vcfin=$(testArg "$1" "$2");           shift;;
+        -c|--vcfconta) vcfconta=$(testArg "$1" "$2");        shift;;
+        -g|--gnomad)   LCRSEGDUPgnomad=$(testArg "$1" "$2"); shift;;
+        -s|--ABstart)  ABstart=$(testArg "$1" "$2");         shift;;
+        -e|--ABend)    ABend=$(testArg "$1" "$2");           shift;;
+        -t|--thread)   nbthread=$(testArg "$1" "$2");        shift;;
         -h|--help)     display_usage && exit 0 ;;
         --) shift; break;; 
         -*) echo "$0: error - unrecognized option $1" >&2 && \
