@@ -231,9 +231,21 @@ make_tab_hetero <- function(lin_predict_mod, res_poly1, res_poly2, i1min, i1med,
                 "col_tab_hetero_plot" = col_tab_hetero_plot))
 }
 
-#############
-###   Main
-#############
+dataset_depth <- function (depth){
+    # function for choosing which dataset is use with the data
+    if (depth <= 45 ){
+        depthtest = 30
+    } else if (depth > 45 && depth <= 75){
+        depthtest = 60
+    } else if (depth > 75){
+        depthtest = 90
+    }
+    return(depthtest)
+}
+
+################
+###   Main   ###
+################
 
 option_list <- list(
     make_option(c("-i", "--input"), action="store", type="character",
@@ -243,6 +255,10 @@ option_list <- list(
     make_option(c("-o", "--output"), action="store", type="character", 
                 default="<input>.conta",
                 help="output file [default %default]"),
+    
+    make_option(c("-d", "--depth"), action="store", type="integer", 
+                default=30,
+                help="Estimated depth [default %default]"),
     
     make_option(c("-n", "--reportName"), action="store", type="character",
                 default = "<input>.pdf",
@@ -272,12 +288,23 @@ argv = argv_mod(argv)
 filin = argv$input
 filout = argv$output
 pdfout = argv$reportName
+depth = argv$depth
 
 scriptPath = dirname(getFilename())
 datadir = paste(scriptPath, "../share/contatester", sep="/")
 
+depthtest = dataset_depth(depth)
+
+
+
+
 # load dataset
+
 load(paste(datadir, "contaIntraProjet.rda", sep="/"))
+# load(paste(datadir, "contaIntraProjet30x.rda", sep="/"))
+# load(paste(datadir, "contaIntraProjet60x.rda", sep="/"))
+# load(paste(datadir, "contaIntraProjet90x.rda", sep="/"))
+# load(paste(datadir, "contaIntraProjetNoConta.rda", sep="/"))
 
 # Data Treatment 
 sample_test = merge_data(filin)
@@ -357,7 +384,7 @@ max_ref_3tiers  = mcor$max_ref
 name_hit_3tiers = mcor$name_hit
 
 # AB [0.01-0.3 ; 0.7-0.99]
-mcor = cor_calc(d, c(i2med_cor:i2max_cor, i2med_cor:i2max_cor))
+mcor = cor_calc(d, c(i1min_cor:i1med_cor, i2med_cor:i2max_cor))
 mcor_1et3tiers = mcor$mcor
 hit_mcor_1et3tiers = mcor$hit_mcor
 min_ref_1et3tiers  = mcor$min_ref
