@@ -13,11 +13,11 @@ contaminant
 
 optional arguments:
   -h, --help            show this help message and exit
-  -f FILE, --file FILE  VCF file version 4.2 to process. If -f is used don't
+  -f, FILE, --file FILE  VCF file version 4.2 to process. If -f is used don't
                         use -l (Mandatory)
-  -l LIST, --list LIST  input text file, one vcf by lane. If -l is used don't
+  -l, LIST, --list LIST  input text file, one vcf by lane. If -l is used don't
                         use -f (Mandatory)
-  -o OUTDIR, --outdir OUTDIR
+  -o, OUTDIR, --outdir OUTDIR
                         folder for storing all output files (optional)
                         [default: current directory]
   -r, --report          create a pdf report for contamination estimation
@@ -31,7 +31,7 @@ optional arguments:
 ## Before to code
 
 You have to rename the python project, for this task:
-- Open the `setup.py` file located into the root of the project
+    - Open the `setup.py` file located into the root of the project
     - Change the value of `name` variable
     - If it is an application:
       - Change the entry point `console_scripts`
@@ -46,13 +46,13 @@ CEA project should use CeCILL license, see corresponding [CEA presse page](http:
 ## Code quality
 
 Any new python project need to:
- - Be compatible python 3.6 or higher
- - Use Typing see [pep 484](https://www.python.org/dev/peps/pep-0484/) and its [documentation](https://docs.python.org/3/library/typing.html)
- - Own a wide range of tests 
+  - Be compatible python 3.6 or higher
+  - Use Typing see [pep 484](https://www.python.org/dev/peps/pep-0484/) and its [documentation](https://docs.python.org/3/library/typing.html)
+  - Own a wide range of tests 
 
 This project include:
- - A framework to test various use cases and unit tests ([pytest](https://pytest.org))
- - A code coverage tools ([coverage.py](https://coverage.readthedocs.io/))
+  - A framework to test various use cases and unit tests ([pytest](https://pytest.org))
+  - A code coverage tools ([coverage.py](https://coverage.readthedocs.io/))
 
  You have to run `python setup.py coverage` before each production release and most of other times. These tools
  generate html reports into the directory `htmlcov`

@@ -1,19 +1,5 @@
 #!/usr/bin/env bash
 
-#####
-##### Allelic Balance Calculation
-#####
-
-#
-# Damien DELAFOY
-# CEA-DRF-JACOB-CNRGH
-#
-
-#
-# Usage :
-#    Script for allelic balance calculation
-#
-
 # Error monitoring
 err_report() {
   echo "Error on ${BASH_SOURCE} line $1" >&2
@@ -24,15 +10,22 @@ trap 'err_report $LINENO' ERR
 #
 
 set -eo pipefail
-
-# Variables initialisation
 declare -r NAME=$(basename "$0")
 declare vcfin=""
-declare histout=""
+declare filout=""
 declare -i nbthread=4
 
 ################################################################################
 # Functions :
+testArg(){
+    # Used for the parsing of Arguments
+    # Test if a string start with a "-" or empty
+    if [[ $2 =~ ^[-] || -z $2 ]]; then 
+        echo "ERROR : Missing Argument for $1" >&2 && display_usage && exit 1
+    else
+        echo "$2" 
+    fi
+}
 
 module_load() {
       # Used to load programs with module load function
@@ -57,44 +50,34 @@ module_load() {
     return 0
 }
 
-testArg(){
-    # Used for the parsing of Arguments
-    # Test if a string start with a "-" or empty
-    if [[ $2 =~ ^[-] || -z $2 ]]; then 
-        echo "ERROR : Missing Argument for $1" >&2 && display_usage && exit 1
-    else
-        echo "$2" 
-    fi
-}
-
-
 display_usage() {
-  echo "
+    echo "
 USAGE :
 ${NAME} [options]
   -f, --file <vcf_file>
         vcf file version 4.2 to process (Mandatory)
-  -o, --outputfile <txt_file>
-        result file (optional) [default: <vcf_file>.hist]
+  -o, --outputfile <integer>
+        output file (optional) [default: <file>.meandepth]
   -t, --thread <integer>
         number of threads used by bcftools (optional) [default:${nbthread}]
   -h, --help
         print help
 
 DESCRIPTION :
-${NAME} calcul the Allelic Balance of a sample from a VCF file, check if
-a cross human contamination is present and estim the degree of
-contamination.
-Output to stdout
+${NAME}
+  Used to estimate depth from a vcf
+  Only use SNP positions
+  Return mean of depth
+  Require bcftools 
 
 EXAMPLE :
-${NAME} -f file.vcf -o file.hist"
+${NAME} -f file.vcf"
 
-  return 0
+    return 0
 }
 
 ################################################################################
-# Main
+# Main :
 
 # Argument parsing
 
@@ -106,8 +89,8 @@ fi
 while (( $# > 0 ))
 do
     case $1 in
-        -f|--file)       vcfin=$(testArg "$1" "$2");    shift;;
-        -o|--outputfile) histout=$(testArg "$1" "$2");    shift;;
+        -f|--file) vcfin=$(testArg "$1" "$2"); shift;;
+        -o|--outputfile) filout=$(testArg "$1" "$2"); shift;;
         -t|--thread) nbthread=$(testArg "$1" "$2"); shift;;
         -h|--help) display_usage && exit 0 ;;
         --) shift; break;;
@@ -124,23 +107,23 @@ if [[ -z $vcfin ]]; then
     display_usage && exit 1
 fi
 
-# histout default value
-if [[ -z $histout ]]; then
-    histout="$vcfin".hist
+# filout default value
+if [[ -z $filout ]]; then
+    filout="$vcfin".meandepth
 fi
 
+############################
 module_load 'bcftools'
 
-# Command
-bcftools view "${vcfin}" --no-header --output-type v --types snps --thread "${nbthread}" | \
-# parsing of AD column of vcf version 4.2
-awk -F '\t' '{
-  if($1 !~ /^#/ ) {
-    split($10, tab_INFO, ":");
-    split(tab_INFO[2], tab_AD, ",");
-    if((tab_AD[2]+tab_AD[1]+tab_AD[3]) != 0) {
-      printf "%.2f\n", tab_AD[2]/(tab_AD[2]+tab_AD[1]+tab_AD[3])
-    }
-  }
-}' | \
-sort | uniq -c > $histout
+bcftools view $vcfin --no-header --output-type v --types snps --thread $nbthread | \
+awk -F '\t' 'BEGIN { m=0 } { if($1 !~ /^#/ ){ split($10, tab_INFO, ":"); m+=tab_INFO[3] } } END { print m/NR }' > $filout
+
+## mean and  mediane :
+# bcftools view $vcfin --no-header --output-type v --types snps --thread $nbthread | \
+# awk -F '\t' 'BEGIN { m=0 ; y=0 } { if($1 !~ /^#/ ){ split($10, tab_INFO, ":"); m+=tab_INFO[3] ; a[i++]=tab_INFO[3]} } END {x=int((i+1)/2); if (x < (i+1)/2) y=(a[x-1]+a[x])/2; else y=a[x-1] ; print m/NR, y}'
+
+
+
+
+
+

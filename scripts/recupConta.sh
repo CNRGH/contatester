@@ -13,7 +13,7 @@
 # Usage :
 #    SNP Selection in a given allelic balance range
 ####
-#    Variant recovery in allelic range default : [0.01 - 0.12]
+#    Variant recovery in allelic range default : [0.00 - 0.11]
 #    Exclude complexes regions 
 # 
 
@@ -38,8 +38,8 @@ declare -r scriptPath=$(dirname "$0")
 declare -r datadir="${scriptPath}"/../share/contatester
 declare LCRSEGDUPgnomad="${datadir}"/lcr_seg_dup_gnomad_2.0.2.bed.gz
 # AB range
-ABstart=0.01
-ABend=0.12
+ABstart=0.00
+ABend=0.11
 
 
 ################################################################################

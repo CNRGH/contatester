@@ -164,6 +164,10 @@ def write_intermediate_task(file_handler: BinaryIO, conf: str, cmd: str,
     write_binary(file_handler, "EDGE " + task_a + " " + task_b + "\n")
 
 
+def write_edge_task(file_handler: BinaryIO, task_a: str, task_b: str) -> None:
+    write_binary(file_handler, "EDGE " + task_a + " " + task_b + "\n")
+    
+
 def task_cmd_if(conta_file: str, cmd: str) -> str:
     awk_cmd = "{printf \\$NF}"
     awk_if_fmt = ("if [[ $( awk \\'END{awk_cmd}\\' {conta_fi}) = TRUE ]];"
@@ -191,7 +195,7 @@ def create_report(basename_vcf: str, conta_file: str, dag_f: BinaryIO,
         current_vcf: Path to current vcf analysed
         vcfs: A list of vcf file path
     """
-    file_extension = "AB_0.01_to_0.12"
+    file_extension = "AB_0.00_to_0.11"
     basename_conta = join(out_dir, basename_vcf + "_" + file_extension)
     vcf_conta = join(out_dir, basename_conta + "_noLCRnoDUP.vcf.gz")
     # select potentialy contaminant variants
@@ -237,14 +241,22 @@ def write_dag_file(check: bool, dag_file: str, out_dir: str, report: str,
             vcf_name = basename(current_vcf)
             basename_vcf = vcf_name.split(".vcf")[0]
             vcf_hist = join(out_dir, basename_vcf + ".hist")
+            depth_estim = join(out_dir, basename_vcf + ".meandepth")
             conta_file = join(out_dir, basename_vcf + ".conta")
             report_name = join(out_dir, basename_vcf + ".pdf")
 
             # calcul allelic balance
             task_id1 = "ABCalc_" + basename_vcf
             task_conf = task_fmt.format(id=task_id1, core=thread)
-            task_cmd = "calculAllelicBalance.sh -f " + current_vcf + " > " \
+            task_cmd = "calculAllelicBalance.sh -f " + current_vcf + " -o " \
                        + vcf_hist
+            write_binary(dag_f, task_conf + "\"" + task_cmd + "\"\n")
+
+            # estimate depth
+            task_id1b = "EstimDepth_" + basename_vcf
+            task_conf = task_fmt.format(id=task_id1b, core=thread)
+            task_cmd = "depth_estim_from_vcf.sh -f " + current_vcf + " -o " \
+                       + depth_estim
             write_binary(dag_f, task_conf + "\"" + task_cmd + "\"\n")
 
             # test and report contamination
@@ -252,9 +264,10 @@ def write_dag_file(check: bool, dag_file: str, out_dir: str, report: str,
             task_conf = task_fmt.format(id=task_id2, core=1)
             task_cmd = ("contaReport.R --input " + vcf_hist + " --output "
                         + conta_file + " " + report + " --reportName "
-                        + report_name)
-            write_intermediate_task(dag_f, task_conf, task_cmd, task_id1,
-                                    task_id2)
+                        + report_name + " -d $(< " + depth_estim + " )")
+            write_binary(dag_f, task_conf + "\"" + task_cmd + "\"\n")
+            write_edge_task(dag_f, task_id1, task_id2)
+            write_edge_task(dag_f, task_id1b, task_id2)
 
             # proceed to comparison
             if check is True:
@@ -471,7 +484,7 @@ def main():
     vcfs, out_dir, report, check, mail, accounting, dagname, thread = get_cli_args()
 
     dag_file = join(out_dir, dagname)
-    msub_file = join(out_dir, dagname[0:-8] + ".msub")
+    msub_file = join(out_dir, dagname + ".msub")
     if isfile(dag_file):
         remove(dag_file)
     task_fmt = "TASK {id} -c {core} bash -c "

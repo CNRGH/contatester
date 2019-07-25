@@ -96,13 +96,15 @@ echo -e '\033[31m- Testing scripts\033[0m'
 contatester -h
 
 echo -e '\033[34m\t- Testing calculAllelicBalance\033[0m'
-calculAllelicBalance.sh -f ./data_examples/test_1.vcf.gz > ./data_examples/calculAllelicBalance_output.hist
+calculAllelicBalance.sh -f ./data_examples/test_1.vcf.gz -o ./data_examples/calculAllelicBalance_output.hist
 
 echo -e '\033[34m\t- Testing contaReport\033[0m'
 module_load r
 contaReport.R --input ./data_examples/distrib_allele_balance.hist \
               --output ./data_examples/distrib_allele_balance.conta \
               --report \
+              --depth 30 \
+              --experiment WG \
               --reportName \
               ./data_examples/distrib_allele_balance.pdf
 
