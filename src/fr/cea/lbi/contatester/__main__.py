@@ -39,7 +39,7 @@ def valid_output_dir(prospective_path: str) -> str:
 
 
 def get_cli_args(parameters: Sequence[str] = sys.argv[1:]) \
-        -> Tuple[List[str], str, str, bool, str, str, str]:
+        -> Tuple[List[str], str, str, bool, str, str, str, str]:
     """Parse command line parameters
     Parse program parameters using argparse module
     Args:
@@ -89,21 +89,27 @@ def get_cli_args(parameters: Sequence[str] = sys.argv[1:]) \
     parser.add_argument("-d", "--dagname", default=default_dagfile_name(),
                         type=str,
                         help="DAG file name for pegasus")
+                        
     parser.add_argument("-t", "--thread", default=4, type=int,
                         help=("number of threads "
+                              "(optional) [default: 4]"))
+                              
+    parser.add_argument("-s", "--threshold", default=4, type=int,
+                        help=("Threshold for contaminated status"
                               "(optional) [default: 4]"))
 
     # keep arguments
     args = parser.parse_args(parameters)
 
-    vcf_file = [args.file]
-    vcf_list = args.list
-    out_dir = abspath(args.outdir)
-    check = args.check
-    mail = args.mail
-    accounting = args.accounting
-    dagname = args.dagname
-    thread = args.thread
+    vcf_file        = [args.file]
+    vcf_list        = args.list
+    out_dir         = abspath(args.outdir)
+    check           = args.check
+    mail            = args.mail
+    accounting      = args.accounting
+    dagname         = args.dagname
+    thread          = args.thread
+    conta_threshold = args.threshold
     
     if vcf_list is not None:
         try:
@@ -138,7 +144,7 @@ def get_cli_args(parameters: Sequence[str] = sys.argv[1:]) \
     if not thread > 0 :
         print("Error : --thread must be greather than 0 ", file=sys.stderr)
 
-    return vcfs, out_dir, report, check, mail, accounting, dagname, thread
+    return vcfs, out_dir, report, check, mail, accounting, dagname, thread, conta_threshold
 
 
 def default_dagfile_name() -> str:
@@ -222,7 +228,8 @@ def create_report(basename_vcf: str, conta_file: str, dag_f: BinaryIO,
 
 
 def write_dag_file(check: bool, dag_file: str, out_dir: str, report: str,
-                   task_fmt: str, vcfs: List[str], thread: int) -> None:
+                   task_fmt: str, vcfs: List[str], thread: int, 
+                   conta_threshold: int) -> None:
     """Write a DAG of tasks into a file
 
     Args:
@@ -264,7 +271,8 @@ def write_dag_file(check: bool, dag_file: str, out_dir: str, report: str,
             task_conf = task_fmt.format(id=task_id2, core=1)
             task_cmd = ("contaReport.R --input " + vcf_hist + " --output "
                         + conta_file + " " + report + " --reportName "
-                        + report_name + " -d $(< " + depth_estim + " )")
+                        + report_name + " -t " + str(conta_threshold) +
+                        " -d $(< " + depth_estim + " )")
             write_binary(dag_f, task_conf + "\"" + task_cmd + "\"\n")
             write_edge_task(dag_f, task_id1, task_id2)
             write_edge_task(dag_f, task_id1b, task_id2)
@@ -481,14 +489,14 @@ def job_duration(nb_vcf: int, check: bool = False) -> int:
 
 # Main
 def main():
-    vcfs, out_dir, report, check, mail, accounting, dagname, thread = get_cli_args()
+    vcfs, out_dir, report, check, mail, accounting, dagname, thread, conta_threshold = get_cli_args()
 
     dag_file = join(out_dir, dagname)
     msub_file = join(out_dir, dagname + ".msub")
     if isfile(dag_file):
         remove(dag_file)
     task_fmt = "TASK {id} -c {core} bash -c "
-    write_dag_file(check, dag_file, out_dir, report, task_fmt, vcfs, thread)
+    write_dag_file(check, dag_file, out_dir, report, task_fmt, vcfs, thread, conta_threshold)
 
     nb_vcf = len(vcfs)
     nb_vcf_by_task = nb_vcf_by_tasks(nb_vcf)
