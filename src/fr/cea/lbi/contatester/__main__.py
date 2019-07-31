@@ -494,7 +494,7 @@ def job_duration(nb_vcf: int, check: bool = False) -> int:
 
 # Main
 def main():
-    vcfs, out_dir, report, check, mail, accounting, dagname, thread, conta_threshold = get_cli_args()
+    vcfs, out_dir, report, check, mail, accounting, dagname, thread, conta_threshold, experiment = get_cli_args()
 
     dag_file = join(out_dir, dagname)
     msub_file = join(out_dir, dagname + ".msub")
