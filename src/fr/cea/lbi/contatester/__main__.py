@@ -39,7 +39,7 @@ def valid_output_dir(prospective_path: str) -> str:
 
 
 def get_cli_args(parameters: Sequence[str] = sys.argv[1:]) \
-        -> Tuple[List[str], str, str, bool, str, str, str, str]:
+        -> Tuple[List[str], str, str, bool, str, str, str, str, int, str]:
     """Parse command line parameters
     Parse program parameters using argparse module
     Args:
