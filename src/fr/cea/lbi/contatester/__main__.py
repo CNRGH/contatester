@@ -70,6 +70,9 @@ def get_cli_args(parameters: Sequence[str] = sys.argv[1:]) \
                         help=("folder for storing all output files "
                               "(optional) [default: current directory]"))
 
+    parser.add_argument("-e", "--experiment", default="WG", type=str,
+                        help="Experiment type, could be WG for Whole Genome or EX for Exome [default WG] ")
+                        
     parser.add_argument("-r", "--report",
                         help=("create a pdf report for contamination "
                               "estimation [default: no report]"),
@@ -82,7 +85,7 @@ def get_cli_args(parameters: Sequence[str] = sys.argv[1:]) \
 
     parser.add_argument("-m", "--mail", default="", type=str,
                         help="send an email at the end of the job")
-
+                        
     parser.add_argument("-A", "--accounting", default="", type=str,
                         help="msub option for calculation time imputation")
 
@@ -110,6 +113,7 @@ def get_cli_args(parameters: Sequence[str] = sys.argv[1:]) \
     dagname         = args.dagname
     thread          = args.thread
     conta_threshold = args.threshold
+    experiment      = args.experiment
     
     if vcf_list is not None:
         try:
@@ -144,7 +148,7 @@ def get_cli_args(parameters: Sequence[str] = sys.argv[1:]) \
     if not thread > 0 :
         print("Error : --thread must be greather than 0 ", file=sys.stderr)
 
-    return vcfs, out_dir, report, check, mail, accounting, dagname, thread, conta_threshold
+    return vcfs, out_dir, report, check, mail, accounting, dagname, thread, conta_threshold, experiment
 
 
 def default_dagfile_name() -> str:
@@ -229,7 +233,7 @@ def create_report(basename_vcf: str, conta_file: str, dag_f: BinaryIO,
 
 def write_dag_file(check: bool, dag_file: str, out_dir: str, report: str,
                    task_fmt: str, vcfs: List[str], thread: int, 
-                   conta_threshold: int) -> None:
+                   conta_threshold: int, experiment: str) -> None:
     """Write a DAG of tasks into a file
 
     Args:
@@ -272,6 +276,7 @@ def write_dag_file(check: bool, dag_file: str, out_dir: str, report: str,
             task_cmd = ("contaReport.R --input " + vcf_hist + " --output "
                         + conta_file + " " + report + " --reportName "
                         + report_name + " -t " + str(conta_threshold) +
+                        " --experiment " + experiment +
                         " -d $(< " + depth_estim + " )")
             write_binary(dag_f, task_conf + "\"" + task_cmd + "\"\n")
             write_edge_task(dag_f, task_id1, task_id2)
@@ -496,7 +501,8 @@ def main():
     if isfile(dag_file):
         remove(dag_file)
     task_fmt = "TASK {id} -c {core} bash -c "
-    write_dag_file(check, dag_file, out_dir, report, task_fmt, vcfs, thread, conta_threshold)
+    write_dag_file(check, dag_file, out_dir, report, task_fmt, vcfs, thread, 
+                   conta_threshold, experiment)
 
     nb_vcf = len(vcfs)
     nb_vcf_by_task = nb_vcf_by_tasks(nb_vcf)
