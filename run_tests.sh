@@ -17,7 +17,7 @@ cleanup(){
 
 
 err_report() {
-  echo "Error on ${BASH_SOURCE} line $1" >&2
+  echo "Error on ${BASH_SOURCE[0]} line $1" >&2
   exit 1
 }
 
@@ -52,8 +52,9 @@ module_load() {
 }
 
 ############################# MAIN #############################
-declare -r CONTATESTER_VERSION=$(grep -Po "(?<=VERSION = ')[\d\.]+" setup.py)
-
+declare CONTATESTER_VERSION=0
+CONTATESTER_VERSION="$(grep -Po "(?<=version     = )[\d\.]+" setup.cfg)"
+readonly CONTATESTER_VERSION
 
 display_banner(){
   local -i i=0

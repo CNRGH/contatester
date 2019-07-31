@@ -19,7 +19,7 @@
 
 # Error monitoring
 err_report() {
-  echo "Error on ${BASH_SOURCE} line $1" >&2
+  echo "Error on ${BASH_SOURCE[0]} line $1" >&2
   exit 1
 }
 
@@ -28,13 +28,17 @@ trap 'err_report $LINENO' ERR
 
 set -eo pipefail
 # Variables initialisation
-declare -r NAME=$(basename "$0")
+declare NAME=""
+NAME="$(basename "$0")"
+readonly NAME
 declare -i nbthread=4
 # vcf file to process
 declare vcfin=""
 declare vcfconta=""
 # All-in-one LCR & SEG DUP
-declare -r scriptPath=$(dirname "$0")
+declare scriptPath=""
+scriptPath="$(dirname "$0")"
+readonly scriptPath
 declare -r datadir="${scriptPath}"/../share/contatester
 declare LCRSEGDUPgnomad="${datadir}"/lcr_seg_dup_gnomad_2.0.2.bed.gz
 # AB range
@@ -144,9 +148,9 @@ do
     shift
 done
 
-filename_no_gz=$(basename $vcfin .gz)
-filename_no_vcf=$(basename $filename_no_gz .vcf)
-filename=$(basename $filename_no_vcf _BOTH.HC.annot)
+filename_no_gz="$(basename "${vcfin}" .gz)"
+filename_no_vcf="$(basename "${filename_no_gz}" .vcf)"
+filename="$(basename "${filename_no_vcf}" _BOTH.HC.annot)"
 fileExtension="AB_${ABstart}to${ABend}"
 
 # for mandatory arg
@@ -187,4 +191,4 @@ awk -F '\t' -v ABstart="$ABstart" -v ABend="$ABend" -v vcfconta="$vcfconta" \
   else {
     print $0 | "bgzip >" vcfconta
   }
-}' && tabix -f -p vcf $vcfconta
+}' && tabix -f -p vcf "${vcfconta}"
