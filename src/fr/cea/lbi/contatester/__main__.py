@@ -72,7 +72,7 @@ def get_cli_args(parameters: Sequence[str] = sys.argv[1:]) \
 
     parser.add_argument("-e", "--experiment", default="WG", type=str,
                         help="Experiment type, could be WG for Whole Genome or EX for Exome [default WG] ")
-                        
+
     parser.add_argument("-r", "--report",
                         help=("create a pdf report for contamination "
                               "estimation [default: no report]"),
@@ -85,18 +85,18 @@ def get_cli_args(parameters: Sequence[str] = sys.argv[1:]) \
 
     parser.add_argument("-m", "--mail", default="", type=str,
                         help="send an email at the end of the job")
-                        
+
     parser.add_argument("-A", "--accounting", default="", type=str,
                         help="msub option for calculation time imputation")
 
     parser.add_argument("-d", "--dagname", default=default_dagfile_name(),
                         type=str,
                         help="DAG file name for pegasus")
-                        
+
     parser.add_argument("-t", "--thread", default=4, type=int,
                         help=("number of threads "
                               "(optional) [default: 4]"))
-                              
+
     parser.add_argument("-s", "--threshold", default=4, type=int,
                         help=("Threshold for contaminated status"
                               "(optional) [default: 4]"))
@@ -104,17 +104,17 @@ def get_cli_args(parameters: Sequence[str] = sys.argv[1:]) \
     # keep arguments
     args = parser.parse_args(parameters)
 
-    vcf_file        = [args.file]
-    vcf_list        = args.list
-    out_dir         = abspath(args.outdir)
-    check           = args.check
-    mail            = args.mail
-    accounting      = args.accounting
-    dagname         = args.dagname
-    thread          = args.thread
+    vcf_file = [args.file]
+    vcf_list = args.list
+    out_dir = abspath(args.outdir)
+    check = args.check
+    mail = args.mail
+    accounting = args.accounting
+    dagname = args.dagname
+    thread = args.thread
     conta_threshold = args.threshold
-    experiment      = args.experiment
-    
+    experiment = args.experiment
+
     if vcf_list is not None:
         try:
             with open(vcf_list, 'r') as filin:
@@ -123,7 +123,7 @@ def get_cli_args(parameters: Sequence[str] = sys.argv[1:]) \
         except IOError:
             print("Error while opening list file {} : "
                   "file does not exist".format(" ".join(vcf_list)),
-                 file=sys.stderr)
+                  file=sys.stderr)
     else:
         vcfs = vcf_file
 
@@ -135,7 +135,7 @@ def get_cli_args(parameters: Sequence[str] = sys.argv[1:]) \
         except IOError:
             print("Error while opening VCF file {} : "
                   "file does not exist".format(" ".join(vcf)),
-                 file=sys.stderr)
+                  file=sys.stderr)
 
     if not exists(out_dir):
         makedirs(out_dir)
@@ -144,8 +144,8 @@ def get_cli_args(parameters: Sequence[str] = sys.argv[1:]) \
         report = "--report"
     else:
         report = ""
-        
-    if not thread > 0 :
+
+    if not thread > 0:
         print("Error : --thread must be greather than 0 ", file=sys.stderr)
 
     return vcfs, out_dir, report, check, mail, accounting, dagname, thread, conta_threshold, experiment
@@ -176,7 +176,7 @@ def write_intermediate_task(file_handler: BinaryIO, conf: str, cmd: str,
 
 def write_edge_task(file_handler: BinaryIO, task_a: str, task_b: str) -> None:
     write_binary(file_handler, "EDGE " + task_a + " " + task_b + "\n")
-    
+
 
 def task_cmd_if(conta_file: str, cmd: str) -> str:
     awk_cmd = "{printf \\$NF}"
@@ -224,7 +224,7 @@ def create_report(basename_vcf: str, conta_file: str, dag_f: BinaryIO,
             vcf_compare_basename = str(vcf_name.split(".vcf")[0])
             task_id4 = ("Compare_" + basename_vcf + "_" +
                         vcf_compare_basename)
-            task_conf = task_fmt.format(id=task_id4, core=ceil(thread/2))
+            task_conf = task_fmt.format(id=task_id4, core=ceil(thread / 2))
             cmd = ("checkContaminant.sh -f " + vcf_compare +
                    " -c " + vcf_conta + " -s " + summary_file)
             task_cmd = task_cmd_if(conta_file, cmd)
@@ -233,7 +233,7 @@ def create_report(basename_vcf: str, conta_file: str, dag_f: BinaryIO,
 
 
 def write_dag_file(check: bool, dag_file: str, out_dir: str, report: str,
-                   task_fmt: str, vcfs: List[str], thread: int, 
+                   task_fmt: str, vcfs: List[str], thread: int,
                    conta_threshold: int, experiment: str) -> None:
     """Write a DAG of tasks into a file
 
@@ -396,7 +396,7 @@ def machine_param(out_dir: str, nb_vcf: int,
                      "#MSUB -e " + join(out_dir, script_name) + "%j.err\n" +
                      "#MSUB -c " + str(nb_core) + "\n" +
                      "#MSUB -q broadwell\n" +
-                     "#MSUB -T " + str(pipeline_duration) +"\n")
+                     "#MSUB -T " + str(pipeline_duration) + "\n")
         msub_module_load = ("module load extenv/ig\n" +
                             common_load)
     elif isdir("/env/cng"):
@@ -416,7 +416,7 @@ def machine_param(out_dir: str, nb_vcf: int,
                      "#MSUB -e " + join(out_dir, script_name) + "%j.err\n" +
                      "#MSUB -c " + str(nb_core) + "\n" +
                      "#MSUB -q normal\n" +
-                     "#MSUB -T " + str(pipeline_duration) +"\n")
+                     "#MSUB -T " + str(pipeline_duration) + "\n")
         msub_module_load = common_load
     else:
         # Default machine
@@ -485,7 +485,7 @@ def job_duration(nb_vcf: int, check: bool = False) -> int:
     nb_vcf_by_task = nb_vcf_by_tasks(nb_vcf)
     nb_run = nb_runs(nb_vcf, nb_vcf_by_task) + 1
     # Max 1/3 samples are contaminated case
-    nb_conta = ceil(nb_vcf * 1/3)
+    nb_conta = ceil(nb_vcf * 1 / 3)
     nb_run_recupconta = nb_runs(nb_conta, nb_vcf_by_tasks(nb_conta))
     nb_checkconta = nb_conta * (nb_vcf - 1)
     nb_run_checkconta = nb_runs(nb_checkconta, nb_vcf_by_tasks(nb_checkconta))
