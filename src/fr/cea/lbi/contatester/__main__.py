@@ -43,7 +43,7 @@ def get_cli_args(parameters: Sequence[str] = sys.argv[1:]) \
     """Parse command line parameters
     Parse program parameters using argparse module
     Args:
-        parameters: Sequence of parameters to be parsed
+        :param parameters: Sequence of parameters to be parsed
 
     Returns:
         A list of vcf file path
@@ -162,8 +162,8 @@ def write_binary(file_handler: BinaryIO, statement: str) -> None:
     """Convert a statement to byte and write it into a file
 
     Args:
-        file_handler: A writeable file
-        statement: any string to be write into the provided file
+        :param file_handler: A writeable file
+        :param statement: any string to be write into the provided file
     """
     file_handler.write(bytes(statement, "ASCII"))
 
@@ -196,14 +196,15 @@ def create_report(basename_vcf: str, conta_file: str, dag_f: BinaryIO,
     report on each provided vcf file
 
     Args:
-        basename_vcf: The base name of vcf file
-        conta_file: The generated contaminant file to be processed
-        dag_f: the dag file to append the extra tasks
-        out_dir: Directory to put results
-        task_fmt: A format string to write a task into the DAG
-        task_id2: The task id which generate generate the contaminant file
-        current_vcf: Path to current vcf analysed
-        vcfs: A list of vcf file path
+        :param basename_vcf: The base name of vcf file
+        :param conta_file: The generated contaminant file to be processed
+        :param dag_f: the dag file to append the extra tasks
+        :param out_dir: Directory to put results
+        :param task_fmt: A format string to write a task into the DAG
+        :param task_id2: The task id which generate generate the contaminant file
+        :param current_vcf: Path to current vcf analysed
+        :param vcfs: A list of vcf file path
+        :param thread:
     """
     file_extension = "AB_0.00_to_0.11"
     basename_conta = join(out_dir, basename_vcf + "_" + file_extension)
@@ -220,7 +221,7 @@ def create_report(basename_vcf: str, conta_file: str, dag_f: BinaryIO,
     for vcf_compare in vcfs:
         if vcf_compare != current_vcf:
             vcf_name = basename(vcf_compare)
-            vcf_compare_basename = vcf_name.split(".vcf")[0]
+            vcf_compare_basename = str(vcf_name.split(".vcf")[0])
             task_id4 = ("Compare_" + basename_vcf + "_" +
                         vcf_compare_basename)
             task_conf = task_fmt.format(id=task_id4, core=ceil(thread/2))
@@ -237,20 +238,23 @@ def write_dag_file(check: bool, dag_file: str, out_dir: str, report: str,
     """Write a DAG of tasks into a file
 
     Args:
-        check: A flag to enable contaminant check
-        dag_file: the dag file path
-        out_dir: Directory to put results
-        report: A flag to generate or not the report
-        task_fmt: A format string to write a task into the DAG
-        vcfs: A list of vcf file path
+        :param check: A flag to enable contaminant check
+        :param dag_file: the dag file path
+        :param out_dir: Directory to put results
+        :param report: A flag to generate or not the report
+        :param task_fmt: A format string to write a task into the DAG
+        :param vcfs: A list of vcf file path
+        :param thread:
+        :param conta_threshold:
+        :param experiment:
     """
     page_size = io.DEFAULT_BUFFER_SIZE
     with open(dag_file, "wb", buffering=10 * page_size) as dag_f:
         for current_vcf in vcfs:
             # path_obj = Path(current_vcf)
             # basename_vcf = path_obj.stem
-            vcf_name = basename(current_vcf)
-            basename_vcf = vcf_name.split(".vcf")[0]
+            vcf_name = str(basename(current_vcf))
+            basename_vcf = str(vcf_name.split(".vcf")[0])
             vcf_hist = join(out_dir, basename_vcf + ".hist")
             depth_estim = join(out_dir, basename_vcf + ".meandepth")
             conta_file = join(out_dir, basename_vcf + ".conta")
@@ -295,13 +299,13 @@ def write_batch_file(dag_file: str, msub_file: str, nb_vcf: int, out_dir: str,
     """Write a Batch file to be processed by SLURM
 
     Args:
-        dag_file: The dag file path
-        mail: User mail to be notified
-        msub_file: path to write the batch file
-        nb_vcf_by_task: number of tasks to process
-        out_dir: Directory to put results
-        accounting: msub option for calculation time imputation
-        check: option for contaminant identification
+        :param dag_file: The dag file path
+        :param mail: User mail to be notified
+        :param msub_file: path to write the batch file
+        :param nb_vcf: number of tasks to process
+        :param out_dir: Directory to put results
+        :param accounting: msub option for calculation time imputation
+        :param check: option for contaminant identification
     """
     with open(msub_file, "wb", ) as msub_f:
         nb_vcf_by_task = nb_vcf_by_tasks(nb_vcf)
@@ -362,9 +366,9 @@ def machine_param(out_dir: str, nb_vcf: int,
     dag = "dag.txt"
     cmd = mpi_exe + " " + mpi_opt + " -n " + str(tasks) +
     " pegasus-mpi-cluster " + dag
+    :param out_dir:
     :param nb_vcf:
-           out_dir:
-           check
+    :param check
     :return: dictionary
     """
     nb_vcf_by_task = nb_vcf_by_tasks(nb_vcf)
@@ -467,7 +471,8 @@ def nb_runs(nb_vcf: int, nb_vcf_by_task: int) -> int:
 def job_duration(nb_vcf: int, check: bool = False) -> int:
     """
     Used to set an optimised maximum time duration for the job
-    :param vcfs:
+    :param nb_vcf:
+    :param check:
     :return: pipeline_duration
     """
     ABcalcul_time = 4 * 60
@@ -492,6 +497,7 @@ def job_duration(nb_vcf: int, check: bool = False) -> int:
         pipeline_duration = 86400
     return pipeline_duration
 
+
 # Main
 def main():
     vcfs, out_dir, report, check, mail, accounting, dagname, thread, conta_threshold, experiment = get_cli_args()
@@ -501,7 +507,7 @@ def main():
     if isfile(dag_file):
         remove(dag_file)
     task_fmt = "TASK {id} -c {core} bash -c "
-    write_dag_file(check, dag_file, out_dir, report, task_fmt, vcfs, thread, 
+    write_dag_file(check, dag_file, out_dir, report, task_fmt, vcfs, int(thread),
                    conta_threshold, experiment)
 
     nb_vcf = len(vcfs)
