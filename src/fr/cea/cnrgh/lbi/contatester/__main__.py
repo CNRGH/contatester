@@ -1,7 +1,7 @@
 # Import necessary libraries:
 
 from pathlib import Path
-from os import access, R_OK, getcwd, makedirs, remove, popen
+from os import access, R_OK, getcwd, makedirs, remove
 from os.path import isfile, abspath, isdir, join, exists, basename
 from typing import Sequence, Tuple, List, BinaryIO, Dict, Union
 import argparse

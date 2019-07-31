@@ -1,12 +1,11 @@
 import os
 from os.path import isfile, isdir, abspath
 from typing import Sequence, List, Union
-from pytest_mock import mocker
-
 import pytest
 from unittest.mock import mock_open
+from pytest_mock import mocker
 
-from fr.cea.lbi.contatester.__main__ import get_cli_args
+from fr.cea.cnrgh.lbi.contatester.__main__ import get_cli_args
 
 
 def access_mocking(path: str, mode: int) -> int:
@@ -43,10 +42,10 @@ def default_dagfile_name_mocking() -> str:
 
 @pytest.fixture
 def mock_os(mocker):
-    mocker.patch('fr.cea.lbi.contatester.__main__.access', side_effect=access_mocking)
-    mocker.patch('fr.cea.lbi.contatester.__main__.isfile', side_effect=isfile_mocking)
-    mocker.patch('fr.cea.lbi.contatester.__main__.isdir', side_effect=isdir_mocking)
-    mocker.patch('fr.cea.lbi.contatester.__main__.default_dagfile_name', side_effect=default_dagfile_name_mocking)
+    mocker.patch('fr.cea.cnrgh.lbi.contatester.__main__.access', side_effect=access_mocking)
+    mocker.patch('fr.cea.cnrgh.lbi.contatester.__main__.isfile', side_effect=isfile_mocking)
+    mocker.patch('fr.cea.cnrgh.lbi.contatester.__main__.isdir', side_effect=isdir_mocking)
+    mocker.patch('fr.cea.cnrgh.lbi.contatester.__main__.default_dagfile_name', side_effect=default_dagfile_name_mocking)
     mocker.patch('builtins.open', mock_open(read_data=abspath('foo.input')+"\n"))
 
 

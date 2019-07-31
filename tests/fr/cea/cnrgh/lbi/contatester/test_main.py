@@ -1,10 +1,10 @@
-import pytest
 from typing import List, Union
 from pkg_resources import resource_filename
-from fr.cea.lbi.contatester.__main__ import task_cmd_if, nb_vcf_by_tasks, write_batch_file
 from os.path import dirname
-from pytest_mock import mocker
 from os.path import isdir
+import pytest
+from pytest_mock import mocker
+from fr.cea.cnrgh.lbi.contatester.__main__ import task_cmd_if, nb_vcf_by_tasks, write_batch_file
 
 
 def is_default_env_dir(dir: str):
@@ -70,17 +70,17 @@ def test_write_batch_file(mocker, env: str, dag_file: str, msub_file: str, nb_vc
                           out_dir: str, mail: Union[str, None],
                           accounting: Union[str, None], expected_file: str):
     if env == 'default':
-        mocker.patch('fr.cea.lbi.contatester.__main__.isdir', side_effect=is_default_env_dir )
+        mocker.patch('fr.cea.cnrgh.lbi.contatester.__main__.isdir', side_effect=is_default_env_dir )
     elif env == 'cnrgh':
-        mocker.patch('fr.cea.lbi.contatester.__main__.isdir', side_effect=is_cnrgh_env_dir )
+        mocker.patch('fr.cea.cnrgh.lbi.contatester.__main__.isdir', side_effect=is_cnrgh_env_dir )
     elif env == 'ccrt':
-        mocker.patch('fr.cea.lbi.contatester.__main__.isdir', side_effect=is_ccrt_env_dir )
+        mocker.patch('fr.cea.cnrgh.lbi.contatester.__main__.isdir', side_effect=is_ccrt_env_dir )
     else:
         raise Exception('Not yet supported environnement: ' + env)
 
     write_batch_file(dag_file, msub_file, nb_vcf_by_task, out_dir, mail, accounting)
     content = open(msub_file, 'r').readlines()
-    expected_filename = resource_filename('tests.fr.cea.lbi.contatester.resources', expected_file.format(env))
+    expected_filename = resource_filename('tests.fr.cea.cnrgh.lbi.contatester.resources', expected_file.format(env))
     expected_content = open(expected_filename, 'r').readlines()
     assert content == expected_content
     assert dirname(msub_file) == dirname(out_dir)

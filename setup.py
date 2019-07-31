@@ -89,7 +89,7 @@ if __name__ == '__main__':
         classifiers=conf['metadata']['classifiers'],
         keywords=conf['metadata']['keywords'],
         cmdclass={'clean': ExtendedClean, 'coverage': Coverage},
-        packages=['fr.cea.ibfj.pywap'],
+        packages=['fr.cea.cnrgh.lbi.contatester'],
         package_dir={'': 'src'},
         include_package_data=True,
 
@@ -103,7 +103,7 @@ if __name__ == '__main__':
                        'coverage >= 4.5.1'],
         entry_points={
             'console_scripts': [
-                'contatester = fr.cea.lbi.contatester.__main__:main'
+                'contatester = fr.cea.cnrgh.lbi.contatester.__main__:main'
             ]
         },
         extras_require={}
