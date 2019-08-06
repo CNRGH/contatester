@@ -172,23 +172,11 @@ fi
 module_load 'bcftools' 'samtools'
 
 # Command
-bcftools view "${vcfin}"  --output-type v --types snps \
+# select snp in allele balance range, compress & tabix
+bcftools view "${vcfin}"  -i "AD[0:1]/(AD[0:0]+AD[0:1]+AD[0:2])>${ABstart} && AD[0:1]/(AD[0:0]+AD[0:1]+AD[0:2])<${ABend}" \
+                          --output-type z \
+                          --types snps \
                           --thread "${nbthread}" \
-                          --targets "^${LCRSEGDUPgnomad}" | \
-# parsing of AD column of vcf version 4.2 
-# and SNP selection
-awk -F '\t' -v ABstart="$ABstart" -v ABend="$ABend" -v vcfconta="$vcfconta" \
-'{
-  if($1 !~ /^#/ ) {
-    split($10, tab_INFO, ":");
-    split(tab_INFO[2], tab_AD, ",");
-    if( (tab_AD[2]+tab_AD[1]+tab_AD[3]) != 0 \
-        && tab_AD[2]/(tab_AD[2]+tab_AD[1]+tab_AD[3]) >= ABstart \
-        && tab_AD[2]/(tab_AD[2]+tab_AD[1]+tab_AD[3]) <= ABend ) {
-      print $0 | "bgzip >" vcfconta ;
-    }
-  }
-  else {
-    print $0 | "bgzip >" vcfconta
-  }
-}' && tabix -f -p vcf "${vcfconta}"
+                          --targets "^${LCRSEGDUPgnomad}" \
+                          --output-file "${vcfconta}" \
+&& tabix -f -p vcf "${vcfconta}"
