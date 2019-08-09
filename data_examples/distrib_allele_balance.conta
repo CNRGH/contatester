@@ -1,7 +1,5 @@
-"Min. Cor. with Ref.","Max. Cor. with Ref.","Max. Cor. with dataset","Percent Conta. hit"
-"AB [0.01-0.3]","0.274","0.297","0.965","13.9"
-"AB [0.7-0.99]","0.028","0.258","0.985","13.9"
-"AB [0.01-0.3 ; 0.7-0.99]","0.028","0.258","0.985","13.9"
-"Percent Conta Linear Regression (Max. precision 15%) ","Percent Conta Polynomial Regr. (1st Possibility)","Percent Conta Polynomial Regr. (2nd Possibility)"
-"AB [0.18-0.49 ; 0.51-0.82]","15% < x < 50%","16.99%","x>50% (87.63%)"
+"Max. Cor. with Ref.","Max. Cor. with dataset","Percent Conta. hit"
+"AB [0.01-0.3 ; 0.7-0.99]",0.35,0.99,14.71
+"Percent Conta Linear Regression (Max. precision 5%) ","Percent Conta Polynomial Regression"
+"AB [0.26-0.38 ; 0.62-0.74]","5% < x < 50% (14.77%)","16.98%"
 Possible contamination greater than 4% : TRUE 
