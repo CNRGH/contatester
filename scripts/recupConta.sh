@@ -173,10 +173,11 @@ module_load 'bcftools' 'samtools'
 
 # Command
 # select snp in allele balance range, compress & tabix
-bcftools view "${vcfin}"  -i "AD[0:1]/(AD[0:0]+AD[0:1]+AD[0:2])>${ABstart} && AD[0:1]/(AD[0:0]+AD[0:1]+AD[0:2])<${ABend}" \
-                          --output-type z \
-                          --types snps \
-                          --thread "${nbthread}" \
-                          --targets "^${LCRSEGDUPgnomad}" \
-                          --output-file "${vcfconta}" \
+bcftools view -i "AD[0:1]/(AD[0:0]+AD[0:1]+AD[0:2])>${ABstart} && AD[0:1]/(AD[0:0]+AD[0:1]+AD[0:2])<${ABend}" \
+              --output-type z \
+              --types snps \
+              --thread "${nbthread}" \
+              --targets "^${LCRSEGDUPgnomad}" \
+              --output-file "${vcfconta}" \
+              "${vcfin}" \
 && tabix -f -p vcf "${vcfconta}"
