@@ -169,11 +169,11 @@ if [[ ! -d "${contadir}" ]]; then
     mkdir --parents "${contadir}"
 fi
 
-module_load 'bcftools' 'samtools'
+module_load 'bcftools/1.9' 'samtools/1.9'
 
 # Command
 # select snp in allele balance range, compress & tabix
-bcftools view -i "AD[0:1]/(AD[0:0]+AD[0:1]+AD[0:2])>${ABstart} && AD[0:1]/(AD[0:0]+AD[0:1]+AD[0:2])<${ABend}" \
+bcftools view -i "(AD[0:1]/FORMAT/DP)>${ABstart} && (AD[0:1]/FORMAT/DP)<${ABend}" \
               --output-type z \
               --types snps \
               --thread "${nbthread}" \
