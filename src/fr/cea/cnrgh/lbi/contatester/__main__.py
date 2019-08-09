@@ -375,8 +375,8 @@ def machine_param(out_dir: str, nb_vcf: int,
     pipeline_duration = job_duration(nb_vcf, check)
 
     common_load = ("module load pegasus\n" +
-                   "module load bcftools\n" +
-                   "module load samtools\n" +
+                   "module load bcftools/1.9\n" +
+                   "module load samtools/1.9\n" +
                    "module load r\n")
 
     if isdir("/ccc"):
