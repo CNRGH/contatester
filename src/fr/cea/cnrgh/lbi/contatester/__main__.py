@@ -262,14 +262,14 @@ def write_dag_file(check: bool, dag_file: str, out_dir: str, report: str,
 
             # calcul allelic balance
             task_id1 = "ABCalc_" + basename_vcf
-            task_conf = task_fmt.format(id=task_id1, core=thread)
+            task_conf = task_fmt.format(id=task_id1, core=1)
             task_cmd = "calculAllelicBalance.sh -f " + current_vcf + " -o " \
                        + vcf_hist
             write_binary(dag_f, task_conf + "\"" + task_cmd + "\"\n")
 
             # estimate depth
             task_id1b = "EstimDepth_" + basename_vcf
-            task_conf = task_fmt.format(id=task_id1b, core=thread)
+            task_conf = task_fmt.format(id=task_id1b, core=1)
             task_cmd = "depth_estim_from_vcf.sh -f " + current_vcf + " -o " \
                        + depth_estim
             write_binary(dag_f, task_conf + "\"" + task_cmd + "\"\n")
@@ -475,9 +475,9 @@ def job_duration(nb_vcf: int, check: bool = False) -> int:
     :param check:
     :return: pipeline_duration
     """
-    ABcalcul_time = 4 * 60
+    ABcalcul_time = 3 * 60
     if check:
-        recupConta_time = 4 * 60
+        recupConta_time = 3 * 60
         checkconta_time = 1 * 60
     else:
         recupConta_time = 0
