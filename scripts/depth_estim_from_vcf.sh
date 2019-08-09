@@ -115,11 +115,14 @@ fi
 ############################
 module_load 'bcftools'
 
-bcftools view $vcfin --no-header --output-type v --types snps --thread $nbthread | \
-awk -F '\t' 'BEGIN { m=0 } { if($1 !~ /^#/ ){ split($10, tab_INFO, ":"); m+=tab_INFO[3] } } END { print m/NR }' > $filout
+bcftools query --include 'TYPE~"snp"' -f '[%DP]\n' "${vcfin}" | \
+awk -F '\t' 'BEGIN { m=0 } {m+=$1} END { print m/NR }' > $filout
+
+# bcftools view --no-header --output-type v --types snps --thread $nbthread $vcfin | \
+# awk -F '\t' 'BEGIN { m=0 } { if($1 !~ /^#/ ){ split($10, tab_INFO, ":"); m+=tab_INFO[3] } } END { print m/NR }' > $filout
 
 ## mean and  mediane :
-# bcftools view $vcfin --no-header --output-type v --types snps --thread $nbthread | \
+# bcftools view --no-header --output-type v --types snps --thread $nbthread $vcfin | \
 # awk -F '\t' 'BEGIN { m=0 ; y=0 } { if($1 !~ /^#/ ){ split($10, tab_INFO, ":"); m+=tab_INFO[3] ; a[i++]=tab_INFO[3]} } END {x=int((i+1)/2); if (x < (i+1)/2) y=(a[x-1]+a[x])/2; else y=a[x-1] ; print m/NR, y}'
 
 
