@@ -5,10 +5,10 @@
 #MSUB -e /tmp/contatester%j.err
 #MSUB -c 4
 #MSUB -q normal
-#MSUB -T 480
+#MSUB -T 360
 #MSUB -@ foo@compagny.com:end
 module load pegasus
-module load bcftools
-module load samtools
+module load bcftools/1.9
+module load samtools/1.9
 module load r
 mpirun -oversubscribe -n 6 pegasus-mpi-cluster test1.dag
