@@ -76,8 +76,6 @@ ${NAME} [options]
         vcf file version 4.2 to process (Mandatory)
   -o, --outputfile <txt_file>
         result file (optional) [default: <vcf_file>.hist]
-  -t, --thread <integer>
-        number of threads used by bcftools (optional) [default:${nbthread}]
   -h, --help
         print help
 
@@ -108,7 +106,6 @@ do
     case $1 in
         -f|--file)       vcfin=$(testArg "$1" "$2");    shift;;
         -o|--outputfile) histout=$(testArg "$1" "$2");    shift;;
-        -t|--thread) nbthread=$(testArg "$1" "$2"); shift;;
         -h|--help) display_usage && exit 0 ;;
         --) shift; break;;
         -*) echo "$0: error - unrecognized option $1" >&2 && \
