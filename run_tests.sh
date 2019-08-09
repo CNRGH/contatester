@@ -118,10 +118,10 @@ contaReport.R --input ./data_examples/distrib_allele_balance.hist \
 
 echo -e '\033[34m\t- Testing recupConta\033[0m'
 recupConta.sh -f ./data_examples/test_1.vcf.gz \
-              -c ./data_examples/test_1_AB_0.01_to_0.12_noLCRnoDUP.vcf.gz
+              -c ./data_examples/test_1_AB_0.00_to_0.11_noLCRnoDUP.vcf.gz
 
 echo -e '\033[34m\t- Testing checkContaminant\033[0m'
 checkContaminant.sh -f ./data_examples/test_2.vcf.gz \
-                    -c ./data_examples/test_1_AB_0.01_to_0.12_noLCRnoDUP.vcf.gz \
+                    -c ./data_examples/test_1_AB_0.00_to_0.11_noLCRnoDUP.vcf.gz \
                     -s ./data_examples/test_1_comparisonSummary.txt
 
