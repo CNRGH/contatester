@@ -145,7 +145,7 @@ if [[ ! -e "${summaryfile}" ]]; then
     echo "vcfContaName,vcfComparName,nbSNPConta,nbMatch,ratio" > "${summaryfile}"
 fi
 
-module_load 'bcftools'
+module_load 'bcftools/1.9'
 
 ####
 # Comparaison of selected variants with other sample 
@@ -157,6 +157,10 @@ nbvar=$(bcftools view -H -o /dev/stdout -O v --types "snps" \
           --thread "${nbthread}" "${vcfconta}" | wc -l)
 nbmatch=$(bcftools view -H -o /dev/stdout -O v --types "snps" \
           --thread "${nbthread}" -T "${vcfconta}" "${vcfcompare}" | wc -l)
-ratio=$(echo "scale=3; ${nbmatch}/${nbvar}" | bc)
+if (( nbvar == 0 )); then
+    ratio="NaN"
+else
+    ratio=$(echo "scale=3; ${nbmatch}/${nbvar}" | bc)
+fi
 
 echo "${vcfconta_name},${vcfcompare_name},${nbvar},${nbmatch},${ratio}" >> "${summaryfile}"
