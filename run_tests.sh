@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 declare TESTING_ENV_IS_ACTIVATE=false
-declare PYTHON_TEST_ENV_NAME='testing'
+declare PYTHON_TEST_ENV_NAME=''
+PYTHON_TEST_ENV_NAME=$(mktemp -d $TMPDIR/contatester.XXXX)
+readonly PYTHON_TEST_ENV_NAME
 declare PYTHON_WHEEL_FOLDER='dist'
 
 cleanup(){
@@ -83,6 +85,11 @@ install_contatester(){
 }
 
 display_banner
+
+python3 setup.py clean
+rm dist testing build -rf
+
+echo -e '\033[31m- tmpdir : '"$PYTHON_TEST_ENV_NAME"'\033[0m'
 
 echo -e '\033[31m- Create a python evironnment for testing scripts\033[0m'
 init_env
