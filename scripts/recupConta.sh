@@ -172,8 +172,13 @@ fi
 module_load 'bcftools/1.9'
 
 # Command
-# select snp in allele balance range, compress & tabix
-bcftools view -i "(AD[0:1]/FORMAT/DP)>${ABstart} && (AD[0:1]/FORMAT/DP)<${ABend}" \
+# select snp in allele balance range
+bcftools view -i "(AD[0:1]/(AD[0:0]+AD[0:1]+AD[0:2]+AD[0:3])>${ABstart} && \
+                   AD[0:1]/(AD[0:0]+AD[0:1]+AD[0:2]+AD[0:3])<${ABend}) || \
+                  (AD[0:1]/(AD[0:0]+AD[0:1]+AD[0:2])>${ABstart} && \
+                   AD[0:1]/(AD[0:0]+AD[0:1]+AD[0:2])<${ABend}) || \
+                  (AD[0:1]/(AD[0:0]+AD[0:1])>${ABstart} && \
+                   AD[0:1]/(AD[0:0]+AD[0:1])<${ABend})" \
               --output-type z \
               --types snps \
               --thread "${nbthread}" \
