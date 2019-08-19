@@ -376,7 +376,6 @@ def machine_param(out_dir: str, nb_vcf: int,
 
     common_load = ("module load pegasus\n" +
                    "module load bcftools/1.9\n" +
-                   "module load samtools/1.9\n" +
                    "module load r\n")
 
     if isdir("/ccc"):

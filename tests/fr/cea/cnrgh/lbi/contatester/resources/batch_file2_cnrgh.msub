@@ -10,6 +10,5 @@
 #MSUB -A foo
 module load pegasus
 module load bcftools/1.9
-module load samtools/1.9
 module load r
 mpirun -oversubscribe -n 6 pegasus-mpi-cluster test1.dag

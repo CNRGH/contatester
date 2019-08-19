@@ -169,7 +169,7 @@ if [[ ! -d "${contadir}" ]]; then
     mkdir --parents "${contadir}"
 fi
 
-module_load 'bcftools/1.9' 'samtools/1.9'
+module_load 'bcftools/1.9'
 
 # Command
 # select snp in allele balance range, compress & tabix
@@ -179,5 +179,4 @@ bcftools view -i "(AD[0:1]/FORMAT/DP)>${ABstart} && (AD[0:1]/FORMAT/DP)<${ABend}
               --thread "${nbthread}" \
               --targets "^${LCRSEGDUPgnomad}" \
               --output-file "${vcfconta}" \
-              "${vcfin}" \
-&& tabix -f -p vcf "${vcfconta}"
+              "${vcfin}"
