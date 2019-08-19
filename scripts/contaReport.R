@@ -337,7 +337,7 @@ make_tab_cor <- function(hit_mcor_1et3tiers, max_ref_1et3tiers, name_hit_1et3tie
 conta_result <- function(res_poly, conta_threshold){
     # Conditionnal treatment for the contamination's estimation 
     
-    if ( round(res_poly) >= conta_threshold) {
+    if ( res_poly >= conta_threshold) {
         conta_res = paste("Possible contamination greater than ", conta_threshold, 
                           "% : TRUE", sep="")
     } else {
