@@ -511,8 +511,7 @@ def main():
                    conta_threshold, experiment)
 
     nb_vcf = len(vcfs)
-    nb_vcf_by_task = nb_vcf_by_tasks(nb_vcf)
-    write_batch_file(dag_file, msub_file, nb_vcf_by_task, out_dir, mail, accounting)
+    write_batch_file(dag_file, msub_file, nb_vcf, out_dir, mail, accounting, check)
 
     # remove rescue file and ressource file
     res_files = glob.glob(dag_file + ".res*")
