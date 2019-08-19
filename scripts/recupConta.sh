@@ -173,9 +173,7 @@ module_load 'bcftools/1.9'
 
 # Command
 # select snp in allele balance range
-bcftools view -i "(AD[0:1]/(AD[0:0]+AD[0:1]+AD[0:2]+AD[0:3])>${ABstart} && \
-                   AD[0:1]/(AD[0:0]+AD[0:1]+AD[0:2]+AD[0:3])<${ABend}) || \
-                  (AD[0:1]/(AD[0:0]+AD[0:1]+AD[0:2])>${ABstart} && \
+bcftools view -i "(AD[0:1]/(AD[0:0]+AD[0:1]+AD[0:2])>${ABstart} && \
                    AD[0:1]/(AD[0:0]+AD[0:1]+AD[0:2])<${ABend}) || \
                   (AD[0:1]/(AD[0:0]+AD[0:1])>${ABstart} && \
                    AD[0:1]/(AD[0:0]+AD[0:1])<${ABend})" \

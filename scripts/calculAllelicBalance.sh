@@ -131,8 +131,8 @@ module_load 'bcftools/1.9'
 # Command
 # parsing of AD column of vcf version 4.2
 bcftools query --include 'TYPE~"snp"' -f '[%AD]\n' "${vcfin}" | \
-awk -F ',' '{ if(($1 + $2 + $3 +$4) != 0) {
-      printf "%.2f\n", $2/($1 + $2 + $3 + $4)
+awk -F ',' '{ if(($1 + $2 + $3) != 0) {
+      printf "%.2f\n", $2/($1 + $2 + $3)
     }
 }' | \
 sort | uniq -c > $histout
