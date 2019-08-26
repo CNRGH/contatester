@@ -19,3 +19,5 @@ data_examples/test_1_comparisonSummary.*
 data_examples/*
 share/
 install_contatester.sh
+contatester_install_ccrt.sh
+contatester_el7_env.tar.gz
