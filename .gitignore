@@ -21,3 +21,4 @@ share/
 install_contatester.sh
 contatester_install_ccrt.sh
 contatester_el7_env.tar.gz
+result_in_one_line.sh
