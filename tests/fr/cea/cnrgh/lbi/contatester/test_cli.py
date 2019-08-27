@@ -50,15 +50,15 @@ def mock_os(mocker):
 
 
 @pytest.mark.parametrize('parameters, fields_expected',
-                         [(('-f', 'foo.input'),                                                      (([abspath('foo.input')], os.getcwd(),           '',         False, '',            '',       'contatest_19000101000000.dagfile', 4, 4, 'WG'))),
-                          (('-l', 'foo.input'),                                                      (([abspath('foo.input')], os.getcwd(),           '',         False, '',            '',       'contatest_19000101000000.dagfile', 4, 4, 'WG'))),
-                          (('-f', 'foo.input', '-o', 'my_out_dir'),                                  (([abspath('foo.input')], abspath('my_out_dir'), '',         False, '',            '',       'contatest_19000101000000.dagfile', 4, 4, 'WG'))),
-                          (('-f', 'foo.input', '-o', 'my_out_dir', '-r'),                            (([abspath('foo.input')], abspath('my_out_dir'), '--report', False, '',            '',       'contatest_19000101000000.dagfile', 4, 4, 'WG'))),
+                         [(('-f', 'foo.input'),                                                      (([abspath('foo.input')], os.getcwd(),           '',         False, '',            '',       'contatest_19000101000000.dagfile', 1, 4, 'WG'))),
+                          (('-l', 'foo.input'),                                                      (([abspath('foo.input')], os.getcwd(),           '',         False, '',            '',       'contatest_19000101000000.dagfile', 1, 4, 'WG'))),
+                          (('-f', 'foo.input', '-o', 'my_out_dir'),                                  (([abspath('foo.input')], abspath('my_out_dir'), '',         False, '',            '',       'contatest_19000101000000.dagfile', 1, 4, 'WG'))),
+                          (('-f', 'foo.input', '-o', 'my_out_dir', '-r'),                            (([abspath('foo.input')], abspath('my_out_dir'), '--report', False, '',            '',       'contatest_19000101000000.dagfile', 1, 4, 'WG'))),
                           (('-f', 'foo.input', '-o', 'my_out_dir', '-r', '-c', '-m', 'foo@foo.com'), (([abspath('foo.input')], abspath('my_out_dir'), '--report', True,  'foo@foo.com', '',       'contatest_19000101000000.dagfile', 4, 4, 'WG'))),
                           (('-f', 'foo.input', '-o', 'my_out_dir', '-r', '-c', '-A', 'fg0000'),      (([abspath('foo.input')], abspath('my_out_dir'), '--report', True,  '',            'fg0000', 'contatest_19000101000000.dagfile', 4, 4, 'WG'))),
                           (('-f', 'foo.input', '-o', 'my_out_dir', '-r', '-c', '-d', 'test.dagfile'),(([abspath('foo.input')], abspath('my_out_dir'), '--report', True,  '',            '',       'test.dagfile',                     4, 4, 'WG'))),
-                          (('-l', 'foo.input', '-o', 'my_out_dir'),                                  (([abspath('foo.input')], abspath('my_out_dir'), '',         False, '',            '',       'contatest_19000101000000.dagfile', 4, 4, 'WG'))),
-                          (('-l', 'foo.input', '-o', 'my_out_dir', '-r'),                            (([abspath('foo.input')], abspath('my_out_dir'), '--report', False, '',            '',       'contatest_19000101000000.dagfile', 4, 4, 'WG'))),
+                          (('-l', 'foo.input', '-o', 'my_out_dir'),                                  (([abspath('foo.input')], abspath('my_out_dir'), '',         False, '',            '',       'contatest_19000101000000.dagfile', 1, 4, 'WG'))),
+                          (('-l', 'foo.input', '-o', 'my_out_dir', '-r'),                            (([abspath('foo.input')], abspath('my_out_dir'), '--report', False, '',            '',       'contatest_19000101000000.dagfile', 1, 4, 'WG'))),
                           (('-l', 'foo.input', '-o', 'my_out_dir', '-r', '-c', '-m', 'foo@foo.com'), (([abspath('foo.input')], abspath('my_out_dir'), '--report', True,  'foo@foo.com', '',       'contatest_19000101000000.dagfile', 4, 4, 'WG')))
                           ])
 @pytest.mark.usefixtures('mock_os')

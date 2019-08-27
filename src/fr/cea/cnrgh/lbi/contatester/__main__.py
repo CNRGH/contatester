@@ -94,12 +94,12 @@ def get_cli_args(parameters: Sequence[str] = sys.argv[1:]) \
                         help="DAG file name for pegasus")
 
     parser.add_argument("-t", "--thread", default=4, type=int,
-                        help=("number of threads "
-                              "(optional) [default: 4]"))
+                        help=("number of threads used by job"
+                              "(optional) [default if check enable|disable: 4|1]"))
 
     parser.add_argument("-s", "--threshold", default=4, type=int,
                         help=("Threshold for contaminated status"
-                              "(optional) [default: 4]"))
+                              "(optional) [default: 4 ]"))
 
     # keep arguments
     args = parser.parse_args(parameters)
@@ -147,6 +147,9 @@ def get_cli_args(parameters: Sequence[str] = sys.argv[1:]) \
 
     if not thread > 0:
         print("Error : --thread must be greather than 0 ", file=sys.stderr)
+        
+    if not check :
+        thread = 1
 
     return vcfs, out_dir, report, check, mail, accounting, dagname, thread, conta_threshold, experiment
 
@@ -224,7 +227,7 @@ def create_report(basename_vcf: str, conta_file: str, dag_f: BinaryIO,
             vcf_compare_basename = str(vcf_name.split(".vcf")[0])
             task_id4 = ("Compare_" + basename_vcf + "_" +
                         vcf_compare_basename)
-            task_conf = task_fmt.format(id=task_id4, core=ceil(thread / 2))
+            task_conf = task_fmt.format(id=task_id4, core=thread)
             cmd = ("checkContaminant.sh -f " + vcf_compare +
                    " -c " + vcf_conta + " -s " + summary_file)
             task_cmd = task_cmd_if(conta_file, cmd)
@@ -292,7 +295,8 @@ def write_dag_file(check: bool, dag_file: str, out_dir: str, report: str,
                               task_fmt, task_id2, current_vcf, vcfs, thread)
 
 
-def write_batch_file(dag_file: str, msub_file: str, nb_vcf: int, out_dir: str,
+def write_batch_file(dag_file: str, msub_file: str, nb_vcf: int, thread: int,  
+                     out_dir: str,
                      mail: Union[str, None] = None,
                      accounting: Union[str, None] = None,
                      check: bool = False) -> None:
@@ -309,7 +313,7 @@ def write_batch_file(dag_file: str, msub_file: str, nb_vcf: int, out_dir: str,
     """
     with open(msub_file, "wb", ) as msub_f:
         nb_vcf_by_task = nb_vcf_by_tasks(nb_vcf)
-        clust_param = machine_param(out_dir, nb_vcf, check)
+        clust_param = machine_param(out_dir, nb_vcf, thread, check)
 
         if clust_param.get("cea_clust"):
             # Clusters parameters
@@ -355,7 +359,7 @@ def write_batch_file(dag_file: str, msub_file: str, nb_vcf: int, out_dir: str,
                                  + mail + ' < /dev/null\n')
 
 
-def machine_param(out_dir: str, nb_vcf: int,
+def machine_param(out_dir: str, nb_vcf: int, thread: int,
                   check: bool = False) -> Dict[str, Union[bool, str]]:
     """ Test machine and apply a configuration
     Usage :
@@ -385,7 +389,7 @@ def machine_param(out_dir: str, nb_vcf: int,
         run_exe = "ccc_mprun"
         mpi_exe = "ccc_mprun"
         mpi_opt = "-E '--overcommit'"
-        nb_core = 4
+        nb_core = thread
         # host_cpus = 28
 
         msub_info = ("#!/bin/bash\n" +
@@ -405,7 +409,7 @@ def machine_param(out_dir: str, nb_vcf: int,
         run_exe = "ccc_mprun"
         mpi_exe = "mpirun"
         mpi_opt = "-oversubscribe"
-        nb_core = 4
+        nb_core = thread
         # host_cpus = 32
 
         msub_info = ("#!/bin/bash\n" +
@@ -424,7 +428,7 @@ def machine_param(out_dir: str, nb_vcf: int,
         run_exe = ""
         mpi_exe = "mpirun"
         mpi_opt = "-oversubscribe"
-        nb_core = 1
+        nb_core = thread
         # host_cpus = ""
         msub_info = ("#!/bin/bash\n" +
                      "err_report(){ echo \"Error on ${BASH_SOURCE} line $1\" >&2; exit 1; }\n" +
@@ -510,7 +514,8 @@ def main():
                    conta_threshold, experiment)
 
     nb_vcf = len(vcfs)
-    write_batch_file(dag_file, msub_file, nb_vcf, out_dir, mail, accounting, check)
+    write_batch_file(dag_file, msub_file, nb_vcf, thread, out_dir, mail, 
+                     accounting, check)
 
     # remove rescue file and ressource file
     res_files = glob.glob(dag_file + ".res*")
@@ -519,7 +524,7 @@ def main():
             remove(res)
 
     # Start Script
-    clust_param = machine_param(out_dir, nb_vcf, check)
+    clust_param = machine_param(out_dir, nb_vcf, thread, check)
     batch_exe = clust_param.get("batch_exe")
     cmd = [batch_exe, msub_file]
 
