@@ -31,6 +31,11 @@ declare vcfin=""
 declare histout=""
 declare -i nbthread=4
 
+declare gnomad=false
+declare gnomad_cmd=""
+declare -r datadir="${scriptPath}"/../share/contatester
+declare LCRSEGDUPgnomad="${datadir}"/lcr_seg_dup_gnomad_2.0.2.bed.gz
+
 ################################################################################
 # Functions :
 
@@ -76,6 +81,11 @@ ${NAME} [options]
         vcf file version 4.2 to process (Mandatory)
   -o, --outputfile <txt_file>
         result file (optional) [default: <vcf_file>.hist]
+  -e, --exclude_gnomad
+  -g, --gnomad <bed_file>
+        BED file used to exclude regions with Low Complexity Repeats (LCR)
+        and Segmental Duplications (seg_dup) (optional)
+        [default: ${datadir}/lcr_seg_dup_gnomad_2.0.2.bed.gz]
   -h, --help
         print help
 
@@ -106,6 +116,8 @@ do
     case $1 in
         -f|--file)       vcfin=$(testArg "$1" "$2");    shift;;
         -o|--outputfile) histout=$(testArg "$1" "$2");    shift;;
+        -e|--exclude_gnomad) gnomad=true;;
+        -g|--gnomad)     LCRSEGDUPgnomad=$(testArg "$1" "$2"); shift;;
         -h|--help) display_usage && exit 0 ;;
         --) shift; break;;
         -*) echo "$0: error - unrecognized option $1" >&2 && \
@@ -126,11 +138,17 @@ if [[ -z $histout ]]; then
     histout="$vcfin".hist
 fi
 
+if [[ $gnomad ]]; then
+    gnomad_cmd=" --targets ^${LCRSEGDUPgnomad} "
+fi
+
 module_load 'bcftools/1.9'
 
 # Command
 # parsing of AD column of vcf version 4.2
-bcftools query --include 'TYPE~"snp"' -f '[%AD]\n' "${vcfin}" | \
+bcftools query --include 'TYPE~"snp"' \
+               -f '[%AD]\n' "${vcfin}" \
+               "${gnomad_cmd}" | \
 awk -F ',' '{ if(($1 + $2 + $3) != 0) {
       printf "%.2f\n", $2/($1 + $2 + $3)
     }
