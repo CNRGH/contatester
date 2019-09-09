@@ -138,7 +138,7 @@ if [[ -z $histout ]]; then
     histout="$vcfin".hist
 fi
 
-if [[ $gnomad ]]; then
+if $gnomad ; then
     gnomad_cmd=" --targets ^${LCRSEGDUPgnomad} "
 fi
 
@@ -147,8 +147,9 @@ module_load 'bcftools/1.9'
 # Command
 # parsing of AD column of vcf version 4.2
 bcftools query --include 'TYPE~"snp"' \
-               -f '[%AD]\n' "${vcfin}" \
-               "${gnomad_cmd}" | \
+               -f '[%AD]\n' \
+               ${gnomad_cmd} \
+               "${vcfin}" | \
 awk -F ',' '{ if(($1 + $2 + $3) != 0) {
       printf "%.2f\n", $2/($1 + $2 + $3)
     }
