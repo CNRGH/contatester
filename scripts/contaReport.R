@@ -32,8 +32,8 @@ library("optparse")
 # argv[["report"]] = TRUE
 # argv[["reportName"]] = "/home/delafoy/C000VP04/C000VP0.hist.pdf"
 # 
-# scriptPath = "/home/delafoy/2019_optim_contatester/Rdataset"
-# datadir = "/home/delafoy/2019_optim_contatester/Rdataset"
+# scriptPath = "/home/delafoy/20190000_optim_contatester/Rdataset"
+# datadir = "/home/delafoy/20190000_optim_contatester/Rdataset"
 
 
 ####################
@@ -197,7 +197,7 @@ regress_calc <- function(d){
     xconta = d$xconta
     ###
     # lineare prediction 
-    max_conta = 5
+    max_conta = d$max_conta_linear
     i1min = d$lin_reg_param$i1min 
     i1med = d$lin_reg_param$i1med
     i2med = d$lin_reg_param$i2med
@@ -239,14 +239,18 @@ regress_calc <- function(d){
 }
 
 make_tab_hetero <- function(lin_predict_mod, res_poly1, i1min, i1med,
-                            i2med, i2max){
+                            i2med, i2max, max_conta_linear){
     # regression result table formating
     
     tab_hetero = cbind(lin_predict_mod, res_poly1) 
     
-    col_tab_hetero_plot = c("Percent Conta\nLinear Regression\n(Max. precision 5%) ", 
+    col_tab_hetero_plot = c(paste("Percent Conta\nLinear Regression\n(Max. precision ", 
+                                  max_conta_linear, "%) ", 
+                                  sep=""), 
                             "Percent Conta\nPolynomial Regression")
-    col_tab_hetero_csv = c("Percent Conta Linear Regression (Max. precision 5%) ", 
+    col_tab_hetero_csv = c(paste("Percent Conta Linear Regression (Max. precision ", 
+                                 max_conta_linear, "%) ",
+                                 sep=""), 
                            "Percent Conta Polynomial Regression")
     #row_tab_hetero = c("AB [0.34-0.49 ; 0.51-0.65]") 
     row_tab_hetero = c(paste("AB [",(i1min-1)/100,"-", (i1med-1)/100,
@@ -536,7 +540,7 @@ sample_test = merge_data(filin)
 
 depthtest = dataset_depth(depth, experiment)
 
-cor_param      = list("i1min" = 2, "i1med" = 31, "i2med" = 71, "i2max" = 100)
+cor_param      = list("i1min" = 2, "i1med" = 50, "i2med" = 52, "i2max" = 100)
 
 if (experiment == "WG"){
     if (depthtest == 30) {
@@ -546,7 +550,8 @@ if (experiment == "WG"){
         contaIntraProjetWG30x = replace_na(contaIntraProjetWG30x)
         #noconta30x = contaIntraProjetWG30x[,1:4]
         #d_30x 
-        lin_reg_param  = list("i1min" = 27, "i1med" = 39, "i2med" = 63, "i2max" = 75)
+        #lin_reg_param  = list("i1min" = 19, "i1med" = 50, "i2med" = 52, "i2max" = 83)
+        lin_reg_param  = list("i1min" = 14, "i1med" = 50, "i2med" = 52, "i2max" = 88)
         poly_reg_param = list("i1min" = 19, "i1med" = 50, "i2med" = 52, "i2max" = 83)
         # stockage dans un objet
         d_30x = data_obj(sample_test, contaIntraProjetWG30x, cor_param, lin_reg_param, poly_reg_param)
@@ -559,7 +564,8 @@ if (experiment == "WG"){
         contaIntraProjetWG60x = replace_na(contaIntraProjetWG60x)
         #noconta60x = contaIntraProjetWG60x[,1:4]
         #d_60x = 
-        lin_reg_param  = list("i1min" = 28, "i1med" = 40, "i2med" = 62, "i2max" = 74)
+        #lin_reg_param  = list("i1min" = 13, "i1med" = 50, "i2med" = 52, "i2max" = 89)
+        lin_reg_param  = list("i1min" = 10, "i1med" = 50, "i2med" = 52, "i2max" = 92)
         poly_reg_param = list("i1min" = 13, "i1med" = 50, "i2med" = 52, "i2max" = 89)
         d_60x = data_obj(sample_test, contaIntraProjetWG60x, cor_param, lin_reg_param, poly_reg_param)
         # calcul lineaire reg
@@ -572,7 +578,8 @@ if (experiment == "WG"){
         contaIntraProjetWG90x = replace_na(contaIntraProjetWG90x)
         #noconta90x = contaIntraProjetWG90x[,1:4]
         #d_90x =
-        lin_reg_param  = list("i1min" = 28, "i1med" = 41, "i2med" = 61, "i2max" = 74)
+        #lin_reg_param  = list("i1min" = 12, "i1med" = 50, "i2med" = 52, "i2max" = 90)
+        lin_reg_param  = list("i1min" = 28, "i1med" = 50, "i2med" = 52, "i2max" = 74)
         poly_reg_param = list("i1min" = 12, "i1med" = 50, "i2med" = 52, "i2max" = 90)
         d_90x = data_obj(sample_test, contaIntraProjetWG90x, cor_param, lin_reg_param, poly_reg_param)
         # calcul lineaire reg
@@ -587,7 +594,8 @@ if (experiment == "WG"){
         contaIntraProjetEX60x = replace_na(contaIntraProjetEX60x)
         #noconta60x = contaIntraProjetEX60x[,1:4]
         #d_60x = 
-        lin_reg_param  = list("i1min" = 16, "i1med" = 38, "i2med" = 64, "i2max" = 96)
+        #lin_reg_param  = list("i1min" = 12, "i1med" = 50, "i2med" = 52, "i2max" = 90)
+        lin_reg_param  = list("i1min" = 10, "i1med" = 50, "i2med" = 52, "i2max" = 92)
         poly_reg_param = list("i1min" = 12, "i1med" = 50, "i2med" = 52, "i2max" = 90)
         d_60x = data_obj(sample_test, contaIntraProjetEX60x, cor_param, lin_reg_param, poly_reg_param)
         # calcul lineaire reg
@@ -599,7 +607,8 @@ if (experiment == "WG"){
         contaIntraProjetEX90x = replace_na(contaIntraProjetEX90x)
         #noconta90x = contaIntraProjetEX90x[,1:4]
         #d_90x = 
-        lin_reg_param  = list("i1min" = 6, "i1med" = 38, "i2med" = 64, "i2max" = 96)
+        #lin_reg_param  = list("i1min" = 9, "i1med" = 50, "i2med" = 52, "i2max" = 93)
+        lin_reg_param  = list("i1min" = 10, "i1med" = 50, "i2med" = 52, "i2max" = 92)
         poly_reg_param = list("i1min" = 9, "i1med" = 50, "i2med" = 52, "i2max" = 93)
         d_90x = data_obj(sample_test, contaIntraProjetEX90x, cor_param, 
                          lin_reg_param, poly_reg_param)
@@ -612,12 +621,14 @@ if (experiment == "WG"){
 # calcul lineaire reg
 d[["depth"]]     = depth
 d[["depthtest"]] = depthtest
+d[["max_conta_linear"]] = 15
 d = regress_calc(d)
 
 # make a table for resultats
 d[["res_hetero"]] = make_tab_hetero(d$lin_predict_mod, d$res_poly1, 
                                     d$lin_reg_param$i1min, d$lin_reg_param$i1med,
-                                    d$lin_reg_param$i2med, d$lin_reg_param$i2max)
+                                    d$lin_reg_param$i2med, d$lin_reg_param$i2max,
+                                    d$max_conta_linear)
 
 # Correlation Calcul
 d = data_corelation(d)
