@@ -40,7 +40,9 @@ declare scriptPath=""
 scriptPath="$(dirname "$0")"
 readonly scriptPath
 declare -r datadir="${scriptPath}"/../share/contatester
-declare LCRSEGDUPgnomad="${datadir}"/lcr_seg_dup_gnomad_2.0.2.bed.gz
+declare REFERENCE="GRCh37"
+declare LCRSEGDUPgnomad="${datadir}"/lcr_seg_dup_gnomad_2.0.2_"${REFERENCE}".bed.gz
+
 # AB range
 ABstart=0.00
 ABend=0.11
@@ -95,7 +97,10 @@ ${NAME} [options]
   -g, --gnomad <bed_file>
         BED file used to exclude regions with Low Complexity Repeats (LCR)
         and Segmental Duplications (seg_dup) (optional)
-        [default: ${datadir}/lcr_seg_dup_gnomad_2.0.2.bed.gz]
+        [default: ${datadir}/lcr_seg_dup_gnomad_2.0.2_${REFERENCE}.bed.gz]
+  -r, --reference <GRCh37|GRCh38>
+        genome version for gnomad regions exclusions (optional)
+        [default: GRCh37]
   -s, --ABstart <float>
         Allele balance starting value for variant selection (optional)
         [default: ${ABstart}]
@@ -133,13 +138,14 @@ fi
 while (( $# > 0 ))
 do
     case $1 in
-        -f|--file)     vcfin=$(testArg "$1" "$2");           shift;;
-        -c|--vcfconta) vcfconta=$(testArg "$1" "$2");        shift;;
-        -g|--gnomad)   LCRSEGDUPgnomad=$(testArg "$1" "$2"); shift;;
-        -s|--ABstart)  ABstart=$(testArg "$1" "$2");         shift;;
-        -e|--ABend)    ABend=$(testArg "$1" "$2");           shift;;
-        -t|--thread)   nbthread=$(testArg "$1" "$2");        shift;;
-        -h|--help)     display_usage && exit 0 ;;
+        -f|--file)      vcfin=$(testArg "$1" "$2");           shift;;
+        -c|--vcfconta)  vcfconta=$(testArg "$1" "$2");        shift;;
+        -g|--gnomad)    LCRSEGDUPgnomad=$(testArg "$1" "$2"); shift;;
+        -r|--reference) REFERENCE=$(testArg "$1" "$2");       shift;;
+        -s|--ABstart)   ABstart=$(testArg "$1" "$2");         shift;;
+        -e|--ABend)     ABend=$(testArg "$1" "$2");           shift;;
+        -t|--thread)    nbthread=$(testArg "$1" "$2");        shift;;
+        -h|--help)      display_usage && exit 0 ;;
         --) shift; break;; 
         -*) echo "$0: error - unrecognized option $1" >&2 && \
             display_usage && exit 1;;
