@@ -31,10 +31,15 @@ declare vcfin=""
 declare histout=""
 declare -i nbthread=4
 
+# All-in-one LCR & SEG DUP
+declare scriptPath=""
+scriptPath="$(dirname "$0")"
+readonly scriptPath
 declare gnomad=false
 declare gnomad_cmd=""
+declare REFERENCE="GRCh37"
 declare -r datadir="${scriptPath}"/../share/contatester
-declare LCRSEGDUPgnomad="${datadir}"/lcr_seg_dup_gnomad_2.0.2.bed.gz
+declare LCRSEGDUPgnomad="${datadir}"/lcr_seg_dup_gnomad_2.0.2_"${REFERENCE}".bed.gz
 
 ################################################################################
 # Functions :
@@ -85,7 +90,10 @@ ${NAME} [options]
   -g, --gnomad <bed_file>
         BED file used to exclude regions with Low Complexity Repeats (LCR)
         and Segmental Duplications (seg_dup) (optional)
-        [default: ${datadir}/lcr_seg_dup_gnomad_2.0.2.bed.gz]
+        [default: ${datadir}/lcr_seg_dup_gnomad_2.0.2_${REFERENCE}.bed.gz]
+  -r, --reference <GRCh37|GRCh38>
+        genome version for gnomad regions exclusions (optional)
+        [default: GRCh37]
   -h, --help
         print help
 
@@ -93,7 +101,6 @@ DESCRIPTION :
 ${NAME} calcul the Allelic Balance of a sample from a VCF file, check if
 a cross human contamination is present and estim the degree of
 contamination.
-Output to stdout
 
 EXAMPLE :
 ${NAME} -f file.vcf -o file.hist"
@@ -114,10 +121,11 @@ fi
 while (( $# > 0 ))
 do
     case $1 in
-        -f|--file)       vcfin=$(testArg "$1" "$2");    shift;;
-        -o|--outputfile) histout=$(testArg "$1" "$2");    shift;;
+        -f|--file)       vcfin=$(testArg "$1" "$2"); shift;;
+        -o|--outputfile) histout=$(testArg "$1" "$2"); shift;;
         -e|--exclude_gnomad) gnomad=true;;
         -g|--gnomad)     LCRSEGDUPgnomad=$(testArg "$1" "$2"); shift;;
+        -r|--reference)  REFERENCE=$(testArg "$1" "$2"); shift;;
         -h|--help) display_usage && exit 0 ;;
         --) shift; break;;
         -*) echo "$0: error - unrecognized option $1" >&2 && \
@@ -139,7 +147,7 @@ if [[ -z $histout ]]; then
 fi
 
 if $gnomad ; then
-    gnomad_cmd=" --targets ^${LCRSEGDUPgnomad} "
+    gnomad_cmd=" --targets-file ^${LCRSEGDUPgnomad} "
 fi
 
 module_load 'bcftools/1.9'
