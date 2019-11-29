@@ -1,0 +1,3 @@
+TASK ABCalc_file1 -c 1 bash -c "calculAllelicBalance.sh -f file1.vcf -o /tmp/file1.hist -d /tmp/file1.meandepth"
+TASK Report_file1 -c 1 bash -c "contaReport.R --input /tmp/file1.hist --output /tmp/file1.conta  --reportName /tmp/file1.pdf -t 4 --experiment WG -d $(< /tmp/file1.meandepth )"
+EDGE ABCalc_file1 Report_file1

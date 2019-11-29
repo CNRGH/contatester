@@ -1,0 +1,15 @@
+TASK ABCalc_file0 -c 1 bash -c "calculAllelicBalance.sh -f file0.vcf -o /tmp/file0.hist -d /tmp/file0.meandepth"
+TASK Report_file0 -c 1 bash -c "contaReport.R --input /tmp/file0.hist --output /tmp/file0.conta  --reportName /tmp/file0.pdf -t 4 --experiment WG -d $(< /tmp/file0.meandepth )"
+EDGE ABCalc_file0 Report_file0
+TASK ABCalc_file1 -c 1 bash -c "calculAllelicBalance.sh -f file1.vcf -o /tmp/file1.hist -d /tmp/file1.meandepth"
+TASK Report_file1 -c 1 bash -c "contaReport.R --input /tmp/file1.hist --output /tmp/file1.conta  --reportName /tmp/file1.pdf -t 4 --experiment WG -d $(< /tmp/file1.meandepth )"
+EDGE ABCalc_file1 Report_file1
+TASK ABCalc_file2 -c 1 bash -c "calculAllelicBalance.sh -f file2.vcf -o /tmp/file2.hist -d /tmp/file2.meandepth"
+TASK Report_file2 -c 1 bash -c "contaReport.R --input /tmp/file2.hist --output /tmp/file2.conta  --reportName /tmp/file2.pdf -t 4 --experiment WG -d $(< /tmp/file2.meandepth )"
+EDGE ABCalc_file2 Report_file2
+TASK ABCalc_file3 -c 1 bash -c "calculAllelicBalance.sh -f file3.vcf -o /tmp/file3.hist -d /tmp/file3.meandepth"
+TASK Report_file3 -c 1 bash -c "contaReport.R --input /tmp/file3.hist --output /tmp/file3.conta  --reportName /tmp/file3.pdf -t 4 --experiment WG -d $(< /tmp/file3.meandepth )"
+EDGE ABCalc_file3 Report_file3
+TASK ABCalc_file4 -c 1 bash -c "calculAllelicBalance.sh -f file4.vcf -o /tmp/file4.hist -d /tmp/file4.meandepth"
+TASK Report_file4 -c 1 bash -c "contaReport.R --input /tmp/file4.hist --output /tmp/file4.conta  --reportName /tmp/file4.pdf -t 4 --experiment WG -d $(< /tmp/file4.meandepth )"
+EDGE ABCalc_file4 Report_file4

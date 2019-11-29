@@ -1,0 +1,65 @@
+TASK ABCalc_file0 -c 1 bash -c "calculAllelicBalance.sh -f file0.vcf -o /tmp/file0.hist -d /tmp/file0.meandepth"
+TASK Report_file0 -c 1 bash -c "contaReport.R --input /tmp/file0.hist --output /tmp/file0.conta --report --reportName /tmp/file0.pdf -t 4 --experiment WG -d $(< /tmp/file0.meandepth )"
+EDGE ABCalc_file0 Report_file0
+TASK RecupConta_file0 -c 7 bash -c "if [[ $( awk \'END{printf \$NF}\' /tmp/file0.conta) = TRUE ]]; then recupConta.sh -f file0.vcf -c /tmp/file0_AB_0.00_to_0.11_noLCRnoDUP.vcf.gz ; fi"
+EDGE Report_file0 RecupConta_file0
+TASK Compare_file0_file1 -c 7 bash -c "if [[ $( awk \'END{printf \$NF}\' /tmp/file0.conta) = TRUE ]]; then checkContaminant.sh -f file1.vcf -c /tmp/file0_AB_0.00_to_0.11_noLCRnoDUP.vcf.gz -s /tmp/file0_comparisonSummary.txt ; fi"
+EDGE RecupConta_file0 Compare_file0_file1
+TASK Compare_file0_file2 -c 7 bash -c "if [[ $( awk \'END{printf \$NF}\' /tmp/file0.conta) = TRUE ]]; then checkContaminant.sh -f file2.vcf -c /tmp/file0_AB_0.00_to_0.11_noLCRnoDUP.vcf.gz -s /tmp/file0_comparisonSummary.txt ; fi"
+EDGE RecupConta_file0 Compare_file0_file2
+TASK Compare_file0_file3 -c 7 bash -c "if [[ $( awk \'END{printf \$NF}\' /tmp/file0.conta) = TRUE ]]; then checkContaminant.sh -f file3.vcf -c /tmp/file0_AB_0.00_to_0.11_noLCRnoDUP.vcf.gz -s /tmp/file0_comparisonSummary.txt ; fi"
+EDGE RecupConta_file0 Compare_file0_file3
+TASK Compare_file0_file4 -c 7 bash -c "if [[ $( awk \'END{printf \$NF}\' /tmp/file0.conta) = TRUE ]]; then checkContaminant.sh -f file4.vcf -c /tmp/file0_AB_0.00_to_0.11_noLCRnoDUP.vcf.gz -s /tmp/file0_comparisonSummary.txt ; fi"
+EDGE RecupConta_file0 Compare_file0_file4
+TASK ABCalc_file1 -c 1 bash -c "calculAllelicBalance.sh -f file1.vcf -o /tmp/file1.hist -d /tmp/file1.meandepth"
+TASK Report_file1 -c 1 bash -c "contaReport.R --input /tmp/file1.hist --output /tmp/file1.conta --report --reportName /tmp/file1.pdf -t 4 --experiment WG -d $(< /tmp/file1.meandepth )"
+EDGE ABCalc_file1 Report_file1
+TASK RecupConta_file1 -c 7 bash -c "if [[ $( awk \'END{printf \$NF}\' /tmp/file1.conta) = TRUE ]]; then recupConta.sh -f file1.vcf -c /tmp/file1_AB_0.00_to_0.11_noLCRnoDUP.vcf.gz ; fi"
+EDGE Report_file1 RecupConta_file1
+TASK Compare_file1_file0 -c 7 bash -c "if [[ $( awk \'END{printf \$NF}\' /tmp/file1.conta) = TRUE ]]; then checkContaminant.sh -f file0.vcf -c /tmp/file1_AB_0.00_to_0.11_noLCRnoDUP.vcf.gz -s /tmp/file1_comparisonSummary.txt ; fi"
+EDGE RecupConta_file1 Compare_file1_file0
+TASK Compare_file1_file2 -c 7 bash -c "if [[ $( awk \'END{printf \$NF}\' /tmp/file1.conta) = TRUE ]]; then checkContaminant.sh -f file2.vcf -c /tmp/file1_AB_0.00_to_0.11_noLCRnoDUP.vcf.gz -s /tmp/file1_comparisonSummary.txt ; fi"
+EDGE RecupConta_file1 Compare_file1_file2
+TASK Compare_file1_file3 -c 7 bash -c "if [[ $( awk \'END{printf \$NF}\' /tmp/file1.conta) = TRUE ]]; then checkContaminant.sh -f file3.vcf -c /tmp/file1_AB_0.00_to_0.11_noLCRnoDUP.vcf.gz -s /tmp/file1_comparisonSummary.txt ; fi"
+EDGE RecupConta_file1 Compare_file1_file3
+TASK Compare_file1_file4 -c 7 bash -c "if [[ $( awk \'END{printf \$NF}\' /tmp/file1.conta) = TRUE ]]; then checkContaminant.sh -f file4.vcf -c /tmp/file1_AB_0.00_to_0.11_noLCRnoDUP.vcf.gz -s /tmp/file1_comparisonSummary.txt ; fi"
+EDGE RecupConta_file1 Compare_file1_file4
+TASK ABCalc_file2 -c 1 bash -c "calculAllelicBalance.sh -f file2.vcf -o /tmp/file2.hist -d /tmp/file2.meandepth"
+TASK Report_file2 -c 1 bash -c "contaReport.R --input /tmp/file2.hist --output /tmp/file2.conta --report --reportName /tmp/file2.pdf -t 4 --experiment WG -d $(< /tmp/file2.meandepth )"
+EDGE ABCalc_file2 Report_file2
+TASK RecupConta_file2 -c 7 bash -c "if [[ $( awk \'END{printf \$NF}\' /tmp/file2.conta) = TRUE ]]; then recupConta.sh -f file2.vcf -c /tmp/file2_AB_0.00_to_0.11_noLCRnoDUP.vcf.gz ; fi"
+EDGE Report_file2 RecupConta_file2
+TASK Compare_file2_file0 -c 7 bash -c "if [[ $( awk \'END{printf \$NF}\' /tmp/file2.conta) = TRUE ]]; then checkContaminant.sh -f file0.vcf -c /tmp/file2_AB_0.00_to_0.11_noLCRnoDUP.vcf.gz -s /tmp/file2_comparisonSummary.txt ; fi"
+EDGE RecupConta_file2 Compare_file2_file0
+TASK Compare_file2_file1 -c 7 bash -c "if [[ $( awk \'END{printf \$NF}\' /tmp/file2.conta) = TRUE ]]; then checkContaminant.sh -f file1.vcf -c /tmp/file2_AB_0.00_to_0.11_noLCRnoDUP.vcf.gz -s /tmp/file2_comparisonSummary.txt ; fi"
+EDGE RecupConta_file2 Compare_file2_file1
+TASK Compare_file2_file3 -c 7 bash -c "if [[ $( awk \'END{printf \$NF}\' /tmp/file2.conta) = TRUE ]]; then checkContaminant.sh -f file3.vcf -c /tmp/file2_AB_0.00_to_0.11_noLCRnoDUP.vcf.gz -s /tmp/file2_comparisonSummary.txt ; fi"
+EDGE RecupConta_file2 Compare_file2_file3
+TASK Compare_file2_file4 -c 7 bash -c "if [[ $( awk \'END{printf \$NF}\' /tmp/file2.conta) = TRUE ]]; then checkContaminant.sh -f file4.vcf -c /tmp/file2_AB_0.00_to_0.11_noLCRnoDUP.vcf.gz -s /tmp/file2_comparisonSummary.txt ; fi"
+EDGE RecupConta_file2 Compare_file2_file4
+TASK ABCalc_file3 -c 1 bash -c "calculAllelicBalance.sh -f file3.vcf -o /tmp/file3.hist -d /tmp/file3.meandepth"
+TASK Report_file3 -c 1 bash -c "contaReport.R --input /tmp/file3.hist --output /tmp/file3.conta --report --reportName /tmp/file3.pdf -t 4 --experiment WG -d $(< /tmp/file3.meandepth )"
+EDGE ABCalc_file3 Report_file3
+TASK RecupConta_file3 -c 7 bash -c "if [[ $( awk \'END{printf \$NF}\' /tmp/file3.conta) = TRUE ]]; then recupConta.sh -f file3.vcf -c /tmp/file3_AB_0.00_to_0.11_noLCRnoDUP.vcf.gz ; fi"
+EDGE Report_file3 RecupConta_file3
+TASK Compare_file3_file0 -c 7 bash -c "if [[ $( awk \'END{printf \$NF}\' /tmp/file3.conta) = TRUE ]]; then checkContaminant.sh -f file0.vcf -c /tmp/file3_AB_0.00_to_0.11_noLCRnoDUP.vcf.gz -s /tmp/file3_comparisonSummary.txt ; fi"
+EDGE RecupConta_file3 Compare_file3_file0
+TASK Compare_file3_file1 -c 7 bash -c "if [[ $( awk \'END{printf \$NF}\' /tmp/file3.conta) = TRUE ]]; then checkContaminant.sh -f file1.vcf -c /tmp/file3_AB_0.00_to_0.11_noLCRnoDUP.vcf.gz -s /tmp/file3_comparisonSummary.txt ; fi"
+EDGE RecupConta_file3 Compare_file3_file1
+TASK Compare_file3_file2 -c 7 bash -c "if [[ $( awk \'END{printf \$NF}\' /tmp/file3.conta) = TRUE ]]; then checkContaminant.sh -f file2.vcf -c /tmp/file3_AB_0.00_to_0.11_noLCRnoDUP.vcf.gz -s /tmp/file3_comparisonSummary.txt ; fi"
+EDGE RecupConta_file3 Compare_file3_file2
+TASK Compare_file3_file4 -c 7 bash -c "if [[ $( awk \'END{printf \$NF}\' /tmp/file3.conta) = TRUE ]]; then checkContaminant.sh -f file4.vcf -c /tmp/file3_AB_0.00_to_0.11_noLCRnoDUP.vcf.gz -s /tmp/file3_comparisonSummary.txt ; fi"
+EDGE RecupConta_file3 Compare_file3_file4
+TASK ABCalc_file4 -c 1 bash -c "calculAllelicBalance.sh -f file4.vcf -o /tmp/file4.hist -d /tmp/file4.meandepth"
+TASK Report_file4 -c 1 bash -c "contaReport.R --input /tmp/file4.hist --output /tmp/file4.conta --report --reportName /tmp/file4.pdf -t 4 --experiment WG -d $(< /tmp/file4.meandepth )"
+EDGE ABCalc_file4 Report_file4
+TASK RecupConta_file4 -c 7 bash -c "if [[ $( awk \'END{printf \$NF}\' /tmp/file4.conta) = TRUE ]]; then recupConta.sh -f file4.vcf -c /tmp/file4_AB_0.00_to_0.11_noLCRnoDUP.vcf.gz ; fi"
+EDGE Report_file4 RecupConta_file4
+TASK Compare_file4_file0 -c 7 bash -c "if [[ $( awk \'END{printf \$NF}\' /tmp/file4.conta) = TRUE ]]; then checkContaminant.sh -f file0.vcf -c /tmp/file4_AB_0.00_to_0.11_noLCRnoDUP.vcf.gz -s /tmp/file4_comparisonSummary.txt ; fi"
+EDGE RecupConta_file4 Compare_file4_file0
+TASK Compare_file4_file1 -c 7 bash -c "if [[ $( awk \'END{printf \$NF}\' /tmp/file4.conta) = TRUE ]]; then checkContaminant.sh -f file1.vcf -c /tmp/file4_AB_0.00_to_0.11_noLCRnoDUP.vcf.gz -s /tmp/file4_comparisonSummary.txt ; fi"
+EDGE RecupConta_file4 Compare_file4_file1
+TASK Compare_file4_file2 -c 7 bash -c "if [[ $( awk \'END{printf \$NF}\' /tmp/file4.conta) = TRUE ]]; then checkContaminant.sh -f file2.vcf -c /tmp/file4_AB_0.00_to_0.11_noLCRnoDUP.vcf.gz -s /tmp/file4_comparisonSummary.txt ; fi"
+EDGE RecupConta_file4 Compare_file4_file2
+TASK Compare_file4_file3 -c 7 bash -c "if [[ $( awk \'END{printf \$NF}\' /tmp/file4.conta) = TRUE ]]; then checkContaminant.sh -f file3.vcf -c /tmp/file4_AB_0.00_to_0.11_noLCRnoDUP.vcf.gz -s /tmp/file4_comparisonSummary.txt ; fi"
+EDGE RecupConta_file4 Compare_file4_file3
