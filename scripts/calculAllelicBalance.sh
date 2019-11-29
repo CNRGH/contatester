@@ -29,6 +29,7 @@ set -eo pipefail
 declare -r NAME=$(basename "$0")
 declare vcfin=""
 declare histout=""
+declare depthout=""
 declare -i nbthread=4
 
 # All-in-one LCR & SEG DUP
@@ -84,8 +85,10 @@ USAGE :
 ${NAME} [options]
   -f, --file <vcf_file>
         vcf file version 4.2 to process (Mandatory)
-  -o, --outputfile <txt_file>
-        result file (optional) [default: <vcf_file>.hist]
+  -o, --histoutputfile <txt_file>
+        allelic balance histogram result file (optional) [default: <vcf_file>.hist]
+  -d, --depthoutputfile <txt_file>
+        depth estimation result file (optional) [default: <vcf_file>.meandepth]
   -e, --exclude_gnomad
   -g, --gnomad <bed_file>
         BED file used to exclude regions with Low Complexity Repeats (LCR)
@@ -122,7 +125,8 @@ while (( $# > 0 ))
 do
     case $1 in
         -f|--file)       vcfin=$(testArg "$1" "$2"); shift;;
-        -o|--outputfile) histout=$(testArg "$1" "$2"); shift;;
+        -o|--histoutputfile) histout=$(testArg "$1" "$2"); shift;;
+        -d|--depthoutputfile) depthout=$(testArg "$1" "$2"); shift;;
         -e|--exclude_gnomad) gnomad=true;;
         -g|--gnomad)     LCRSEGDUPgnomad=$(testArg "$1" "$2"); shift;;
         -r|--reference)  REFERENCE=$(testArg "$1" "$2"); shift;;
@@ -146,6 +150,16 @@ if [[ -z $histout ]]; then
     histout="$vcfin".hist
 fi
 
+# depthout default value
+if [[ -z $depthout ]]; then
+    depthout="$vcfin".meandepth
+fi
+
+# histout and depthout must be different
+if [[ $histout = $depthout ]]; then
+    echo '[ERROR] -o|--histoutputfile and -d|--depthoutputfile must have different names' >&2 && \
+    display_usage && exit 1
+
 if $gnomad ; then
     gnomad_cmd=" --targets-file ^${LCRSEGDUPgnomad} "
 fi
@@ -158,8 +172,7 @@ bcftools query --include 'TYPE~"snp"' \
                -f '[%AD]\n' \
                ${gnomad_cmd} \
                "${vcfin}" | \
-awk -F ',' '{ if(($1 + $2 + $3) != 0) {
+awk -F ',' -v depthout=$depthout 'BEGIN { m=0 } { m+=($1+$2+$3+$4); if(($1 + $2 + $3) != 0) {
       printf "%.2f\n", $2/($1 + $2 + $3)
-    }
-}' | \
+    } } END { print m/NR > depthout }' | \
 sort | uniq -c > $histout
