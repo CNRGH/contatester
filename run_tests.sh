@@ -104,8 +104,10 @@ echo -e '\033[31m- Testing scripts\033[0m'
 contatester -h
 
 echo -e '\033[34m\t- Testing calculAllelicBalance\033[0m'
-calculAllelicBalance.sh -f ./data_examples/test_1.vcf.gz -o ./data_examples/calculAllelicBalance_output.hist
-
+calculAllelicBalance.sh -f ./data_examples/test_1.vcf.gz \
+                        -o ./data_examples/calculAllelicBalance_output.hist
+                        -d ./data_examples/calculAllelicBalance_output.meandepth
+                        
 echo -e '\033[34m\t- Testing contaReport\033[0m'
 module_load r
 contaReport.R --input ./data_examples/distrib_allele_balance.hist \
