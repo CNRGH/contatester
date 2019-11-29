@@ -80,5 +80,3 @@ def test_allowed_usage(parameters: Sequence[str], fields_expected: List[Union[st
 def test_not_allowed_usage(parameters: Sequence[str]):
     with pytest.raises(SystemExit):
         args = get_cli_args(parameters)
-
-
