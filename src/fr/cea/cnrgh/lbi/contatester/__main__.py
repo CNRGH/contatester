@@ -249,7 +249,7 @@ def write_dag_file(check: bool, dag_file: str, out_dir: str, report: str,
         :param vcfs: A list of vcf file path
         :param thread:
         :param conta_threshold:
-        :param experiment:
+        :param experiment: used for contaReport.R could be WG or Ex but EX not yet supoorted
     """
     page_size = io.DEFAULT_BUFFER_SIZE
     with open(dag_file, "wb", buffering=10 * page_size) as dag_f:
@@ -266,16 +266,16 @@ def write_dag_file(check: bool, dag_file: str, out_dir: str, report: str,
             # calcul allelic balance
             task_id1 = "ABCalc_" + basename_vcf
             task_conf = task_fmt.format(id=task_id1, core=1)
-            task_cmd = "calculAllelicBalance.sh -f " + current_vcf + " -o " \
-                       + vcf_hist
+            task_cmd = "calculAllelicBalance.sh -f " + current_vcf + \
+                       " -o " + vcf_hist + " -d " + depth_estim
             write_binary(dag_f, task_conf + "\"" + task_cmd + "\"\n")
 
             # estimate depth
-            task_id1b = "EstimDepth_" + basename_vcf
-            task_conf = task_fmt.format(id=task_id1b, core=1)
-            task_cmd = "depth_estim_from_vcf.sh -f " + current_vcf + " -o " \
-                       + depth_estim
-            write_binary(dag_f, task_conf + "\"" + task_cmd + "\"\n")
+            # task_id1b = "EstimDepth_" + basename_vcf
+            # task_conf = task_fmt.format(id=task_id1b, core=1)
+            # task_cmd = "depth_estim_from_vcf.sh -f " + current_vcf + " -o " \
+            #            + depth_estim
+            # write_binary(dag_f, task_conf + "\"" + task_cmd + "\"\n")
 
             # test and report contamination
             task_id2 = "Report_" + basename_vcf
@@ -287,7 +287,7 @@ def write_dag_file(check: bool, dag_file: str, out_dir: str, report: str,
                         " -d $(< " + depth_estim + " )")
             write_binary(dag_f, task_conf + "\"" + task_cmd + "\"\n")
             write_edge_task(dag_f, task_id1, task_id2)
-            write_edge_task(dag_f, task_id1b, task_id2)
+            # write_edge_task(dag_f, task_id1b, task_id2)
 
             # proceed to comparison
             if check is True:
@@ -307,7 +307,7 @@ def write_batch_file(dag_file: str, msub_file: str, nb_vcf: int, thread: int,
         :param mail: User mail to be notified
         :param msub_file: path to write the batch file
         :param nb_vcf: number of tasks to process
-        :param out_dir: Directory to put results
+        :param out_dir: Directory to output slurm error and output files
         :param accounting: msub option for calculation time imputation
         :param check: option for contaminant identification
     """
@@ -450,15 +450,16 @@ def machine_param(out_dir: str, nb_vcf: int, thread: int,
     return clust_param
 
 
-def nb_vcf_by_tasks(nb_vcf: int) -> int:
+def nb_vcf_by_tasks(nb_vcf: int, max_vcf_by_task: int = 48) -> int:
     """
-    Used to set a maximum number of task to launch in parallele depending of the
+    Used to set a maximum number of task to launch in parallel depending of the
     total number of task
+    :param max_vcf_by_task: default 48
     :param nb_vcf:
     :return: nb_vcf_by_task
     """
-    if nb_vcf > 48:
-        nb_vcf_by_task = 48
+    if nb_vcf > max_vcf_by_task:
+        nb_vcf_by_task = max_vcf_by_task
     elif nb_vcf > 1:
         nb_vcf_by_task = nb_vcf
     else:
@@ -478,17 +479,22 @@ def job_duration(nb_vcf: int, check: bool = False) -> int:
     :param check:
     :return: pipeline_duration
     """
-    ABcalcul_time = 3 * 60
+    max_pipeline_duration = 86400  # in second
+    max_vcf_contaminated_in_project = 1 / 3
+    tolerance = 1   # add a batch for error margin
+    min_to_sec = 60
+
+    ABcalcul_time = 3 * min_to_sec
     if check:
-        recupConta_time = 3 * 60
-        checkconta_time = 1 * 60
+        recupConta_time = 3 * min_to_sec
+        checkconta_time = 1 * min_to_sec
     else:
         recupConta_time = 0
         checkconta_time = 0
     nb_vcf_by_task = nb_vcf_by_tasks(nb_vcf)
-    nb_run = nb_runs(nb_vcf, nb_vcf_by_task) + 1
+    nb_run = nb_runs(nb_vcf, nb_vcf_by_task) + tolerance
     # Max 1/3 samples are contaminated case
-    nb_conta = ceil(nb_vcf * 1 / 3)
+    nb_conta = ceil(nb_vcf * max_vcf_contaminated_in_project)
     nb_run_recupconta = nb_runs(nb_conta, nb_vcf_by_tasks(nb_conta))
     nb_checkconta = nb_conta * (nb_vcf - 1)
     nb_run_checkconta = nb_runs(nb_checkconta, nb_vcf_by_tasks(nb_checkconta))
@@ -496,8 +502,8 @@ def job_duration(nb_vcf: int, check: bool = False) -> int:
                          recupConta_time * nb_run_recupconta +
                          checkconta_time * nb_run_checkconta)
     # maximum job duration 24h
-    if pipeline_duration > 86400:
-        pipeline_duration = 86400
+    if pipeline_duration > max_pipeline_duration:
+        pipeline_duration = max_pipeline_duration
     return pipeline_duration
 
 
