@@ -159,6 +159,7 @@ fi
 if [[ $histout = $depthout ]]; then
     echo '[ERROR] -o|--histoutputfile and -d|--depthoutputfile must have different names' >&2 && \
     display_usage && exit 1
+fi
 
 if $gnomad ; then
     gnomad_cmd=" --targets-file ^${LCRSEGDUPgnomad} "
@@ -176,3 +177,4 @@ awk -F ',' -v depthout=$depthout 'BEGIN { m=0 } { m+=($1+$2+$3+$4); if(($1 + $2 
       printf "%.2f\n", $2/($1 + $2 + $3)
     } } END { print m/NR > depthout }' | \
 sort | uniq -c > $histout
+
