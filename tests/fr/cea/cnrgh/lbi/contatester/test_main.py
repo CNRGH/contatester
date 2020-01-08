@@ -48,14 +48,14 @@ def test_task_cmd_if(conta_file: str, cmd: str, expected: str) -> None:
 
 
 @pytest.mark.parametrize('vcfs, max_vcf_by_task, expected',
-                         ((['file1.vcf'], 48, 1),
-                          (['file{}.vcf'.format(i) for i in range(0, 12)], 48, 12),
-                          (['file{}.vcf'.format(i) for i in range(0, 48)], 48, 48),
-                          (['file{}.vcf'.format(i) for i in range(0, 55)], 48, 48),
-                          (['file1.vcf'], 96, 1),
-                          (['file{}.vcf'.format(i) for i in range(0, 12)], 96, 12),
-                          (['file{}.vcf'.format(i) for i in range(0, 96)], 96, 96),
-                          (['file{}.vcf'.format(i) for i in range(0, 101)], 96, 96)
+                         ((1, 48, 1),
+                          (12, 48, 12),
+                          (48, 48, 48),
+                          (55, 48, 48),
+                          (1, 96, 1),
+                          (12, 96, 12),
+                          (96, 96, 96),
+                          (101, 96, 96)
                           ))
 def test_nb_vcf_by_tasks(vcfs: List[str], max_vcf_by_task: int, expected: int) -> None:
     nb = nb_vcf_by_tasks(vcfs, max_vcf_by_task)
