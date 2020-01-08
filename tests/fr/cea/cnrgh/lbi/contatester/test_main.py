@@ -118,7 +118,7 @@ def test_write_batch_file(mocker, env: str, dag_file: str, msub_file: str, nb_vc
 # TODO create_report
 
 
-@pytest.mark.parametrize('check,                                 dag_file, out_dir,     report,                       task_fmt,                                          vcfs, thread, conta_threshold, experiment,                    expected_filen',
+@pytest.mark.parametrize('check,                                 dag_file, out_dir,     report,                       task_fmt,                                          vcfs, thread, conta_threshold, experiment,                    expected_file',
                          ((False, '/tmp/test_5vcf_report_nocheck.dagfile', '/tmp/', '--report', "TASK {id} -c {core} bash -c ", ['file{}.vcf'.format(i) for i in range(0, 5)],      1,               4,       'WG', 'test_5vcf_report_nocheck.dagfile'),
                           (False,        '/tmp/test_5vcf_nocheck.dagfile', '/tmp/',         '', "TASK {id} -c {core} bash -c ", ['file{}.vcf'.format(i) for i in range(0, 5)],      1,               4,       'WG',        'test_5vcf_nocheck.dagfile'),
                           (True,    '/tmp/test_5vcf_report_check.dagfile', '/tmp/', '--report', "TASK {id} -c {core} bash -c ", ['file{}.vcf'.format(i) for i in range(0, 5)],      7,               4,       'WG',   'test_5vcf_report_check.dagfile'),
@@ -130,7 +130,7 @@ def test_write_batch_file(mocker, env: str, dag_file: str, msub_file: str, nb_vc
                          ))
 def test_write_dag_file(check: bool, dag_file: str, out_dir: str, report: str,
                         task_fmt: str, vcfs: List[str], thread: int,
-                        conta_threshold: int, experiment: str):
+                        conta_threshold: int, experiment: str, expected_file: str):
     write_dag_file(check, dag_file, out_dir, report, task_fmt, vcfs, thread, conta_threshold, experiment)
     content = open(dag_file, 'r').readlines()
     expected_filename = resource_filename(
