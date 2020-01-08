@@ -24,6 +24,8 @@ variables:
   before_script:
     - source venv/bin/activate
     - export R_LIBS="$(pwd)/rlib:/ur/lib64/Rlibrary"
+    - curl -LO https://repo.ius.io/ius-release-el7.rpm
+    - yum update -y ius-release-el7.rpm
     - yum install -y libcurl openssl
 
 .docker_jobs:
@@ -82,6 +84,8 @@ prepare_python_env:
       - venv
       - rlib
   before_script:
+    - curl -LO https://repo.ius.io/ius-release-el7.rpm
+    - yum update -y ius-release-el7.rpm
     - yum install -y libcurl-devel g++ openssl-devel
     - python3 -m venv venv
     - source venv/bin/activate
