@@ -7,7 +7,9 @@ COPY rlib /usr/local/lib64/
 # COPY --from=builder /data/rlib/* /usr/local/lib64/
 # COPY --from=builder /data/dist/dist/contatester-${CONTATESTER_VERSION}-py2.py3-none-any.whl /contatester-${CONTATESTER_VERSION}-py2.py3-none-any.whl
 # tests and data_example directory are intentionally ommited
-RUN yum install -y libcurl openssl curl ant openmpi-devel cppcheck numactl-devel graphviz \
+RUN curl -LO https://repo.ius.io/ius-release-el7.rpm \
+    && yum update -y ius-release-el7.rpm \
+    && yum install -y libcurl openssl curl ant openmpi-devel cppcheck numactl-devel graphviz \
     && yum group install -y "Development Tools" \
     && export PATH=$PATH:/usr/lib64/openmpi/bin/ \
     && mkdir -p /bin \
