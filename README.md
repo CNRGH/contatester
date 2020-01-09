@@ -112,8 +112,7 @@ After each commit you can download (by clicking `Download` a list menu appear):
   - python libraries : pathlib, os, typing, argparse, io, subprocess, sys, glob, datetime
   - R 3.3.1
   - R libraries : optparse, grid, gridBase, gridExtra 
-  - bcftools >= 1.6
-  - samtools >= 1.6
+  - bcftools >= 1.9
   - pegasus >= 4.8.2
 
 ### Build time
