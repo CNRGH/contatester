@@ -22,20 +22,6 @@ library("gridExtra")
 library("optparse")
 
 
-### DEBUG
-# argv=list()
-# argv[["input"]] = "/home/delafoy/C000VP03/C000VP0.hist"
-# argv[["output"]] = "/home/delafoy/C000VP04/C000VP0.hist.conta"
-# argv[["depth"]] = 30
-# #argv[["depth"]] = 60
-# argv[["experiment"]] = "WG"
-# argv[["report"]] = TRUE
-# argv[["reportName"]] = "/home/delafoy/C000VP04/C000VP0.hist.pdf"
-# 
-# scriptPath = "/home/delafoy/20190000_optim_contatester/Rdataset"
-# datadir = "/home/delafoy/20190000_optim_contatester/Rdataset"
-
-
 ####################
 ###   Function   ###
 ####################
@@ -101,7 +87,6 @@ replace_na <- function(d){
     return(replace(d, is.na(d), 0))
 }
 
-# reg_data = ratio_hetero
 ratio_hetero <- function(d, i1min, i1med, i2med, i2max){
     # data informations
     # Sample ratio left hetero / right hetero
@@ -120,11 +105,6 @@ lm_reg <- function(xconta, ratio_hetero, max_conta){
 }
 
 lm_reg_predict <- function(model_lin, test_value){
-    # linear model
-    #     data_lm      = data.frame(xconta[xconta <= max_conta], ratio_hetero[xconta <= max_conta])
-    #     colnames(data_lm) = c("xconta","ratio_hetero")
-    #     
-    #     model_lin   = lm(formula = xconta ~ ratio_hetero, data = data_lm)
     lin_predict = predict(model_lin, data.frame(ratio_hetero=test_value))
     return(lin_predict)
 }
@@ -145,9 +125,6 @@ poly_reg <- function(xconta, ratio_hetero){
     data_reg = data.frame(xconta, ratio_hetero)
     colnames(data_reg) = c("xconta","ratio_hetero")
     model_2deg = lm(ratio_hetero ~ poly(xconta, 2, raw=TRUE), data = data_reg)
-    #     coef_a = model_2deg$coefficients[3]
-    #     coef_b = model_2deg$coefficients[2]
-    #     coef_c = model_2deg$coefficients[1]
     return(list("model_2deg" = model_2deg, 
                 "data_reg" = data_reg))
 }
@@ -157,22 +134,13 @@ poly_reg_predict <- function(model_2deg, test_value){
     coef_a = model_2deg$coefficients[3]
     coef_b = model_2deg$coefficients[2]
     coef_c = model_2deg$coefficients[1] - test_value
-    
     res_poly = as.numeric(round(polyroot(c(coef_c, coef_b, coef_a)), 2))
-    
     return(res_poly)
 }
 
 poly_reg_predict_modif <- function(res_poly){
-    
+    # polynomial regression layout
     res_poly1 = paste(res_poly[1], "%", sep="")
-    #     if (res_poly[2] <= 50){
-    #         res_poly2 = paste(res_poly[2], "%", sep="")
-    #     } else {
-    #         res_poly2 = paste("x>50% (", res_poly[2], "%)", sep ="")
-    #     }
-    #     return(list("res_poly1" = res_poly1, 
-    #                 "res_poly2" = res_poly2))
     return(res_poly1)
 }
 
@@ -208,8 +176,6 @@ regress_calc <- function(d){
     model_lin = lin_pred$model_lin
     lin_predict = lm_reg_predict(model_lin, test_value[3])
     lin_predict_mod = lin_predict_modif(lin_predict, max_conta)
-    # summary_lm = summary(model_lin)
-    # lm_rsquar  = round(summary_lm$r.squared,5)
     
     ###
     # polynomial prediction
@@ -223,8 +189,6 @@ regress_calc <- function(d){
     model_2deg = res_poly$model_2deg
     res_poly  = poly_reg_predict(model_2deg, test_value[3])
     res_poly1 = poly_reg_predict_modif(res_poly)
-    # summary_2deg = summary(model_2deg)
-    # model_2deg_rsquar = round(summary_2deg$r.squared, 5)
     
     ### results
     d[["model_lin"]] = model_lin
@@ -281,27 +245,7 @@ cor_calc <- function(d, d_range){
 }
 
 data_corelation <- function(d){
-    # correlation treatment
-    
-#     # AB [0.01-0.3]
-#     mcor = cor_calc(d, c(d$cor_param$i1min:d$cor_param$i1med))
-#     d[["cor_range1"]]      = paste("AB [", (d$cor_param$i1min-1)/100, "-", 
-#                                    (d$cor_param$i1med-1)/100, "]", sep="")
-#     d[["mcor_1tiers"]]     = mcor$mcor
-#     d[["hit_mcor_1tiers"]] = mcor$hit_mcor
-#     d[["max_ref_1tiers"]]  = mcor$max_ref
-#     d[["name_hit_1tiers"]] = mcor$name_hit
-#     
-#     # AB [0.7-0.99]
-#     mcor = cor_calc(d, c(d$cor_param$i2med:d$cor_param$i2max))
-#     d[["cor_range2"]]      = paste("AB [", (d$cor_param$i2med-1)/100, "-", 
-#                                    (d$cor_param$i2max-1)/100, "]", sep="") 
-#     d[["mcor_3tiers"]]     = mcor$mcor
-#     d[["hit_mcor_3tiers"]] = mcor$hit_mcor
-#     d[["max_ref_3tiers"]]  = mcor$max_ref
-#     d[["name_hit_3tiers"]] = mcor$name_hit
-    
-    # AB [0.01-0.3 ; 0.7-0.99]
+
     mcor = cor_calc(d, c(d$cor_param$i1min:d$cor_param$i1med, 
                          d$cor_param$i2med:d$cor_param$i2max))
     d[["cor_range3"]]         = paste("AB [", (d$cor_param$i1min-1)/100, "-",
@@ -319,7 +263,6 @@ make_tab_cor <- function(hit_mcor_1et3tiers, max_ref_1et3tiers, name_hit_1et3tie
                          cor_range3){
     
     # Correlation results table  formating
-    
     tab_cor = cbind(c(round(max_ref_1et3tiers, 3)),
                     c(round(hit_mcor_1et3tiers[1],3)),
                     c(name_hit_1et3tiers))
@@ -415,20 +358,6 @@ write_pdf_report <- function(d, filin, pdfout){
     #nb_ref   = length(ref_col) # number of not contaminated samples in dataset
     nb_data  = dim(d$dataset)[2]
     i_sample = nb_data + 1
-#     # AB [0.7:0.99]
-#     plot(d$xconta, d$mcor_3tiers[1:nb_data, i_sample], 
-#          pch=4,
-#          ylim=c(-1,1), xlim=c(0,50),
-#          col=legende_color[1],
-#          xlab="Percent contamination", ylab="Correlation", 
-#          main = "Sample Correlation to Simulated CrossHuman Contamination Dataset" )
-#     # AB [01:0.3]
-#     points(d$xconta, d$mcor_1tiers[1:nb_data, i_sample], 
-#            pch=4, col = legende_color[2])
-#     # AB [0.01:0.3 ; 0.7:0.99]
-#     points(d$xconta, d$mcor_1et3tiers[1:nb_data, i_sample],
-#            pch=4, col = legende_color[3])
-    
     plot(d$xconta, d$mcor_1et3tiers[1:nb_data, i_sample], 
          pch=4,
          ylim=c(-1,1), xlim=c(0,50),
@@ -548,8 +477,6 @@ if (experiment == "WG"){
         # 30x
         load(paste(datadir, "contaIntraProjetWG30x.rda", sep="/"))
         contaIntraProjetWG30x = replace_na(contaIntraProjetWG30x)
-        #noconta30x = contaIntraProjetWG30x[,1:4]
-        #d_30x 
         #lin_reg_param  = list("i1min" = 19, "i1med" = 50, "i2med" = 52, "i2max" = 83)
         lin_reg_param  = list("i1min" = 14, "i1med" = 50, "i2med" = 52, "i2max" = 88)
         poly_reg_param = list("i1min" = 19, "i1med" = 50, "i2med" = 52, "i2max" = 83)
@@ -562,8 +489,6 @@ if (experiment == "WG"){
         # 60x
         load(paste(datadir, "contaIntraProjetWG60x.rda", sep="/"))
         contaIntraProjetWG60x = replace_na(contaIntraProjetWG60x)
-        #noconta60x = contaIntraProjetWG60x[,1:4]
-        #d_60x = 
         #lin_reg_param  = list("i1min" = 13, "i1med" = 50, "i2med" = 52, "i2max" = 89)
         lin_reg_param  = list("i1min" = 10, "i1med" = 50, "i2med" = 52, "i2max" = 92)
         poly_reg_param = list("i1min" = 13, "i1med" = 50, "i2med" = 52, "i2max" = 89)
@@ -576,8 +501,6 @@ if (experiment == "WG"){
         # 90x
         load(paste(datadir, "contaIntraProjetWG90x.rda", sep="/"))
         contaIntraProjetWG90x = replace_na(contaIntraProjetWG90x)
-        #noconta90x = contaIntraProjetWG90x[,1:4]
-        #d_90x =
         #lin_reg_param  = list("i1min" = 12, "i1med" = 50, "i2med" = 52, "i2max" = 90)
         lin_reg_param  = list("i1min" = 28, "i1med" = 50, "i2med" = 52, "i2max" = 74)
         poly_reg_param = list("i1min" = 12, "i1med" = 50, "i2med" = 52, "i2max" = 90)
@@ -592,8 +515,6 @@ if (experiment == "WG"){
         # 60x
         load(paste(datadir, "contaIntraProjetEX60x.rda", sep="/"))
         contaIntraProjetEX60x = replace_na(contaIntraProjetEX60x)
-        #noconta60x = contaIntraProjetEX60x[,1:4]
-        #d_60x = 
         #lin_reg_param  = list("i1min" = 12, "i1med" = 50, "i2med" = 52, "i2max" = 90)
         lin_reg_param  = list("i1min" = 10, "i1med" = 50, "i2med" = 52, "i2max" = 92)
         poly_reg_param = list("i1min" = 12, "i1med" = 50, "i2med" = 52, "i2max" = 90)
@@ -605,8 +526,6 @@ if (experiment == "WG"){
         # 90x
         load(paste(datadir, "contaIntraProjetEX90x.rda", sep="/"))
         contaIntraProjetEX90x = replace_na(contaIntraProjetEX90x)
-        #noconta90x = contaIntraProjetEX90x[,1:4]
-        #d_90x = 
         #lin_reg_param  = list("i1min" = 9, "i1med" = 50, "i2med" = 52, "i2max" = 93)
         lin_reg_param  = list("i1min" = 10, "i1med" = 50, "i2med" = 52, "i2max" = 92)
         poly_reg_param = list("i1min" = 9, "i1med" = 50, "i2med" = 52, "i2max" = 93)

@@ -270,13 +270,6 @@ def write_dag_file(check: bool, dag_file: str, out_dir: str, report: str,
                        " -o " + vcf_hist + " -d " + depth_estim
             write_binary(dag_f, task_conf + "\"" + task_cmd + "\"\n")
 
-            # estimate depth
-            # task_id1b = "EstimDepth_" + basename_vcf
-            # task_conf = task_fmt.format(id=task_id1b, core=1)
-            # task_cmd = "depth_estim_from_vcf.sh -f " + current_vcf + " -o " \
-            #            + depth_estim
-            # write_binary(dag_f, task_conf + "\"" + task_cmd + "\"\n")
-
             # test and report contamination
             task_id2 = "Report_" + basename_vcf
             task_conf = task_fmt.format(id=task_id2, core=1)
@@ -287,7 +280,6 @@ def write_dag_file(check: bool, dag_file: str, out_dir: str, report: str,
                         " -d $(< " + depth_estim + " )")
             write_binary(dag_f, task_conf + "\"" + task_cmd + "\"\n")
             write_edge_task(dag_f, task_id1, task_id2)
-            # write_edge_task(dag_f, task_id1b, task_id2)
 
             # proceed to comparison
             if check is True:
