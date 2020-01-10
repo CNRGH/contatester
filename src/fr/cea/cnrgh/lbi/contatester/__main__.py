@@ -471,7 +471,9 @@ def job_duration(nb_vcf: int, check: bool = False) -> int:
     :param check:
     :return: pipeline_duration
     """
+    # maximum job duration 24h
     max_pipeline_duration = 86400  # in second
+    # Max 1/3 samples are contaminated case
     max_vcf_contaminated_in_project = 1 / 3
     tolerance = 1   # add a batch for error margin
     min_to_sec = 60
@@ -481,11 +483,11 @@ def job_duration(nb_vcf: int, check: bool = False) -> int:
         recupConta_time = 3 * min_to_sec
         checkconta_time = 1 * min_to_sec
     else:
+        # if no check, this steps are not done 
         recupConta_time = 0
         checkconta_time = 0
     nb_vcf_by_task = nb_vcf_by_tasks(nb_vcf)
     nb_run = nb_runs(nb_vcf, nb_vcf_by_task) + tolerance
-    # Max 1/3 samples are contaminated case
     nb_conta = ceil(nb_vcf * max_vcf_contaminated_in_project)
     nb_run_recupconta = nb_runs(nb_conta, nb_vcf_by_tasks(nb_conta))
     nb_checkconta = nb_conta * (nb_vcf - 1)
