@@ -13,18 +13,31 @@ contaminant
 
 optional arguments:
   -h, --help            show this help message and exit
-  -f, FILE, --file FILE  VCF file version 4.2 to process. If -f is used don't
+  -f FILE, --file FILE  VCF file version 4.2 to process. If -f is used don't
                         use -l (Mandatory)
-  -l, LIST, --list LIST  input text file, one vcf by lane. If -l is used don't
+  -l LIST, --list LIST  input text file, one vcf by lane. If -l is used don't
                         use -f (Mandatory)
-  -o, OUTDIR, --outdir OUTDIR
+  -o OUTDIR, --outdir OUTDIR
                         folder for storing all output files (optional)
                         [default: current directory]
+  -e EXPERIMENT, --experiment EXPERIMENT
+                        Experiment type, could be WG for Whole Genome or EX
+                        for Exome [default WG]
   -r, --report          create a pdf report for contamination estimation
                         [default: no report]
-  -c, --check           enable contaminant check for the list of VCF provided
-                        if a VCF is marked as contaminated
+  -c, --check           enable contaminant check for each VCF provided if a
+                        VCF is marked as contaminated
   -m MAIL, --mail MAIL  send an email at the end of the job
+  -A ACCOUNTING, --accounting ACCOUNTING
+                        msub option for calculation time imputation
+  -d DAGNAME, --dagname DAGNAME
+                        DAG file name for pegasus
+  -t THREAD, --thread THREAD
+                        number of threads used by job(optional) [default if
+                        check enable|disable: 4|1]
+  -s THRESHOLD, --threshold THRESHOLD
+                        Threshold for contaminated status(optional) [default:
+                        4 ]
 
 ```
 
@@ -60,12 +73,6 @@ This project include:
 ## TEMP Install 
 
 ```bash
-$ rm -r el7_env/ dist/ build/
-$ python3 -m venv el7_env
-$ source el7_env/bin/activate
-$ pip install --upgrade pip wheel setuptools
-$ python setup.py bdist_wheel 
-$ pip install dist/contatester-1.0.0-py2.py3-none-any.whl
 ```
 
 ## Development environment
@@ -73,7 +80,7 @@ $ pip install dist/contatester-1.0.0-py2.py3-none-any.whl
 In order to test your application and all dependencies are well declared, you have to create a virtual env
 
 ```bash
-$ python3.6 -m venv linux_venv
+$ python3 -m venv linux_venv
 $ source linux_venv/bin/activate
 ```
 
@@ -82,13 +89,14 @@ $ source linux_venv/bin/activate
 We are using `setuptools` as software build tool. In order to build this project, you have to run:
 
 ```bash
-$ python setup.py build
+$ pip install --upgrade pip wheel setuptools
+$ python setup.py bdist_wheel 
 ```
 
 ### Local Installation
 
 ```bash
-$ python setup.py install
+$ pip install dist/contatester-1.0.0-py2.py3-none-any.whl
 ```
 
 ### Clean
@@ -108,7 +116,7 @@ After each commit you can download (by clicking `Download` a list menu appear):
 
 ## Dependencies
 ### Runtime
-  - python 3.6
+  - python >= 3.6
   - python libraries : pathlib, os, typing, argparse, io, subprocess, sys, glob, datetime
   - R 3.3.1
   - R libraries : optparse, grid, gridBase, gridExtra 
