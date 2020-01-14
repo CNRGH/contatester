@@ -90,8 +90,8 @@ ${NAME} [options]
         print help
 
 DESCRIPTION :
-${NAME} compare selected variants from a VCF file with an over VCF
-VCF should be uncompressed or ziped with bgzip
+${NAME} compare selected variants from a VCF file with another VCF
+VCF should be uncompressed or compressed with bgzip
 Output : 
     - Output format : vcfContaName,vcfComparName,nbSNPConta,nbMatch,ratio
     - Write important informations in summary file

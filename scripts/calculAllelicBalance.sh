@@ -101,8 +101,8 @@ ${NAME} [options]
         print help
 
 DESCRIPTION :
-${NAME} calcul the Allelic Balance of a sample from a VCF file, check if
-a cross human contamination is present and estim the degree of
+${NAME} compute the Allelic Balance of a sample from a VCF file, check if
+a cross human contamination is present and estimate the degree of
 contamination.
 
 EXAMPLE :

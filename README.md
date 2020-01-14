@@ -1,15 +1,19 @@
-# Contatester Wrapper project
+[![pipeline status](https://gitlab.com/cnrgh/contatester/badges/master/pipeline.svg)](https://gitlab.com/cnrgh/contatester)
+[![License: CeCILL](https://img.shields.io/badge/license-CeCILL-blue.svg)](http://www.cecill.info)
+[![doi url](https://zenodo.org/badge/DOI/10.5281/zenodo.3606008.svg)](https://doi.org/10.5281/zenodo.3606008)
 
-Wrapper for the detection and determination of the presence of cross
-contaminant using pegasus for high efficiency
+# Contatester
+
+Contatester computes the Allelic Balance of a sample from a VCF file, 
+check if a cross human contamination is present and estimate the degree of 
+contamination, using pegasus for high efficiency
 
 ## Usage
 
 ```
 usage: contatester [options]
 
-Wrapper for the detection and determination of the presence of cross
-contaminant
+Detection and determination of the presence of cross contaminant
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -41,43 +45,26 @@ optional arguments:
 
 ```
 
-## Before to code
-
-You have to rename the python project, for this task:
-    - Open the `setup.py` file located into the root of the project
-    - Change the value of `name` variable
-    - If it is an application:
-      - Change the entry point `console_scripts`
-      - Rename the directory `src/fr/cea/lbi/contatester` by your project name
-    - if it is a library
-      - Remove tne entry point `console_scripts`
-
-## License
-
-CEA project should use CeCILL license, see corresponding [CEA presse page](http://www.cea.fr/presse/Pages/actualites-communiques/ntic/licence-CeCILL-reconnue-par-Open-source-initiative.aspx).
 
 ## Code quality
 
 Any new python project need to:
   - Be compatible python 3.6 or higher
-  - Use Typing see [pep 484](https://www.python.org/dev/peps/pep-0484/) and its [documentation](https://docs.python.org/3/library/typing.html)
+  - Use Typing see [pep 484](https://www.python.org/dev/peps/pep-0484/) and 
+    its [documentation](https://docs.python.org/3/library/typing.html)
   - Own a wide range of tests 
 
 This project include:
   - A framework to test various use cases and unit tests ([pytest](https://pytest.org))
   - A code coverage tools ([coverage.py](https://coverage.readthedocs.io/))
 
- You have to run `python setup.py coverage` before each production release and most of other times. These tools
- generate html reports into the directory `htmlcov`
-
-## TEMP Install 
-
-```bash
-```
+ You have to run `python setup.py coverage` before each production release and 
+ most of other times. These tools generate html reports into the directory `htmlcov`
 
 ## Development environment
 
-In order to test your application and all dependencies are well declared, you have to create a virtual env
+In order to test your application and all dependencies are well declared, 
+you have to create a virtual env
 
 ```bash
 $ python3 -m venv linux_venv
@@ -86,7 +73,8 @@ $ source linux_venv/bin/activate
 
 ### Build
 
-We are using `setuptools` as software build tool. In order to build this project, you have to run:
+We are using `setuptools` as software build tool. In order to build this project, 
+you have to run:
 
 ```bash
 $ pip install --upgrade pip wheel setuptools
@@ -101,10 +89,14 @@ $ pip install dist/contatester-1.0.0-py2.py3-none-any.whl
 
 ### Clean
 
-Both setuptools and distutils commands are extended to ensure that all cache files are cleaned. Indeed python generate `*.pyc`, 
-`*.pyo` file to store corresponding bytecode. These bytecode files are not always regenerated which could lead to some
-problems when working on a cross-environment (Windows <-> Linux). The extended clean command remove either `__pycache__`, `*.egg-info`, `.eggs`, `.pytest_cache`
+Both setuptools and distutils commands are extended to ensure that all cache 
+files are cleaned. Indeed python generate `*.pyc`, `*.pyo` file to store 
+corresponding bytecode. These bytecode files are not always regenerated which 
+could lead to some problems when working on a cross-environment (Windows <-> Linux). 
+The extended clean command remove either `__pycache__`, `*.egg-info`, `.eggs`, `.pytest_cache`
 
+## Installation using Docker
+TODO
 
 ## Continuous Integration
 
@@ -129,6 +121,12 @@ After each commit you can download (by clicking `Download` a list menu appear):
   - python36
   - R-devel
 
-## Conclusion
 
-Happy coding :-)
+## License
+
+Contatester is released under the terms of the CeCILL license,
+a free software license agreement adapted to both international and French legal matters
+that is fully compatible with the GNU GPL, GNU Affero GPL and/or EUPL license.
+
+For further details see [LICENSE](LICENSE) file or check out http://www.cecill.info/.
+

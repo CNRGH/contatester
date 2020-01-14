@@ -52,7 +52,7 @@ def get_cli_args(parameters: Sequence[str] = sys.argv[1:]) \
         A flag to enable contaminant check
     """
     parser = argparse.ArgumentParser(prog=script_name,
-                                     description=("Wrapper for the detection"
+                                     description=("Detection"
                                                   " and determination of "
                                                   "the presence of cross "
                                                   "contaminant"))
