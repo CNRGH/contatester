@@ -96,7 +96,27 @@ could lead to some problems when working on a cross-environment (Windows <-> Lin
 The extended clean command remove either `__pycache__`, `*.egg-info`, `.eggs`, `.pytest_cache`
 
 ## Installation using Docker
-TODO
+
+To ease the use of contatester we provides a docker images. Example to get Contatester version 1.0.0 in few commands:
+
+1. Get the contatester image
+```
+$ docker pull cnrgh/contatester:1.0.0
+```
+
+2. Run a container using our image
+```
+docker run --rm \
+           --name="contatester" \
+           --volume "$(pwd)/my_data":/data \
+           --volume "$(pwd)/my_out_dir":result_dir \
+           cnrgh/contatester:1.0.0 -f /data/test_1.vcf.gz -o /result_dir
+```
+Here we create a container named `contatester` using the image cnrgh/contatester:1.0.0. 
+The directory `my_data` is mount bind into the container to `/data` and `my_out_dir` to `/result`.
+The contatester application is executed with parameters `-f` and `-o`.
+Results are stored both into `result` for the container and `$(pwd)/my_out_dir` for the host.
+
 
 ## Continuous Integration
 
