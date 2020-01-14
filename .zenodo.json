@@ -1,0 +1,51 @@
+{
+    "title": "CNRGH/contatester: Version 1.0.0",
+    "description": "Calcul the Allelic Balance of a sample from a VCF file, check if a cross human contamination is present and estim the degree of contamination.",
+    "license": "CeCILL",
+    "upload_type": "software",
+    "access_right": "open",
+    "creators": [
+        {
+            "name": "Delafoy, Damien",
+            "orcid": "0000-0002-0586-4655"
+        },
+        {
+            "name":  "Mercier, Jonathan",
+            "orcid": "0000-0001-5905-2700"
+        },
+        {
+            "name":  "Elise, Larsonneur",
+            "orcid": "0000-0002-0929-8603",
+        },
+        {
+            "name":  "Nicolas, Wiart",
+            "orcid": "0000-0001-9701-4262",
+        },
+        {
+            "name":  "Florian, Sandron",
+            "orcid": "0000-0001-7491-0283",
+        },
+        {
+            "name":  "Delphine, Daian",
+            "orcid": "0000-0002-6965-8244",
+        },
+        {
+            "name":  "Robert, Olaso",
+            "orcid": "0000-0001-7631-9657",
+        },
+        {
+            "name":  "Anne, Boland",
+            "orcid": "0000-0001-8789-5676",
+        },
+        {
+            "name":  "Vincent, Meyer",
+            "orcid": "0000-0001-9144-1618",
+        }
+    ],
+    "keywords": [
+        "Contamination", 
+        "VCF", 
+        "Allelic balance", 
+        "Whole Genome"
+    ]
+}
