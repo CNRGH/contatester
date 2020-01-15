@@ -1,4 +1,4 @@
-[![License: CeCILL](https://img.shields.io/badge/license-CeCILL-blue.svg)](http://www.cecill.info)
+[![License: CeCILL](https://img.shields.io/badge/license-CeCILL-blue.svg)](http://cecill.info)
 [![doi url](https://zenodo.org/badge/DOI/10.5281/zenodo.3606008.svg)](https://doi.org/10.5281/zenodo.3606008)
 
 # Contatester
